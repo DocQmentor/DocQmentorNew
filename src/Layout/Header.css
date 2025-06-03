@@ -1,0 +1,232 @@
+.logo-container .title-center h1{
+    background-color: white;
+}
+.logo-container .title-center h1 span{
+    background-color: white;
+}
+.header-component-container center p{
+    font-size: small;
+    padding-left: 100px;
+    background-color: white;
+}
+.header-component-container sup{
+    background-color: white;
+    font-size: small;
+    margin: 10px;
+}
+.title-center h1 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: bold;
+  font-family: sans-serif;
+}
+ 
+.red-letter {
+  color: #ed2224;
+}
+.blue-letter {
+  color: #0071bc;
+}
+.header-component-container header {
+    background: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+ 
+.header-component-container header::after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #266898;
+}
+ 
+.header-component-container .a {
+    background-color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+ 
+.header-component-container .i {
+    background-color: white;
+    color: #47556e;
+    margin-right: 8px;
+}
+ 
+.header-component-container img {
+    background-color: white;
+    height: 30px;
+    display: flex;
+    align-items: center;
+}
+ 
+.header-component-container ul {
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* gap: 20px; Reduced gap for better spacing */
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+ 
+.header-component-container li {
+    background-color: white;
+    list-style: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    color: #47556e;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    transition: background-color 0.2s;
+}
+ 
+.header-component-container li:hover
+ {
+    border: #266898 1px dashed;
+}
+.header-component-container li.active {
+  position: relative;
+}
+ 
+/* .header-component-container li.active::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #266898;
+  border-radius: 3px;
+} */
+.header-component-container li.active,
+.header-component-container li.active  .i{
+  color: #ed2224;
+  font-weight: bold;
+}
+ 
+.header-component-container li .a {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+ 
+.header-component-container li:hover {
+  border: #266898 1px dashed;
+}
+ 
+ 
+ 
+/* Add these to your existing Header.css */
+ 
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 250px;
+  overflow: hidden;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+  transform-origin: top right;
+}
+ 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+ 
+.profile-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+ 
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #266898;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+ 
+.profile-info {
+  flex: 1;
+  overflow: hidden;
+}
+ 
+.profile-name {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ 
+.profile-email {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ 
+.profile-footer {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+ 
+.logout-button {
+  background: none;
+  border: none;
+  color: #ed2224;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+ 
+.logout-button:hover {
+  background-color: #f8f8f8;
+}
+ 
+/* Add this to make sure the profile li has relative positioning */
+.header-component-container li {
+  position: relative;
+}

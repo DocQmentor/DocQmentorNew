@@ -1,0 +1,20 @@
+/* .footer-component-container{
+    border: 1px solid #94a3b8;
+} */
+.footer-component-container footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+.footer-component-container p{
+    color: #1a5276;
+}
+.footer-component-container ul{
+    display: flex;
+    gap: 30px;
+}
+.footer-component-container li{
+    list-style: none;
+    color: #1a5276;
+}

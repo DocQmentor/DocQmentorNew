@@ -1,0 +1,315 @@
+body {
+  background-color: skyblue;
+}
+ 
+.main {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-gap: 20px;
+  padding: 2rem;
+  font-family: 'Nunito', sans-serif;
+  background-color: #ffffff;
+  animation: fadeInPage 1s ease-in;
+}
+ 
+/* Fade-in page animation */
+@keyframes fadeInPage {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+ 
+/* Header */
+.Login-header {
+  grid-column: 1 / -1;
+  display: flex;
+  background-color: white;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+ 
+/* Logos */
+.img-doc,
+.img-tech {
+  background-color: white;
+  height: 45px;
+  width: auto;
+  object-fit: contain;
+  margin-top: -5px;
+}
+ 
+/* Summary Section */
+.summary {
+  background-color: white;
+  grid-column: 1 / 7;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-right: 1rem;
+  animation: slideInLeft 1s ease-in-out;
+}
+ 
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+ 
+.highlight {
+  background-color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #266898;
+}
+ 
+.highlight-letter {
+  background-color: white;
+  color: #ed2224;
+}
+ 
+.main-title {
+  background-color: white;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: black;
+}
+ 
+.para {
+  background-color: white;
+  font-size: 1rem;
+  color: black;
+  margin-bottom: 1.5rem;
+}
+ 
+/* Login Button */
+.auth-status {
+  background-color: white;
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+ 
+.login-button {
+  background-color: #ed2224;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+ 
+.login-button:hover {
+  background-color: #266898;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+ 
+/* Success */
+.success-message {
+  background-color: white;
+  color: #266898;
+  font-weight: bold;
+}
+ 
+/* Floating image */
+.image-con {
+  grid-column: 7 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+}
+ 
+.image {
+  background-color: white;
+  width: 260px;
+  animation: floatUpDown 3s ease-in-out infinite;
+}
+ 
+@keyframes floatUpDown {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0); }
+}
+ 
+/* Feature Icons and Header */
+.feature-header {
+  background-color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+ 
+.feature-icon {
+  background-color: white;
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 0.6px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+}
+ 
+/* Removed icon scaling on hover */
+/*
+.feature-card:hover .feature-icon {
+  transform: scale(1.4);
+}
+*/
+ 
+.features-section .feature-header img,
+.features-section .feature-header h3 {
+  background-color: white;
+}
+ 
+.features-section .feature-header img {
+  border: #0071bc 1px solid;
+  border-radius: 10px;
+}
+ 
+/* Features Section */
+.features-section {
+  background-color: white;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  padding: 3rem 0;
+  margin-top: 2rem;
+}
+ 
+.feature-card {
+  background-color: white;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: left;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  cursor: pointer;
+}
+ 
+.feature-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+ 
+.feature-card:hover h3 {
+  color: #ed2224;
+  font-weight: bold;
+}
+ 
+.feature-card p {
+  background-color: white;
+  font-size: 15px;
+  color: #333;
+}
+ 
+/* Footer */
+.Copyright {
+  grid-column: 1 / -1;
+  text-align: left;
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: #888;
+  background-color: white;
+  padding-left: 10px;
+}
+ 
+/* Responsive */
+@media screen and (max-width: 1024px) {
+  .summary {
+    grid-column: 1 / -1;
+    padding-right: 0;
+    margin-bottom: 2rem;
+  }
+ 
+  .image-con {
+    grid-column: 1 / -1;
+  }
+ 
+  .image {
+    max-width: 100%;
+  }
+ 
+  .auth-status {
+    background-color: #ffffff;
+    justify-content: center;
+  }
+}
+ 
+@media screen and (max-width: 768px) {
+  .features-section {
+    grid-template-columns: 1fr;
+    padding: 2rem 1rem;
+  }
+ 
+  .Login-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+ 
+  .img-doc,
+  .img-tech {
+    height: 40px;
+  }
+ 
+  .highlight {
+    font-size: 1.8rem;
+  }
+ 
+  .main-title {
+    font-size: 1.2rem;
+  }
+ 
+  .para {
+    font-size: 0.95rem;
+  }
+}
+ 
+/* Logo title container */
+.title-center h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: bold;
+  font-family: sans-serif;
+  display: inline-block;
+  position: relative;
+}
+ 
+.red-letter {
+  color: #ed2224;
+}
+ 
+.blue-letter {
+  color: #0071bc;
+}
+ 
+.title-center sup {
+  font-size: 10px;
+  vertical-align: super;
+  margin-left: 2px;
+}
+ 
+.logo-container .title-center h1 span {
+  background-color: white;
+}
+ 
+.header-component-container center p {
+  font-size: small;
+  padding-left: 100px;
+  background-color: white;
+}
+ 
+.logo-subtitle {
+  font-size: 12px;
+  color: white;
+  position: absolute;
+  left: 0;
+  bottom: -18px;
+  font-family: 'Nunito', sans-serif;
+}
