@@ -46,11 +46,11 @@ const Header = () => {
           </center> */}
         </div>
         <ul>
-          <li className={location.pathname === '/home' ? 'active' : ''}>
+          {/* <li className={location.pathname === '/home' ? 'active' : ''}>
             <NavLink to="/home" className="a">
               <Home size={20} className="i"/>Home
             </NavLink>
-          </li>
+          </li> */}
           <li className={location.pathname === '/Dashboard' ? 'active' : ''}>
             <NavLink to="/Dashboard" className="a">
               <LayoutDashboard size={20} className="i"/>Dashboard

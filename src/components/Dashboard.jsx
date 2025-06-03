@@ -67,7 +67,7 @@ const Dashboard = () => {
             <h2>Dashboard</h2>
             <p>View your document processing activity and insights</p>
           </div>
-          <div>
+          <div className="vendor-select-drop-down">
             <h5>Select Vendors</h5>
             <select>
               <option>Vendor</option>
@@ -198,7 +198,9 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      <Footer />
+      <footer className="footer">
+        <Footer/>
+      </footer>
     </div>
   );
 };

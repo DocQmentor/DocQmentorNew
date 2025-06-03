@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Download, Inbox, Save, ArrowDownCircle } from "lucide-react";
 import Header from '../Layout/Header';
 import Footer from '../Layout/Footer';
 import './Table.css'
@@ -16,16 +17,30 @@ function Table() {
   ];
  
   const [vendorFilter, setVendorFilter] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
  
+  // Get unique vendor names for dropdown
+  const vendorNames = [...new Set(invoiceData.map(item => item.vendorName))];
+ 
   const filteredData = invoiceData.filter(item => {
-    const matchesVendor = item.vendorName.toLowerCase().includes(vendorFilter.toLowerCase());
+    // Vendor dropdown filter
+    const matchesVendor = !vendorFilter || item.vendorName === vendorFilter;
+    
+    // General search filter (checks all fields)
+    const matchesSearch = !searchText || 
+      Object.values(item).some(
+        val => val.toString().toLowerCase().includes(searchText.toLowerCase())
+      );
+    
+    // Date range filter
     const itemDate = new Date(item.invoiceDate);
     const from = fromDate ? new Date(fromDate) : null;
     const to = toDate ? new Date(toDate) : null;
     const matchesDate = (!from || itemDate >= from) && (!to || itemDate <= to);
-    return matchesVendor && matchesDate;
+    
+    return matchesVendor && matchesSearch && matchesDate;
   });
  
   const convertToCSV = (data) => {
@@ -72,16 +87,30 @@ function Table() {
  
       <div className="filters" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
         <label style={{ marginRight: '10px' }}>
-          <strong>Filter by Vendor Name:</strong>
-          <input
-            type="text"
+          <strong>Filter by Vendor:</strong>
+          <select
             value={vendorFilter}
             onChange={e => setVendorFilter(e.target.value)}
-            placeholder="Enter vendor name"
+            style={{ marginLeft: '10px', padding: '5px' }}
+          >
+            <option value="">All Vendors</option>
+            {vendorNames.map((vendor, index) => (
+              <option key={index} value={vendor}>{vendor}</option>
+            ))}
+          </select>
+        </label>
+        
+        <label style={{ marginLeft: '20px', marginRight: '10px' }}>
+          <strong>Search All:</strong>
+          <input
+            type="text"
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            placeholder="Search across all fields"
             style={{ marginLeft: '10px', padding: '5px' }}
           />
         </label>
- 
+        
         <label style={{ marginLeft: '20px', marginRight: '10px' }}>
           <strong>From Date:</strong>
           <input
@@ -103,21 +132,27 @@ function Table() {
         </label>
  
         <button
-          onClick={handleDownloadFilteredData}
-          style={{
-            marginLeft: 'auto',
-            padding: '8px 14px',
-            backgroundColor: '#0d3c61',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-          title="Download Filtered Data"
-        >
-          Export 📥
-        </button>
-      </div>
+  className="export-button"
+  onClick={handleDownloadFilteredData}
+  style={{
+    display: 'flex',              // for horizontal alignment
+    alignItems: 'center',         // vertical center
+    justifyContent: 'center',     // horizontal center
+    gap: '8px',                   // space between text and icon
+    marginLeft: 'auto',
+    padding: '8px 16px',
+    backgroundColor: '#0d3c61',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer'
+  }}
+  title="Download Filtered Data"
+>
+  Export <Save size={20} className="i" />
+</button>
+
+     </div>
  
       <table>
         <thead>
@@ -151,7 +186,7 @@ function Table() {
           )}
         </tbody>
       </table>
-    </div>
+      </div>
     <footer className='.footer'>
         <Footer/>
       </footer>

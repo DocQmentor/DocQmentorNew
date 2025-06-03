@@ -1,23 +1,35 @@
 .table-component-container{
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
   gap: 10px;
   width: 100%;
 }
+.table-component-container .export-button .i {
+  padding-top: 2px;          /* optional fine-tuning */
+  color: white;              /* removed quotes */
+  background-color: transparent;  /* no need to set again unless different */
+}
+
 .table-component-container .footer{
   width: 100%;
   border: #0071bc 1px solid;
 }
-.table-component-container .filters input{
+
+.table-component-container .filters input,
+.table-component-container .filters select{
   border: #0d3c61 solid 2px;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 .dataview-container {
-  margin-top: 30px;
+  height: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px;
   width: 100%;
   padding: 40px;
 }
- 
+
 .dataview-container h2 {
   font-size: 28px;
   font-weight: bold;

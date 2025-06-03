@@ -46,7 +46,16 @@
     border: 1px solid #ccc;
     border-radius: 3px;
 }
- 
+.vendor-select-drop-down{
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+.vendor-select-drop-down select{
+    border: #ccc 1px solid;
+    border-radius: 5px;
+    padding: 6px;
+}
 .stats-container {
     width: 100%;
     display: flex;
@@ -207,7 +216,10 @@
     width: 100%;
     background-color: white;
 }
- 
+.file-load-section ul{
+    overflow: scroll;
+    max-height: 200px;
+}
 .file-load-section li {
     list-style-type: none;
     background-color: white;

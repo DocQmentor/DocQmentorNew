@@ -4,7 +4,7 @@ import { PublicClientApplication } from '@azure/msal-browser';
  
 const config = {
   appId: "450165b3-b418-4134-b525-cf04512bee71",
-  redirectUri: "/home",
+  redirectUri: "/Dashboard",
   scopes: ["user.read"],
   authority: "https://login.microsoftonline.com/2b2653b1-1e48-445c-81a8-032920b2a550"
 };
