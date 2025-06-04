@@ -29,6 +29,7 @@ export const uploadToAzure = async (file, onProgress) => {
   const blobUrl = `${storageAccountUrl}/${containerName}/${blobPath}${sasToken}`;
 
   try {
+    // Upload file to Azure Blob Storage
     const response = await axios.put(blobUrl, file, {
       headers: {
         "x-ms-blob-type": "BlockBlob",
@@ -36,18 +37,29 @@ export const uploadToAzure = async (file, onProgress) => {
       },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
           onProgress(percent);
         }
       },
     });
 
     if (response.status === 201 || response.status === 200) {
+      // Now call Azure Function with full blobUrl and documentName
+      await axios.post(
+        "https://docap.azurewebsites.net/api/DocQmentorFunc?code=n4SOThz-nkfGfs96hGTtAsvm3ZS2wt7O3pqELLzWqi38AzFuUm090A==",
+        {
+          blobUrl,
+          documentName: fileName,
+        }
+      );
+
       return {
         fileName,
         folderName,
         uploadedAt: new Date(),
-        status: "In Process", // Optional default
+        status: "In Process",
       };
     } else {
       console.error("Upload failed:", response);

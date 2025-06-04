@@ -27,8 +27,6 @@ const Dashboard = () => {
       file,
       fileName: file.name,
       uploadedAt: new Date(),
-      folderName:
-        file.name.substring(0, file.name.lastIndexOf(".")) || file.name,
     }));
 
     setSelectedFiles((prev) => {
@@ -49,7 +47,6 @@ const Dashboard = () => {
         console.error("Error fetching vendors", error);
       }
     };
-
     fetchVendors();
   }, []);
 
@@ -116,8 +113,8 @@ const Dashboard = () => {
           </div>
           <div>
             <label className="select">Select Vendor:</label>
-            <select className="vendor-dropdown">
-              <option disabled selected>
+            <select className="vendor-dropdown" defaultValue="">
+              <option disabled value="">
                 Select Vendor
               </option>
               {vendors.map((vendor, i) => (
@@ -220,7 +217,6 @@ const Dashboard = () => {
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Folder</th>
                   <th>Status</th>
                   <th>Uploaded</th>
                   <th>Date</th>
@@ -231,7 +227,6 @@ const Dashboard = () => {
                 {uploadedFiles.map((file, index) => (
                   <tr key={index}>
                     <td>{file.fileName}</td>
-                    <td>{file.folderName}</td>
                     <td>
                       <span
                         className={`badge ${file.status
