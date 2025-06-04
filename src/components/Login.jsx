@@ -18,11 +18,7 @@ const Login = ({ setUser }) => {
     }
   };
 
-  // If already logged in, redirect to home
-  // if (accounts.length > 0) {
-  //   navigate('/home');
-  //   return null;
-  // }
+
 
   return (
       <div className='main'>

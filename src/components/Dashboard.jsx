@@ -114,8 +114,8 @@ const Dashboard = () => {
             <h2>Dashboard</h2>
             <p>View your document processing activity and insights</p>
           </div>
-          <div>
-            <label className="select">Select Vendor:</label>
+          <div className="select-vendor-dropdown">
+            <label className="select">Vendors:</label>
             <select className="vendor-dropdown">
               <option disabled selected>
                 Select Vendor
@@ -179,7 +179,7 @@ const Dashboard = () => {
                 onChange={FileChange}
               />
               <label className="btn btn-outline">
-                <Upload size={16} /> Select Files
+                <Upload size={16} className="selecte-icon"/> Select Files
               </label>
             </div>
 
@@ -254,7 +254,10 @@ const Dashboard = () => {
         </div>
       </div>
 
+      <footer>
       <Footer />
+      </footer>
+
       <ToastContainer />
     </div>
   );

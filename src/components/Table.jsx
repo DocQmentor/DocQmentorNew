@@ -132,28 +132,26 @@ function Table() {
         </label>
  
         <button
-  className="export-button"
-  onClick={handleDownloadFilteredData}
-  style={{
-    display: 'flex',              // for horizontal alignment
-    alignItems: 'center',         // vertical center
-    justifyContent: 'center',     // horizontal center
-    gap: '8px',                   // space between text and icon
-    marginLeft: 'auto',
-    padding: '8px 16px',
-    backgroundColor: '#0d3c61',
-    color: 'white',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer'
-  }}
-  title="Download Filtered Data"
->
-  Export <Save size={20} className="i" />
-</button>
-
+          className="export-button"
+          onClick={handleDownloadFilteredData}
+          style={{
+            display: 'flex',              // for horizontal alignment
+            alignItems: 'center',         // vertical center
+            justifyContent: 'center',     // horizontal center
+            gap: '8px',                   // space between text and icon
+            marginLeft: 'auto',
+            padding: '8px 16px',
+            backgroundColor: '#0d3c61',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+          title="Download Filtered Data"
+        >
+          Export <Save size={20} className="i" />
+        </button>
      </div>
- 
       <table>
         <thead>
           <tr>
@@ -187,8 +185,8 @@ function Table() {
         </tbody>
       </table>
       </div>
-    <footer className='.footer'>
-        <Footer/>
+      <footer className='footer'>
+          <Footer/>
       </footer>
     </div>
   );
