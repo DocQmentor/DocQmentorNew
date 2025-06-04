@@ -24,37 +24,48 @@
 .dashboard-total-container .header{
     width: 100%;
 }
- 
-.vendor-select{
-    /* border: #1a5276 1px solid; */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    /* margin-top: 40px; */
+ /* Vendor Select */
+/* Clean and structured Vendor Select Section */
+.select {
+  color: #1a5276;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
 }
-.dashboard-total-container .vendor-select h5{
-    color: #1a5276;
-    margin-left: 30px;
-}
-#vendors{
-    background-color: #ffff;
-    padding: 3px;
-    width: 100px;
-    height: 30px;
-    margin: 5px 0px 0px 26px;
-    border: 1px solid #ccc;
+.vendor-dropdown{
+    width: 150px;
     border-radius: 3px;
+    border-width: 2px;
+
 }
-.vendor-select-drop-down{
-    display: flex;
-    gap: 5px;
-    align-items: center;
+.vendor-select {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 20px;
 }
-.vendor-select-drop-down select{
-    border: #ccc 1px solid;
-    border-radius: 5px;
-    padding: 6px;
+
+.vendor-select-drop-down select {
+  padding: 8px 14px;
+  font-size: 1rem;
+  border: 2px solid #1a5276;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #1a5276;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 180px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Hover + Focus for Dropdown */
+.vendor-select-drop-down select:hover,
+.vendor-select-drop-down select:focus {
+  border-color: #154360;
+  box-shadow: 0 0 0 3px rgba(21, 67, 96, 0.15);
+  cursor: pointer;
 }
 .stats-container {
     width: 100%;

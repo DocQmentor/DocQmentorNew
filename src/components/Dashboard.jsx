@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./Dashboard.css";
 import {
   Upload,
@@ -13,11 +13,13 @@ import Footer from "../Layout/Footer";
 import { uploadToAzure } from "../utils/azureUploader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getVendorFolders } from "../utils/blobService";
 
 const Dashboard = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [vendors, setVendors] = useState([]);
   const fileInputRef = useRef(null);
 
   const FileChange = (e) => {
@@ -29,9 +31,6 @@ const Dashboard = () => {
         file.name.substring(0, file.name.lastIndexOf(".")) || file.name,
     }));
 
-    console.log("Selected new files:", newFiles); // Debug log
-
-    // Filter out duplicates by file name
     setSelectedFiles((prev) => {
       const existingNames = new Set(prev.map((f) => f.fileName));
       const uniqueNewFiles = newFiles.filter(
@@ -40,6 +39,19 @@ const Dashboard = () => {
       return [...prev, ...uniqueNewFiles];
     });
   };
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const list = await getVendorFolders();
+        setVendors(list);
+      } catch (error) {
+        console.error("Error fetching vendors", error);
+      }
+    };
+
+    fetchVendors();
+  }, []);
 
   const handleDeleteFile = (index) => {
     const updated = [...selectedFiles];
@@ -103,11 +115,16 @@ const Dashboard = () => {
             <p>View your document processing activity and insights</p>
           </div>
           <div>
-            <h5>Select Vendors</h5>
-            <select>
-              <option>Vendor</option>
-              <option>Vendor-1</option>
-              <option>Vendor-2</option>
+            <label className="select">Select Vendor:</label>
+            <select className="vendor-dropdown">
+              <option disabled selected>
+                Select Vendor
+              </option>
+              {vendors.map((vendor, i) => (
+                <option key={i} value={vendor}>
+                  {vendor}
+                </option>
+              ))}
             </select>
           </div>
         </nav>
@@ -148,7 +165,7 @@ const Dashboard = () => {
               <p>Upload documents for AI-powered data extraction</p>
             </div>
 
-            <div className="input-section">
+            <div className="input-section" onClick={handleClick}>
               <Upload className="Upload" size={48} />
               <h3 className="upload-section-h3">
                 Drop files here or click to upload
@@ -161,8 +178,7 @@ const Dashboard = () => {
                 multiple
                 onChange={FileChange}
               />
-
-              <label className="btn btn-outline" onClick={handleClick}>
+              <label className="btn btn-outline">
                 <Upload size={16} /> Select Files
               </label>
             </div>
