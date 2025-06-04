@@ -1,20 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home, LayoutDashboard, FileText, User, LogOut } from 'lucide-react';
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
 
-const Header = ({ user }) => {
+const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { instance } = useMsal();
+  const { instance, accounts } = useMsal();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('User');
 
-  if (!user) {
-    console.log('No user in Header');
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (accounts && accounts.length > 0) {
+      const account = accounts[0];
+      setUserEmail(account.username || 'user@example.com');
+      const nameParts = (account.name || 'User Name').split(' ');
+      setUserName(`${nameParts[0]}${nameParts[1] ? ' ' + nameParts[1] : ''}`);
+    } else {
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      if (storedUser) {
+        setUserEmail(storedUser.email || 'user@example.com');
+        const nameParts = (storedUser.name || 'User Name').split(' ');
+        setUserName(`${nameParts[0]}${nameParts[1] ? ' ' + nameParts[1] : ''}`);
+      } else {
+        console.log('No user in Header');
+        navigate('/');
+      }
+    }
+  }, [accounts, navigate]);
 
   const handleLogout = async () => {
     try {
@@ -24,25 +39,21 @@ const Header = ({ user }) => {
     }
   };
 
-  // Get user display name and email directly from the MSAL account object
-  const userDisplayName = user.name || user.username || 'User Name';
-  const userEmail = user.username || 'user@example.com';
-  const initials = userDisplayName
-    .split(' ')
-    .map(name => name[0])
-    .join('')
-    .toUpperCase();
-
   const toggleProfile = () => {
     setIsProfileOpen(!isProfileOpen);
   };
 
-  // Function to handle navigation clicks
   const handleNavigationClick = (e, path) => {
     if (location.pathname === path) {
-      e.preventDefault(); // Prevent navigation if already on the same page
+      e.preventDefault();
     }
   };
+
+  const initials = userName
+    .split(' ')
+    .map(name => name[0])
+    .join('')
+    .toUpperCase();
 
   return (
     <div className="header-component-container">
@@ -52,26 +63,26 @@ const Header = ({ user }) => {
         </div>
         <ul>
           <li className={location.pathname === '/dashboard' ? 'active' : ''}>
-            <NavLink 
-              to="/dashboard" 
+            <NavLink
+              to="/dashboard"
               className="a"
               onClick={(e) => handleNavigationClick(e, '/dashboard')}
             >
-              <LayoutDashboard size={20} className="i"/>Dashboard
+              <LayoutDashboard size={20} className="i" /> Dashboard
             </NavLink>
           </li>
           <li className={location.pathname === '/table' ? 'active' : ''}>
-            <NavLink 
-              to="/table" 
+            <NavLink
+              to="/table"
               className="a"
               onClick={(e) => handleNavigationClick(e, '/table')}
             >
-              <FileText size={20} className="i"/> Data View
+              <FileText size={20} className="i" /> Data View
             </NavLink>
           </li>
           <li className={location.pathname === '/profile' ? 'active' : ''} onClick={toggleProfile}>
-            <div className="a" style={{cursor: 'pointer'}}>
-              <User size={20} className="i"/> {userDisplayName}
+            <div className="a" style={{ cursor: 'pointer' }}>
+              <User size={20} className="i" /> {userName}
             </div>
             {isProfileOpen && (
               <div className="profile-dropdown">
@@ -80,13 +91,13 @@ const Header = ({ user }) => {
                     {initials}
                   </div>
                   <div className="profile-info">
-                    <div className="profile-name">{userDisplayName}</div>
+                    <div className="profile-name">{userName}</div>
                     <div className="profile-email">{userEmail}</div>
                   </div>
                 </div>
                 <div className="profile-footer">
                   <button className="logout-button" onClick={handleLogout}>
-                    <LogOut size={16} className="i"/> Sign Out
+                    <LogOut size={16} className="i" /> Sign Out
                   </button>
                 </div>
               </div>
@@ -96,6 +107,6 @@ const Header = ({ user }) => {
       </header>
     </div>
   );
-}
+};
 
 export default Header;
