@@ -1,75 +1,30 @@
-import './Login.css';
-import React, { Component } from 'react';
-import { PublicClientApplication } from '@azure/msal-browser';
- 
-const config = {
-  appId: "450165b3-b418-4134-b525-cf04512bee71",
-  redirectUri: "/Dashboard",
-  scopes: ["user.read"],
-  authority: "https://login.microsoftonline.com/2b2653b1-1e48-445c-81a8-032920b2a550"
-};
- 
-class Login extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      error: null,
-      isAuthenticated: false,
-      user: {}
-    };
- 
-    this.publicClientApplication = new PublicClientApplication({
-      auth: {
-        clientId: config.appId,
-        redirectUri: config.redirectUri,
-        authority: config.authority
-      },
-      cache: {
-        cacheLocation: "sessionStorage",
-        storeAuthStateInCookie: true
-      }
-    });
-  }
- 
-  async componentDidMount() {
+import './Login.css'
+import React from 'react';
+import { useMsal } from '@azure/msal-react';
+import { useNavigate } from 'react-router-dom';
+
+const Login = ({ setUser }) => {
+  const { instance, accounts } = useMsal();
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
     try {
-      await this.publicClientApplication.initialize();
-      const accounts = this.publicClientApplication.getAllAccounts();
-      if (accounts.length > 0) {
-        this.setState({
-          isAuthenticated: true,
-          user: accounts[0]
-        });
-      }
-    } catch (err) {
-      console.error("Initialization failed:", err);
-    }
-  }
- 
-  login = async () => {
-    try {
-      await this.publicClientApplication.loginRedirect({
-        scopes: config.scopes,
-        prompt: "select_account"
+      await instance.loginRedirect({
+        scopes: ['openid', 'profile', 'User.Read'],
+        prompt: 'select_account'
       });
- 
-      this.setState({ isAuthenticated: true });
-      window.location.href = "/home";
-    } catch (err) {
-      this.setState({
-        isAuthenticated: false,
-        user: {},
-        error: err
-      });
+    } catch (error) {
+      console.error('Login failed:', error);
     }
-  }
- 
-  logout = () => {
-    this.publicClientApplication.logoutRedirect();
-  }
- 
-  render() {
-    return (
+  };
+
+  // If already logged in, redirect to home
+  // if (accounts.length > 0) {
+  //   navigate('/home');
+  //   return null;
+  // }
+
+  return (
       <div className='main'>
         <header className='Login-header'>
           <img className='img-doc' src="src/assets/logo-docqmentor.png" alt="DocQmentor Logo" />
@@ -85,11 +40,7 @@ class Login extends Component {
           </p>
  
           <div className="auth-status">
-            {this.state.isAuthenticated ? (
-              <p className="success-message">Successfully logged in</p>
-            ) : (
-              <button className="login-button" onClick={this.login}>Login with Microsoft</button>
-            )}
+              <button className="login-button" onClick={handleLogin}>Login with Microsoft</button>
           </div>
         </div>
  
@@ -129,14 +80,10 @@ class Login extends Component {
     <p>Powerful filterable table with sorting, presets, and bulk actions for managing and processing documents at scale.</p>
   </div>
 </div>
- 
- 
         <p className='Copyright'>© Copyright <b>Techstar Group.</b> All Rights Reserved</p>
       </div>
      
     );
-  }
-}
- 
-export default Login;
- 
+};
+
+export default Login; 

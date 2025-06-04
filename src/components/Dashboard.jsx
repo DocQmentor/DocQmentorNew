@@ -11,56 +11,91 @@ import {
 import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
 import { uploadToAzure } from "../utils/azureUploader";
-
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+ 
 const Dashboard = () => {
-  const [selectedFiles, setSelectedFiles] = useState([]); // Local files selected
-  const [uploadedFiles, setUploadedFiles] = useState([]); // Uploaded to Azure
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
-
+ 
   const FileChange = (e) => {
-    const files = Array.from(e.target.files).map((file) => ({
+    const newFiles = Array.from(e.target.files).map((file) => ({
       file,
       fileName: file.name,
       uploadedAt: new Date(),
-      folderName: file.name.split(".")[0],
+      folderName:
+        file.name.substring(0, file.name.lastIndexOf(".")) || file.name,
     }));
-    setSelectedFiles((prev) => [...prev, ...files]);
+ 
+    console.log("Selected new files:", newFiles); // Debug log
+ 
+    // Filter out duplicates by file name
+    setSelectedFiles((prev) => {
+      const existingNames = new Set(prev.map((f) => f.fileName));
+      const uniqueNewFiles = newFiles.filter(
+        (f) => !existingNames.has(f.fileName)
+      );
+      return [...prev, ...uniqueNewFiles];
+    });
   };
-
+ 
   const handleDeleteFile = (index) => {
     const updated = [...selectedFiles];
     updated.splice(index, 1);
     setSelectedFiles(updated);
   };
-
+ 
   const handleClick = () => {
     fileInputRef.current.click();
   };
-
+ 
   const handleProcessFiles = async () => {
+    setIsUploading(true);
     const results = [];
+ 
     for (const fileObj of selectedFiles) {
-      const result = await uploadToAzure(fileObj.file);
-      if (result) {
-        results.push({
-          ...fileObj,
-          status: "In Process", // Set status here
+      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
+        autoClose: 1000,
+      });
+ 
+      try {
+        const result = await uploadToAzure(fileObj.file, (percent) => {
+          toast.update(toastId, {
+            render: `${fileObj.fileName} uploading: ${percent}%`,
+            isLoading: percent < 100,
+            autoClose: percent >= 100 ? 2000 : false,
+          });
         });
+ 
+        if (result) {
+          results.push({
+            ...fileObj,
+            status: "In Process",
+          });
+          toast.success(`${fileObj.fileName} uploaded successfully!`);
+        }
+      } catch (err) {
+        toast.error(`Failed to upload ${fileObj.fileName}`);
       }
     }
+ 
     setUploadedFiles((prev) => [...prev, ...results]);
-    setSelectedFiles([]); // Clear local queue
+    setSelectedFiles([]);
+    setIsUploading(false);
   };
-
+ 
   const formatDate = (dateObj) => {
     return new Date(dateObj).toISOString().split("T")[0];
   };
-
+ 
   return (
     <div className="dashboard-total-container">
       <header className="header">
         <Header />
       </header>
+ 
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
           <div>
@@ -76,7 +111,7 @@ const Dashboard = () => {
             </select>
           </div>
         </nav>
-
+ 
         <main className="stats-container">
           <div className="stat-box Total">
             <FileText className="i" size={24} />
@@ -105,31 +140,33 @@ const Dashboard = () => {
             </div>
           </div>
         </main>
-
+ 
         <div className="Dashboard-upload-table-section">
           <div className="upload-section">
             <div className="upload-section-header-contants">
               <h3>Upload Documents</h3>
               <p>Upload documents for AI-powered data extraction</p>
             </div>
-            <div className="input-section" onClick={handleClick}>
+ 
+            <div className="input-section">
               <Upload className="Upload" size={48} />
               <h3 className="upload-section-h3">
                 Drop files here or click to upload
               </h3>
               <p className="mb-4">Support for PDF, Word, JPG, PNG files</p>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                multiple
+                onChange={FileChange}
+              />
+ 
               <label className="btn btn-outline" onClick={handleClick}>
                 <Upload size={16} /> Select Files
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  multiple
-                  onChange={FileChange}
-                  style={{ display: "none" }}
-                />
               </label>
             </div>
+ 
             <div className="file-load-section">
               {selectedFiles.length > 0 && (
                 <>
@@ -146,14 +183,18 @@ const Dashboard = () => {
                       </li>
                     ))}
                   </ul>
-                  <button className="process-btn" onClick={handleProcessFiles}>
-                    Process Files
+                  <button
+                    className="process-btn"
+                    onClick={handleProcessFiles}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? "Uploading..." : "Process Files"}
                   </button>
                 </>
               )}
             </div>
           </div>
-
+ 
           <div className="status-section">
             <div className="status-header">
               <h3>Recent Documents</h3>
@@ -175,7 +216,6 @@ const Dashboard = () => {
                   <tr key={index}>
                     <td>{file.fileName}</td>
                     <td>{file.folderName}</td>
-
                     <td>
                       <span
                         className={`badge ${file.status
@@ -185,7 +225,6 @@ const Dashboard = () => {
                         {file.status}
                       </span>
                     </td>
-
                     <td>Just now</td>
                     <td>{formatDate(file.uploadedAt)}</td>
                     <td>
@@ -198,11 +237,11 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      <footer className="footer">
-        <Footer/>
-      </footer>
+ 
+      <Footer />
+      <ToastContainer />
     </div>
   );
 };
-
+ 
 export default Dashboard;

@@ -1,83 +1,91 @@
-import React, { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Home, LayoutDashboard, FileText, User, LogOut } from 'lucide-react';
+import { useMsal } from '@azure/msal-react';
 import './Header.css';
-import { LogOut, LayoutDashboard, FileText, User, Home } from 'lucide-react';
- 
-const Header = () => {
+
+const Header = ({ user }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { instance } = useMsal();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-  const [userName, setUserName] = useState('');
- 
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    if (storedUser) {
-      setUserEmail(storedUser.email || 'user@example.com');
-      const nameParts = (storedUser.name || 'User Name').split(' ');
-      setUserName(`${nameParts[0]}${nameParts[1] ? ' ' + nameParts[1] : ''}`);
+
+  if (!user) {
+    console.log('No user in Header');
+    navigate('/');
+    return null;
+  }
+
+  const handleLogout = async () => {
+    try {
+      await instance.logoutRedirect();
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
-  }, []);
- 
-  const handleLogout = () => {
-    // Add your logout logic here
-    console.log('User logged out');
-    setIsProfileOpen(false);
   };
- 
+
+  // Get user display name and email directly from the MSAL account object
+  const userDisplayName = user.name || user.username || 'User Name';
+  const userEmail = user.username || 'user@example.com';
+  const initials = userDisplayName
+    .split(' ')
+    .map(name => name[0])
+    .join('')
+    .toUpperCase();
+
   const toggleProfile = () => {
     setIsProfileOpen(!isProfileOpen);
   };
- 
+
+  // Function to handle navigation clicks
+  const handleNavigationClick = (e, path) => {
+    if (location.pathname === path) {
+      e.preventDefault(); // Prevent navigation if already on the same page
+    }
+  };
+
   return (
     <div className="header-component-container">
       <header>
         <div className="logo-container">
-          <img src="src\assets\logo-docqmentor.png" alt="" />
-          {/* <div className="title-center">
-            <h1>
-              <span className="red-letter">D</span>
-              <span className="blue-letter">oc</span>
-              <span className="red-letter">Q</span>
-              <span className="blue-letter">mentor<sup>TM</sup></span>
-            </h1>
-          </div>
-          <center>
-            <p>AI-powered document management solution</p>
-          </center> */}
+          <img src="/src/assets/logo-docqmentor.png" alt="DocQmentor Logo" />
         </div>
         <ul>
-          {/* <li className={location.pathname === '/home' ? 'active' : ''}>
-            <NavLink to="/home" className="a">
-              <Home size={20} className="i"/>Home
-            </NavLink>
-          </li> */}
-          <li className={location.pathname === '/Dashboard' ? 'active' : ''}>
-            <NavLink to="/Dashboard" className="a">
+          <li className={location.pathname === '/dashboard' ? 'active' : ''}>
+            <NavLink 
+              to="/dashboard" 
+              className="a"
+              onClick={(e) => handleNavigationClick(e, '/dashboard')}
+            >
               <LayoutDashboard size={20} className="i"/>Dashboard
             </NavLink>
           </li>
-          <li className={location.pathname === '/Table' ? 'active' : ''}>
-            <NavLink to="/Table" className="a">
+          <li className={location.pathname === '/table' ? 'active' : ''}>
+            <NavLink 
+              to="/table" 
+              className="a"
+              onClick={(e) => handleNavigationClick(e, '/table')}
+            >
               <FileText size={20} className="i"/> Data View
             </NavLink>
           </li>
-          <li className={location.pathname === '/Profile' ? 'active' : ''} onClick={toggleProfile}>
+          <li className={location.pathname === '/profile' ? 'active' : ''} onClick={toggleProfile}>
             <div className="a" style={{cursor: 'pointer'}}>
-              <User size={20} className="i"/> Profile
+              <User size={20} className="i"/> {userDisplayName}
             </div>
             {isProfileOpen && (
               <div className="profile-dropdown">
                 <div className="profile-header">
                   <div className="profile-avatar">
-                    {userName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    {initials}
                   </div>
                   <div className="profile-info">
-                    <div className="profile-name">{userName}</div>
+                    <div className="profile-name">{userDisplayName}</div>
                     <div className="profile-email">{userEmail}</div>
                   </div>
                 </div>
                 <div className="profile-footer">
-                  <button onClick={handleLogout} className="logout-button">
+                  <button className="logout-button" onClick={handleLogout}>
                     <LogOut size={16} className="i"/> Sign Out
                   </button>
                 </div>
@@ -89,5 +97,5 @@ const Header = () => {
     </div>
   );
 }
- 
+
 export default Header;
