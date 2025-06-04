@@ -20,7 +20,7 @@
   font-weight: bold;
   font-family: sans-serif;
 }
- 
+
 .red-letter {
   color: #ed2224;
 }
@@ -40,7 +40,7 @@
     align-items: center;
     padding: 10px 20px;
 }
- 
+
 .header-component-container header::after {
     content: '';
     display: block;
@@ -51,27 +51,27 @@
     height: 2px;
     background-color: #266898;
 }
- 
+
 .header-component-container .a {
     background-color: white;
     text-decoration: none;
     display: flex;
     align-items: center;
 }
- 
+
 .header-component-container .i {
     background-color: white;
     color: #47556e;
     margin-right: 8px;
 }
- 
+
 .header-component-container img {
     background-color: white;
     height: 30px;
     display: flex;
     align-items: center;
 }
- 
+
 .header-component-container ul {
     background-color: white;
     display: flex;
@@ -82,7 +82,7 @@
     padding: 0;
     height: 100%;
 }
- 
+
 .header-component-container li {
     background-color: white;
     list-style: none;
@@ -95,7 +95,7 @@
     height: 100%;
     transition: background-color 0.2s;
 }
- 
+
 .header-component-container li:hover
  {
     border: #266898 1px dashed;
@@ -103,7 +103,7 @@
 .header-component-container li.active {
   position: relative;
 }
- 
+
 /* .header-component-container li.active::after {
   content: '';
   position: absolute;
@@ -119,7 +119,7 @@
   color: #ed2224;
   font-weight: bold;
 }
- 
+
 .header-component-container li .a {
   color: inherit;
   text-decoration: none;
@@ -127,15 +127,15 @@
   align-items: center;
   gap: 8px;
 }
- 
+
 .header-component-container li:hover {
   border: #266898 1px dashed;
 }
- 
- 
- 
+
+
+
 /* Add these to your existing Header.css */
- 
+
 .profile-dropdown {
   position: absolute;
   top: 100%;
@@ -149,7 +149,7 @@
   animation: fadeIn 0.3s ease-in-out;
   transform-origin: top right;
 }
- 
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -160,14 +160,14 @@
     transform: translateY(0) scale(1);
   }
 }
- 
+
 .profile-header {
   padding: 16px;
   display: flex;
   align-items: center;
   border-bottom: 1px solid #f0f0f0;
 }
- 
+
 .profile-avatar {
   width: 40px;
   height: 40px;
@@ -181,19 +181,19 @@
   margin-right: 12px;
   flex-shrink: 0;
 }
- 
+
 .profile-info {
   flex: 1;
   overflow: hidden;
 }
- 
+
 .profile-name {
   font-weight: bold;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
- 
+
 .profile-email {
   font-size: 12px;
   color: #666;
@@ -201,13 +201,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
- 
+
 .profile-footer {
   padding: 12px 16px;
   display: flex;
   justify-content: flex-end;
 }
- 
+
 .logout-button {
   background: none;
   border: none;
@@ -221,11 +221,11 @@
   border-radius: 4px;
   transition: background-color 0.2s;
 }
- 
+
 .logout-button:hover {
   background-color: #f8f8f8;
 }
- 
+
 /* Add this to make sure the profile li has relative positioning */
 .header-component-container li {
   position: relative;
