@@ -23,7 +23,6 @@ const Dashboard = () => {
   const [vendors, setVendors] = useState([]);
   const fileInputRef = useRef(null);
  
-  // Load vendors on component mount
   useEffect(() => {
     const fetchVendors = async () => {
       try {
@@ -36,88 +35,53 @@ const Dashboard = () => {
     fetchVendors();
   }, []);
  
-  // Load uploaded files from localStorage on mount
+  // Load documents from backend (Data View API)
   useEffect(() => {
-    const storedFiles = localStorage.getItem("uploadedFiles");
-    if (storedFiles) {
-      setUploadedFiles(JSON.parse(storedFiles));
-    }
-  }, []);
- 
-  // Check if document has all mandatory fields
-  const hasAllMandatoryFields = (doc) => {
-    const mandatoryFields = [
-      doc.vendorName,
-      doc.invoiceId,
-      doc.invoiceDate,
-      doc.invoiceTotal || doc.invoicetotal
-    ];
-   
-    return mandatoryFields.every(field =>
-      field !== undefined &&
-      field !== null &&
-      field !== "" &&
-      String(field).trim() !== ""
-    );
-  };
- 
-  // Poll for status updates
-  useEffect(() => {
-    const pollForUpdates = async () => {
+    const fetchDocumentsFromBackend = async () => {
       try {
-        const response = await fetch(
-          "https://docap.azurewebsites.net/api/DocQmentorFunc?code=n4SOThz-nkfGfs96hGTtAsvm3ZS2wt7O3pqELLzWqi38AzFuUm090A=="
-        );
-        if (!response.ok) throw new Error("Failed to fetch processed data");
-        const processedData = await response.json();
+        const response = await fetch("https://docap.azurewebsites.net/api/DocQmentorFunc?code=n4SOThz-nkfGfs96hGTtAsvm3ZS2wt7O3pqELLzWqi38AzFuUm090A==");
+        if (!response.ok) throw new Error("Failed to fetch document data");
  
-        if (Array.isArray(processedData) && processedData.length > 0) {
-          setUploadedFiles(prevFiles => {
-            const updatedFiles = prevFiles.map(file => {
-              const processedDoc = processedData.find(doc =>
-                doc.documentName === file.fileName ||
-                doc.fileName === file.fileName
-              );
-             
-              if (processedDoc) {
-                let newStatus = "In Process";
-               
-                // Check if processing is complete
-                if (processedDoc.status === "Completed") {
-                  // Verify mandatory fields
-                  newStatus = hasAllMandatoryFields(processedDoc)
-                    ? "Completed"
-                    : "Manual Review";
-                }
-               
-                return {
-                  ...file,
-                  status: newStatus,
-                  processedData: processedDoc // Store the full processed data
-                };
-              }
-              return file;
-            });
+        const documents = await response.json();
  
-            // Only update localStorage if changes were made
-            if (JSON.stringify(updatedFiles) !== JSON.stringify(prevFiles)) {
-              localStorage.setItem("uploadedFiles", JSON.stringify(updatedFiles));
-            }
-            return updatedFiles;
-          });
+        if (Array.isArray(documents)) {
+          const formattedFiles = documents.map((doc) => ({
+            fileName: doc.documentName || doc.fileName || "Unknown",
+            status: determineStatus(doc),
+            uploadedAt: doc.uploadDate || new Date().toISOString(),
+            processedData: doc,
+          }));
+ 
+          setUploadedFiles(formattedFiles);
         }
       } catch (error) {
-        console.error("Error polling for updates:", error);
+        console.error("Error loading backend documents:", error);
       }
     };
  
-    // Poll every 10 seconds
-    const intervalId = setInterval(pollForUpdates, 10000);
-   
-    // Initial poll
-    pollForUpdates();
+    const determineStatus = (doc) => {
+      if (doc.status === "Completed") {
+        return hasAllMandatoryFields(doc) ? "Completed" : "Manual Review";
+      }
+      return "In Process";
+    };
  
-    return () => clearInterval(intervalId);
+    const hasAllMandatoryFields = (doc) => {
+      const mandatoryFields = [
+        doc.vendorName,
+        doc.invoiceId,
+        doc.invoiceDate,
+        doc.invoiceTotal || doc.invoicetotal,
+      ];
+      return mandatoryFields.every(
+        (field) =>
+          field !== undefined &&
+          field !== null &&
+          String(field).trim() !== ""
+      );
+    };
+ 
+    fetchDocumentsFromBackend();
   }, []);
  
   const FileChange = (e) => {
@@ -125,7 +89,7 @@ const Dashboard = () => {
       file,
       fileName: file.name,
       uploadedAt: new Date(),
-      status: "In Process"
+      status: "In Process",
     }));
  
     setSelectedFiles((prev) => {
@@ -147,7 +111,7 @@ const Dashboard = () => {
  
   const handleProcessFiles = async () => {
     if (selectedFiles.length === 0) return;
-   
+ 
     setIsUploading(true);
     const results = [];
  
@@ -167,7 +131,7 @@ const Dashboard = () => {
           const processedFile = {
             ...fileObj,
             status: "In Process",
-            uploadedAt: new Date().toISOString()
+            uploadedAt: new Date().toISOString(),
           };
           results.push(processedFile);
           toast.success(`${fileObj.fileName} uploaded successfully!`);
@@ -178,29 +142,25 @@ const Dashboard = () => {
       }
     }
  
-    setUploadedFiles((prev) => {
-      const updated = [...prev, ...results];
-      localStorage.setItem("uploadedFiles", JSON.stringify(updated));
-      return updated;
-    });
- 
+    // Show uploaded files immediately (will be updated from backend on reload)
+    setUploadedFiles((prev) => [...prev, ...results]);
     setSelectedFiles([]);
     setIsUploading(false);
   };
  
   const formatDate = (dateString) => {
     if (!dateString) return "Just now";
-   
+ 
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Just now";
-   
+ 
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-   
+ 
     if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-   
+ 
     return date.toLocaleDateString();
   };
  
@@ -359,3 +319,4 @@ const Dashboard = () => {
 };
  
 export default Dashboard;
+ 
