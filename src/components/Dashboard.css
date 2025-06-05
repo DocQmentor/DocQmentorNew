@@ -3,7 +3,7 @@
     padding: 0;
     box-sizing: border-box;
 }
- 
+
 .dashboard-total-container {
     width: 100%;
     min-height: 100vh;
@@ -20,11 +20,11 @@
     align-items: center;
     gap: 12px;
 }
- 
+
 .dashboard-total-container .header{
     width: 100%;
 }
- /* Vendor Select */
+/* Vendor Select */
 /* Clean and structured Vendor Select Section */
 .select {
   color: #1a5276;
@@ -120,7 +120,7 @@
     /* border: #1a5276 1px solid; */
     width: 100%;
 }
- 
+
 .stat-box .i{
   padding: 10px;
   color: white;
@@ -156,21 +156,21 @@
 .Total {
     grid-area: total;
 }
- 
+
 .completed {
     background-color: #ffff;
     grid-area: completed;
 }
- 
+
 .inprocess {
     grid-area: inprocess;
 }
- 
+
 .manual-review {
     grid-area: manual-review;
 }
- 
- 
+
+
 .upload-section {
     background-color: white;
     grid-area: upload-section;
@@ -215,12 +215,12 @@
 .upload-section .Upload,.upload-section .upload-section-h3, .mb-4, button{
     background-color: white;
 }
- 
+
 #file-upload {
     cursor: pointer;
     display: none;
 }
- 
+
 /* .btn-outline {
   border: 1px solid #ed2224;
   border-radius: 10px;
@@ -333,7 +333,7 @@
 .status-section caption p{
     font-size: small;
 }
- 
+
 .status-section table{
     width: 100%;
     border-collapse: collapse;
@@ -344,7 +344,7 @@
     background-color: white;
     font-size: large;
 }
- 
+
 .status-section th,
 .status-section td
 {
@@ -358,7 +358,7 @@
     /* color: #1a5276; */
     background-color: white;
 }
- 
+
 /* .status-section caption {
     text-align: left;
     background-color: white;
@@ -367,47 +367,47 @@
 .dashboard-total-container .footer{
     width: 100%;
 }
- 
+
 .status-header {
     background-color: white;
     margin-bottom: 10px;
 }
- 
+
 .status-header h3 {
     background-color: white;
     margin-bottom: 4px;
     /* color: #1a5276; */
 }
- 
+
 .status-header p {
     background-color: white;
     font-size: 14px;
     color: #47556e;
 }
- 
+
 .status-section table {
     width: 100%;
     border-collapse: collapse;
 }
- 
+
 .status-section th,
 .status-section td {
     padding: 12px;
     text-align: left;
     background-color: white;
 }
- 
+
 .status-section th {
     /* color: #1a5276; */
     font-weight: bold;
     border-bottom: 2px solid #ccc;
 }
- 
+
 .status-section td {
     color: #47556e;
     border-top: 1px solid #ccc;
 }
- 
+
 .badge {
     padding: 6px 12px;
     border-radius: 20px;
@@ -415,22 +415,22 @@
     font-weight: 600;
     display: inline-block;
 }
- 
+
 .badge.completed {
     background-color: #2e9a55;
     color: white;
 }
- 
+
 .badge.inprocess {
     background-color: #ffaf00;
     color: white;
 }
- 
+
 .badge.manual-review {
     background-color: #ec1212;
     color: white;
 }
- 
+
 .action-btn {
     padding: 6px 14px;
     border: none;
@@ -441,14 +441,14 @@
     cursor: pointer;
     transition: 0.3s;
 }
- 
+
 .action-btn:hover {
     background-color: #154360;
 }
- 
- 
- 
- .badge {
+
+
+
+.badge {
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.85rem;
@@ -479,3 +479,4 @@
         ;
     }
 }
+ 

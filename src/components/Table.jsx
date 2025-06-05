@@ -3,7 +3,6 @@ import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
 import "./Table.css";
 
-// Simple Error Boundary component
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -33,13 +32,13 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
 function getString(val) {
   if (val === null || val === undefined) return "";
   if (typeof val === "string" || typeof val === "number") return val;
   if (typeof val === "object") {
     if ("valueString" in val) return val.valueString;
     if ("content" in val) return val.content;
-    // fallback: convert entire object to string to avoid crash (optional)
     return JSON.stringify(val);
   }
   return "";
@@ -62,7 +61,20 @@ function Table() {
         );
         if (!response.ok) throw new Error("Failed to fetch invoice data");
         const data = await response.json();
-        setInvoiceData(data);
+
+        const processed = Array.isArray(data)
+          ? data.map((doc) => ({
+              vendorName: getString(doc.vendorName),
+              invoiceId: getString(doc.invoiceId),
+              invoiceDate: getString(doc.invoiceDate),
+              lpoNo: getString(doc.lpoNo),
+              subTotal: getString(doc.subTotal),
+              vat: getString(doc.vat),
+              invoicetotal: getString(doc.invoicetotal),
+            }))
+          : [];
+
+        setInvoiceData(processed);
         setError(null);
       } catch (err) {
         setError(err.message || "Unknown error");
@@ -73,7 +85,6 @@ function Table() {
     fetchInvoices();
   }, []);
 
-  // FIX: Declare vendorName safely and use it
   const filteredData = invoiceData.filter((item) => {
     const vendorName =
       typeof item.vendorName === "string" ? item.vendorName : "";
@@ -104,13 +115,13 @@ function Table() {
     ];
     const rows = data.map((item) =>
       [
-        item.vendorName || "",
-        item.invoiceId || "",
-        item.invoiceDate || "",
-        item.lpoNo || "",
-        item.subTotal || "",
-        item.vat || "",
-        item.invoicetotal || "",
+        item.vendorName,
+        item.invoiceId,
+        item.invoiceDate,
+        item.lpoNo,
+        item.subTotal,
+        item.vat,
+        item.invoicetotal,
       ].join(",")
     );
     return [headers.join(","), ...rows].join("\n");
@@ -229,13 +240,13 @@ function Table() {
                 {filteredData.length > 0 ? (
                   filteredData.map((item, index) => (
                     <tr key={index}>
-                      <td>{getString(item.vendorName)}</td>
-                      <td>{getString(item.invoiceId)}</td>
-                      <td>{getString(item.invoiceDate)}</td>
-                      <td>{getString(item.lpoNo)}</td>
-                      <td>{getString(item.subTotal)}</td>
-                      <td>{getString(item.vat)}</td>
-                      <td>{getString(item.invoicetotal)}</td>
+                      <td>{item.vendorName}</td>
+                      <td>{item.invoiceId}</td>
+                      <td>{item.invoiceDate}</td>
+                      <td>{item.lpoNo}</td>
+                      <td>{item.subTotal}</td>
+                      <td>{item.vat}</td>
+                      <td>{item.invoicetotal}</td>
                     </tr>
                   ))
                 ) : (
@@ -259,3 +270,4 @@ function Table() {
 }
 
 export default Table;
+ 

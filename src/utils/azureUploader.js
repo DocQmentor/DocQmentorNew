@@ -60,6 +60,7 @@ export const uploadToAzure = async (file, onProgress) => {
         folderName,
         uploadedAt: new Date(),
         status: "In Process",
+        url: blobUrl,
       };
     } else {
       console.error("Upload failed:", response);
