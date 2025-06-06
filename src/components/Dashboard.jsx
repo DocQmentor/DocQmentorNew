@@ -1,4 +1,3 @@
-// Dashboard.jsx
 import React, { useRef, useState, useEffect } from "react";
 import "./Dashboard.css";
 import {
@@ -23,6 +22,7 @@ const Dashboard = () => {
   const [vendors, setVendors] = useState([]);
   const fileInputRef = useRef(null);
  
+  // Load vendors on component mount
   useEffect(() => {
     const fetchVendors = async () => {
       try {
@@ -35,11 +35,13 @@ const Dashboard = () => {
     fetchVendors();
   }, []);
  
-  // Load documents from backend (Data View API)
+  // Load and poll documents from backend
   useEffect(() => {
     const fetchDocumentsFromBackend = async () => {
       try {
-        const response = await fetch("https://docap.azurewebsites.net/api/DocQmentorFunc?code=n4SOThz-nkfGfs96hGTtAsvm3ZS2wt7O3pqELLzWqi38AzFuUm090A==");
+        const response = await fetch(
+          "https://docap.azurewebsites.net/api/DocQmentorFunc?code=n4SOThz-nkfGfs96hGTtAsvm3ZS2wt7O3pqELLzWqi38AzFuUm090A=="
+        );
         if (!response.ok) throw new Error("Failed to fetch document data");
  
         const documents = await response.json();
@@ -50,6 +52,7 @@ const Dashboard = () => {
             status: determineStatus(doc),
             uploadedAt: doc.uploadDate || new Date().toISOString(),
             processedData: doc,
+            url: doc.fileUrl || null, // Include file URL if available
           }));
  
           setUploadedFiles(formattedFiles);
@@ -81,7 +84,13 @@ const Dashboard = () => {
       );
     };
  
+    // Initial fetch
     fetchDocumentsFromBackend();
+ 
+    // Poll every 10 seconds
+    const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
+ 
+    return () => clearInterval(intervalId);
   }, []);
  
   const FileChange = (e) => {
@@ -132,6 +141,7 @@ const Dashboard = () => {
             ...fileObj,
             status: "In Process",
             uploadedAt: new Date().toISOString(),
+            url: result.url, // Store the Azure Blob URL
           };
           results.push(processedFile);
           toast.success(`${fileObj.fileName} uploaded successfully!`);
@@ -142,7 +152,7 @@ const Dashboard = () => {
       }
     }
  
-    // Show uploaded files immediately (will be updated from backend on reload)
+    // Show uploaded files immediately (will be updated from backend on next poll)
     setUploadedFiles((prev) => [...prev, ...results]);
     setSelectedFiles([]);
     setIsUploading(false);
@@ -166,7 +176,9 @@ const Dashboard = () => {
  
   return (
     <div className="dashboard-total-container">
-      <header className="header"><Header /></header>
+      <header className="header">
+        <Header />
+      </header>
  
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
@@ -177,9 +189,13 @@ const Dashboard = () => {
           <div>
             <label className="select">Select Vendor:</label>
             <select className="vendor-dropdown" defaultValue="">
-              <option disabled value="">Select Vendor</option>
+              <option disabled value="">
+                Select Vendor
+              </option>
               {vendors.map((vendor, i) => (
-                <option key={i} value={vendor}>{vendor}</option>
+                <option key={i} value={vendor}>
+                  {vendor}
+                </option>
               ))}
             </select>
           </div>
@@ -245,11 +261,7 @@ const Dashboard = () => {
                       </li>
                     ))}
                   </ul>
-                  <button
-                    className="process-btn"
-                    onClick={handleProcessFiles}
-                    disabled={isUploading}
-                  >
+                  <button className="process-btn" onClick={handleProcessFiles} disabled={isUploading}>
                     {isUploading ? "Uploading..." : "Process Files"}
                   </button>
                 </>
@@ -285,7 +297,18 @@ const Dashboard = () => {
                       <td>{formatDate(file.uploadedAt)}</td>
                       <td>{new Date(file.uploadedAt).toLocaleDateString()}</td>
                       <td>
-                        <button className="action-btn">View</button>
+                        <button
+                          className="action-btn"
+                          onClick={() => {
+                            if (file.url) {
+                              window.open(file.url, "_blank");
+                            } else {
+                              toast.error("File URL not available");
+                            }
+                          }}
+                        >
+                          View
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -302,7 +325,9 @@ const Dashboard = () => {
         </div>
       </div>
  
-      <footer><Footer /></footer>
+      <footer>
+        <Footer />
+      </footer>
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -319,4 +344,5 @@ const Dashboard = () => {
 };
  
 export default Dashboard;
+ 
  
