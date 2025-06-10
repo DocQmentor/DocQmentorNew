@@ -8,6 +8,7 @@ import {
   Clock,
   AlertTriangle,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
 import { uploadToAzure } from "../utils/azureUploader";
@@ -16,6 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { getVendorFolders } from "../utils/blobService";
  
 const Dashboard = () => {
+  const Navigate = useNavigate()
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -217,7 +219,7 @@ const Dashboard = () => {
             <p>In Process</p>
             <div className="total">{uploadedFiles.filter((f) => f.status === "In Process").length}</div>
           </div>
-          <div className="stat-box manual-review">
+          <div className="stat-box manual-review" onClick={() => Navigate('/manualreview')}>
             <AlertTriangle className="i" size={24} />
             <p>Manual Review</p>
             <div className="total">{uploadedFiles.filter((f) => f.status === "Manual Review").length}</div>
@@ -231,7 +233,7 @@ const Dashboard = () => {
               <p>Upload documents for AI-powered data extraction</p>
             </div>
  
-            <div className="input-section" onClick={handleClick}>
+            <div className="input-section">
               <Upload className="Upload" size={48} />
               <h3 className="upload-section-h3">Drop files here or click to upload</h3>
               <p className="mb-4">Support for PDF, Word, JPG, PNG files</p>
@@ -243,8 +245,8 @@ const Dashboard = () => {
                 onChange={FileChange}
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
               />
-              <label className="btn btn-outline">
-                <Upload size={16} className="selecte-icon" /> Select Files
+              <label className="btn btn-outline" onClick={handleClick}>
+                <Upload size={16} className="selecte-icon"/> Select Files
               </label>
             </div>
  

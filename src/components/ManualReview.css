@@ -1,0 +1,44 @@
+.manual-review-container-all {
+    /* margin-top: 60px; */
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.manual-review-container{
+    margin-top: 60px;
+}
+.manual-review-header-container h1{
+    color: #0d3c61;
+}
+.manual-review-container table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.manual-review-container th,
+.manual-review-container td {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.manual-review-container th {
+  background-color: #0d3c61;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.manual-review-container tr:nth-child(even) {
+  background-color: #f4f7fa;
+}
+
+.manual-review-container tr:hover {
+  background-color: #eaf1f5;
+}
