@@ -9,17 +9,34 @@ const splitCamelCase = (text) =>
   text.replace(/([a-z])([A-Z])/g, "$1 $2");
 
 const extractFolderName = (filename) => {
+  // Remove file extension
   const baseName = filename.substring(0, filename.lastIndexOf(".")) || filename;
-  let cleaned = baseName.replace(/[\d_-]+/g, " ");
+  
+  // Common patterns to remove:
+  // 1. Numbers and special characters after the main name
+  // 2. "- copy", "copy", "-1234" etc.
+  // 3. Split camelCase if present
+  
+  // First, split on common separators (space, hyphen, underscore)
+  let parts = baseName.split(/[\s\-_]+/);
+  
+  // Filter out unwanted parts (numbers, "copy", etc.)
+  const filteredParts = parts.filter(part => 
+    !/^\d+$/.test(part) && // pure numbers
+    !/^copy$/i.test(part) && // "copy" in any case
+    !/^-/.test(part) // parts starting with hyphen
+  );
+  
+  // Rejoin the remaining parts
+  let cleaned = filteredParts.join(' ');
+  
+  // Handle camelCase if present
   cleaned = splitCamelCase(cleaned);
+  
+  // Final cleaning and formatting - return in uppercase
   return cleaned
     .trim()
-    .split(/\s+/)
-    .map(
-      (word) =>
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    )
-    .join(" ");
+    .toUpperCase();
 };
 
 export const uploadToAzure = async (file, onProgress) => {
