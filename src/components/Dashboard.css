@@ -20,6 +20,20 @@
     align-items: center;
     gap: 12px;
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+.page-btn {
+  margin: 0 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.page-btn.active {
+  background-color: #4caf50;
+  color: white;
+}
 
 .dashboard-total-container .header{
     width: 100%;

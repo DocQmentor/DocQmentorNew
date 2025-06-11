@@ -8,6 +8,8 @@ import {
   Clock,
   AlertTriangle,
 } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+
 import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
 import { uploadToAzure } from "../utils/azureUploader";
@@ -23,6 +25,7 @@ const Dashboard = () => {
   const [vendors, setVendors] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState(""); // New state for vendor filtering
   const fileInputRef = useRef(null);
+const navigate = useNavigate();
 
   // Fetch vendors list once
   useEffect(() => {
@@ -323,7 +326,6 @@ const Dashboard = () => {
             </select>
           </div>
         </nav>
-
         <main className="stats-container">
           <div className="stat-box Total">
             <FileText className="i" size={24} />
@@ -340,9 +342,10 @@ const Dashboard = () => {
             <p>In Process</p>
             <div className="total">{stats.inProcess}</div>
           </div>
-          <div className="stat-box manual-review">
+          <div className="stat-box manual-review" onClick={() => navigate('/manualreview')}>
             <AlertTriangle className="i" size={24} />
             <p>Manual Review</p>
+            
             <div className="total">{stats.manualReview}</div>
           </div>
         </main>
