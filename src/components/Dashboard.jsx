@@ -19,15 +19,16 @@ import { getVendorFolders } from "../utils/blobService";
 
 const Dashboard = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [myFiles, setMyFiles] = useState([]); // current user uploads from localStorage + backend updates
-  const [allDocuments, setAllDocuments] = useState([]); // all documents from database for stats
+  const [myFiles, setMyFiles] = useState([]);
+  const [allDocuments, setAllDocuments] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [vendors, setVendors] = useState([]);
-  const [selectedVendor, setSelectedVendor] = useState(""); // New state for vendor filtering
+  const [selectedVendor, setSelectedVendor] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const documentsPerPage = 10;
   const fileInputRef = useRef(null);
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  // Fetch vendors list once
   useEffect(() => {
     const fetchVendors = async () => {
       try {
@@ -40,13 +41,11 @@ const navigate = useNavigate();
     fetchVendors();
   }, []);
 
-  // Load localStorage uploads on mount
   useEffect(() => {
     const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
     setMyFiles(localUploads);
   }, []);
 
-  // Poll backend every 10s to update status of current user uploads AND get all documents for stats
   useEffect(() => {
     const fetchDocumentsFromBackend = async () => {
       try {
@@ -56,14 +55,9 @@ const navigate = useNavigate();
         if (!response.ok) throw new Error("Failed to fetch document data");
 
         const documents = await response.json();
-
-        // Store all documents for stats display
         setAllDocuments(documents);
 
-        // Filter backend docs for those files that current user uploaded (match by fileName)
-        const localUploads = JSON.parse(
-          localStorage.getItem("myUploads") || "[]"
-        );
+        const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
         const updatedFiles = localUploads.map((localFile) => {
           const backendDoc = documents.find(
             (doc) =>
@@ -71,7 +65,6 @@ const navigate = useNavigate();
               doc.fileName === localFile.fileName
           );
           if (backendDoc) {
-            // Update status based on backend data
             const status = determineStatus(backendDoc);
             return {
               ...localFile,
@@ -80,7 +73,7 @@ const navigate = useNavigate();
               processedData: backendDoc,
             };
           }
-          return localFile; // no backend update
+          return localFile;
         });
 
         setMyFiles(updatedFiles);
@@ -105,8 +98,7 @@ const navigate = useNavigate();
         doc.invoiceTotal || doc.invoicetotal,
       ];
       return mandatoryFields.every(
-        (field) =>
-          field !== undefined && field !== null && String(field).trim() !== ""
+        (field) => field !== undefined && field !== null && String(field).trim() !== ""
       );
     };
 
@@ -115,58 +107,31 @@ const navigate = useNavigate();
     return () => clearInterval(intervalId);
   }, []);
 
-  // Function to filter documents by selected vendor
   const getFilteredDocuments = () => {
-    if (!selectedVendor) {
-      return allDocuments; // Show all documents if no vendor selected
-    }
-
-    return allDocuments.filter((doc) => {
-      const documentName = doc.documentName || "";
-      return documentName.toLowerCase().includes(selectedVendor.toLowerCase());
-    });
+    if (!selectedVendor) return allDocuments;
+    return allDocuments.filter((doc) =>
+      (doc.documentName || "").toLowerCase().includes(selectedVendor.toLowerCase())
+    );
   };
 
-  // Function to filter myFiles by selected vendor
   const getFilteredMyFiles = () => {
-    if (!selectedVendor) {
-      return myFiles; // Show all files if no vendor selected
-    }
-
+    if (!selectedVendor) return myFiles;
     return myFiles.filter((file) => {
-      // Check if file has processed data with vendor info
-      if (file.processedData && file.processedData.documentName) {
-        const fileDocName = file.processedData.documentName;
-        return fileDocName.toLowerCase().includes(selectedVendor.toLowerCase());
-      }
-
-      // If no processed data, check if filename contains vendor name
-      return file.fileName.toLowerCase().includes(selectedVendor.toLowerCase());
+      const docName = file.processedData?.documentName || file.fileName;
+      return docName.toLowerCase().includes(selectedVendor.toLowerCase());
     });
   };
 
-  // Calculate stats from filtered documents
   const getDocumentStats = () => {
     const filteredDocs = getFilteredDocuments();
     const total = filteredDocs.length;
-    const completed = filteredDocs.filter((doc) => {
-      if (doc.status === "Completed") {
-        return hasAllMandatoryFields(doc);
-      }
-      return false;
-    }).length;
-
-    const inProcess = filteredDocs.filter(
-      (doc) => doc.status !== "Completed"
+    const completed = filteredDocs.filter((doc) =>
+      doc.status === "Completed" && hasAllMandatoryFields(doc)
     ).length;
-
-    const manualReview = filteredDocs.filter((doc) => {
-      if (doc.status === "Completed") {
-        return !hasAllMandatoryFields(doc);
-      }
-      return false;
-    }).length;
-
+    const inProcess = filteredDocs.filter((doc) => doc.status !== "Completed").length;
+    const manualReview = filteredDocs.filter((doc) =>
+      doc.status === "Completed" && !hasAllMandatoryFields(doc)
+    ).length;
     return { total, completed, inProcess, manualReview };
   };
 
@@ -178,19 +143,14 @@ const navigate = useNavigate();
       doc.invoiceTotal || doc.invoicetotal,
     ];
     return mandatoryFields.every(
-      (field) =>
-        field !== undefined && field !== null && String(field).trim() !== ""
+      (field) => field !== undefined && field !== null && String(field).trim() !== ""
     );
   };
 
-  // Handle vendor selection change
   const handleVendorChange = (e) => {
     setSelectedVendor(e.target.value);
-    console.log("Selected vendor:", e.target.value); // Debug log
+    setCurrentPage(1); // Reset to first page on vendor change
   };
-
-  const stats = getDocumentStats();
-  const filteredMyFiles = getFilteredMyFiles();
 
   const FileChange = (e) => {
     const newFiles = Array.from(e.target.files).map((file) => ({
@@ -200,14 +160,9 @@ const navigate = useNavigate();
       status: "In Process",
       url: null,
     }));
-
-    // Avoid duplicate filenames in selection
     setSelectedFiles((prev) => {
-      const existingNames = new Set(prev.map((f) => f.fileName));
-      const uniqueNewFiles = newFiles.filter(
-        (f) => !existingNames.has(f.fileName)
-      );
-      return [...prev, ...uniqueNewFiles];
+      const existing = new Set(prev.map((f) => f.fileName));
+      return [...prev, ...newFiles.filter((f) => !existing.has(f.fileName))];
     });
   };
 
@@ -224,27 +179,19 @@ const navigate = useNavigate();
   const handleProcessFiles = async () => {
     if (selectedFiles.length === 0) return;
     setIsUploading(true);
-
     const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
-
-    // Add selected files immediately to localStorage and myFiles as "In Process"
     const newUploads = selectedFiles.map((fileObj) => ({
       fileName: fileObj.fileName,
       status: "In Process",
       uploadedAt: new Date().toISOString(),
       url: null,
     }));
-
     const updatedLocalUploads = [...newUploads, ...localUploads];
     localStorage.setItem("myUploads", JSON.stringify(updatedLocalUploads));
     setMyFiles((prev) => [...newUploads, ...prev]);
 
-    // Upload each file asynchronously
     for (const fileObj of selectedFiles) {
-      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
-        autoClose: 1000,
-      });
-
+      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, { autoClose: 1000 });
       try {
         const result = await uploadToAzure(fileObj.file, (percent) => {
           toast.update(toastId, {
@@ -256,21 +203,15 @@ const navigate = useNavigate();
 
         if (result) {
           toast.success(`${fileObj.fileName} uploaded successfully!`);
-
-          // Update url for the file in myFiles + localStorage
-          setMyFiles((prevFiles) =>
-            prevFiles.map((f) =>
+          setMyFiles((prev) =>
+            prev.map((f) =>
               f.fileName === fileObj.fileName ? { ...f, url: result.url } : f
             )
           );
-
-          const updatedUploadsWithUrl = updatedLocalUploads.map((f) =>
+          const updated = updatedLocalUploads.map((f) =>
             f.fileName === fileObj.fileName ? { ...f, url: result.url } : f
           );
-          localStorage.setItem(
-            "myUploads",
-            JSON.stringify(updatedUploadsWithUrl)
-          );
+          localStorage.setItem("myUploads", JSON.stringify(updated));
         }
       } catch (err) {
         console.error(`Failed to upload ${fileObj.fileName}:`, err);
@@ -286,24 +227,28 @@ const navigate = useNavigate();
     if (!dateString) return "Unknown time";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Unknown time";
-
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-
     if (diffInSeconds < 60) return "Just now";
-    if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     return date.toLocaleString();
   };
 
+  const filteredMyFiles = getFilteredMyFiles()
+    .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
+    .slice(0, 50); // Keep last 50
+
+  const indexOfLast = currentPage * documentsPerPage;
+  const indexOfFirst = indexOfLast - documentsPerPage;
+  const currentDocs = filteredMyFiles.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredMyFiles.length / documentsPerPage);
+
+  const stats = getDocumentStats();
+
   return (
     <div className="dashboard-total-container">
-      <header className="header">
-        <Header />
-      </header>
-
+      <header className="header"><Header /></header>
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
           <div>
@@ -312,41 +257,21 @@ const navigate = useNavigate();
           </div>
           <div>
             <label className="select">Select Vendor:</label>
-            <select
-              className="vendor-dropdown"
-              value={selectedVendor}
-              onChange={handleVendorChange}
-            >
+            <select className="vendor-dropdown" value={selectedVendor} onChange={handleVendorChange}>
               <option value="">All Vendors</option>
               {vendors.map((vendor, i) => (
-                <option key={i} value={vendor}>
-                  {vendor}
-                </option>
+                <option key={i} value={vendor}>{vendor}</option>
               ))}
             </select>
           </div>
         </nav>
+
         <main className="stats-container">
-          <div className="stat-box Total">
-            <FileText className="i" size={24} />
-            <p>Total Documents</p>
-            <div className="total">{stats.total}</div>
-          </div>
-          <div className="stat-box completed">
-            <CheckCircle className="i" size={24} />
-            <p>Completed Documents</p>
-            <div className="total">{stats.completed}</div>
-          </div>
-          <div className="stat-box inprocess">
-            <Clock className="i" size={24} />
-            <p>In Process</p>
-            <div className="total">{stats.inProcess}</div>
-          </div>
+          <div className="stat-box Total"><FileText className="i" size={24} /><p>Total</p><div className="total">{stats.total}</div></div>
+          <div className="stat-box completed"><CheckCircle className="i" size={24} /><p>Completed</p><div className="total">{stats.completed}</div></div>
+          <div className="stat-box inprocess"><Clock className="i" size={24} /><p>In Process</p><div className="total">{stats.inProcess}</div></div>
           <div className="stat-box manual-review" onClick={() => navigate('/manualreview')}>
-            <AlertTriangle className="i" size={24} />
-            <p>Manual Review</p>
-            
-            <div className="total">{stats.manualReview}</div>
+            <AlertTriangle className="i" size={24} /><p>Manual Review</p><div className="total">{stats.manualReview}</div>
           </div>
         </main>
 
@@ -356,34 +281,15 @@ const navigate = useNavigate();
               <h3>Upload Documents</h3>
               <p>Upload documents for AI-powered data extraction</p>
             </div>
-
             <div className="input-section" onClick={handleClick}>
               <Upload className="Upload" size={48} />
-              <h3 className="upload-section-h3">
-                Drop files here or click to upload
-              </h3>
+              <h3 className="upload-section-h3">Drop files here or click to upload</h3>
               <p className="mb-4">Support for PDF, Word, JPG, PNG files</p>
-
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                multiple
-                onChange={FileChange}
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              />
-
-              <label
-                className="btn btn-outline"
-                onClick={(e) => {
-                  e.stopPropagation(); // prevent div click
-                  fileInputRef.current.click();
-                }}
-              >
+              <input type="file" ref={fileInputRef} style={{ display: "none" }} multiple onChange={FileChange} accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+              <label className="btn btn-outline" onClick={(e) => { e.stopPropagation(); fileInputRef.current.click(); }}>
                 <Upload size={16} className="selecte-icon" /> Select Files
               </label>
             </div>
-
             <div className="file-load-section">
               {selectedFiles.length > 0 && (
                 <>
@@ -391,20 +297,11 @@ const navigate = useNavigate();
                     {selectedFiles.map((fileObj, index) => (
                       <li key={index}>
                         {fileObj.fileName}
-                        <button
-                          onClick={() => handleDeleteFile(index)}
-                          className="delete-btn"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <button onClick={() => handleDeleteFile(index)} className="delete-btn"><Trash2 size={16} /></button>
                       </li>
                     ))}
                   </ul>
-                  <button
-                    className="process-btn"
-                    onClick={handleProcessFiles}
-                    disabled={isUploading}
-                  >
+                  <button className="process-btn" onClick={handleProcessFiles} disabled={isUploading}>
                     {isUploading ? "Uploading..." : "Process Files"}
                   </button>
                 </>
@@ -415,73 +312,45 @@ const navigate = useNavigate();
           <div className="status-section">
             <div className="status-header">
               <h3>Recent Documents</h3>
-              <p>
-                {selectedVendor
-                  ? `Documents for vendor: ${selectedVendor}`
-                  : "List of your uploaded documents"}
-              </p>
+              <p>{selectedVendor ? `Documents for vendor: ${selectedVendor}` : "List of your uploaded documents"}</p>
             </div>
             <table>
               <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th>Uploaded</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
+                <tr><th>Name</th><th>Status</th><th>Uploaded</th><th>Date</th><th>Actions</th></tr>
               </thead>
               <tbody>
-                {filteredMyFiles.length > 0 ? (
-                  filteredMyFiles.map((file, index) => (
+                {currentDocs.length > 0 ? (
+                  currentDocs.map((file, index) => (
                     <tr key={index}>
                       <td>{file.fileName}</td>
-                      <td>
-                        <span
-                          className={`badge ${file.status
-                            ?.toLowerCase()
-                            .replace(" ", "-")}`}
-                        >
-                          {file.status}
-                        </span>
-                      </td>
+                      <td><span className={`badge ${file.status?.toLowerCase().replace(" ", "-")}`}>{file.status}</span></td>
                       <td>{formatDate(file.uploadedAt)}</td>
                       <td>{new Date(file.uploadedAt).toLocaleDateString()}</td>
                       <td>
-                        <button
-                          className="action-btn"
-                          onClick={() => {
-                            if (file.url) {
-                              window.open(file.url, "_blank");
-                            } else {
-                              toast.error("File URL not available");
-                            }
-                          }}
-                        >
+                        <button className="action-btn" onClick={() => file.url ? window.open(file.url, "_blank") : toast.error("File URL not available")}>
                           View
                         </button>
                       </td>
                     </tr>
                   ))
                 ) : (
-                  <tr>
-                    <td colSpan="5" style={{ textAlign: "center" }}>
-                      {selectedVendor
-                        ? `No documents found for vendor: ${selectedVendor}`
-                        : "No documents uploaded yet"}
-                    </td>
-                  </tr>
+                  <tr><td colSpan="5" style={{ textAlign: "center" }}>{selectedVendor ? `No documents found for vendor: ${selectedVendor}` : "No documents uploaded yet"}</td></tr>
                 )}
               </tbody>
             </table>
+
+            <div className="pagination">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button key={i} className={`page-btn ${currentPage === i + 1 ? "active" : ""}`} onClick={() => setCurrentPage(i + 1)}>
+                  {i + 1}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <footer>
-        <Footer />
-      </footer>
-
+      <footer><Footer /></footer>
       <ToastContainer />
     </div>
   );
