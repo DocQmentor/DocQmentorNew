@@ -89,6 +89,7 @@
 }
 .stats-container .manual-review{
     grid-area: manual-review;
+    cursor: pointer;
 }
 .stat-box {
     width: 100%;

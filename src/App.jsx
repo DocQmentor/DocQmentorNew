@@ -7,6 +7,7 @@ import Login from "./components/Login";
 import Home from "./components/Home";
 import Table from "./components/Table";
 import Dashboard from "./components/Dashboard";
+import ManualReview from "./components/ManualReview"
 import Header from "./Layout/Header";
 import Footer from "./Layout/Footer";
 
@@ -61,6 +62,7 @@ const AppRoutes = () => {
         <Route path="/home" element={<Home />} />
         <Route path="/table" element={<Table />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/manualreview" element={<ManualReview />} />
       </Route>
 
       <Route path="*" element={
