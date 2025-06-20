@@ -46,36 +46,36 @@ const Login = ({ setUser }) => {
  
         {/* FEATURES SECTION */}
         {/* FEATURES SECTION */}
-<div className="features-section">
-  <div className="feature-card">
-    <div className="feature-header">
-      <img src="src/assets/home.png" alt="Home Icon" className="feature-icon" />
-      <h3>Home</h3>
-    </div>
-    <p>The Home Page serves as your document management command center with instant access to all key features and real-time notifications to keep your team aligned.</p>
-  </div>
-  <div className="feature-card">
-    <div className="feature-header">
-      <img src="src/assets/upload doc.png" alt="Dashboard Icon" className="feature-icon" />
-      <h3>Dashboard</h3>
-    </div>
-    <p>Streamlined drag-and-drop dashboard with batch processing, file-type categorization, and upload analytics for smart document organization.</p>
-  </div>
-  <div className="feature-card">
-    <div className="feature-header">
-      <img src="src/assets/status tracker.png" alt="Status Tracker Icon" className="feature-icon" />
-      <h3>Status Tracker</h3>
-    </div>
-    <p>Full visibility of document status with real-time stage tracking and timestamps, removing guesswork and improving accountability.</p>
-  </div>
-  <div className="feature-card">
-    <div className="feature-header">
-      <img src="src/assets/data view.png" alt="Data View Icon" className="feature-icon" />
-      <h3>Data View</h3>
-    </div>
-    <p>Powerful filterable table with sorting, presets, and bulk actions for managing and processing documents at scale.</p>
-  </div>
-</div>
+      <div className="features-section">
+        <div className="feature-card">
+          <div className="feature-header">
+            <img src="src/assets/home.png" alt="Home Icon" className="feature-icon" />
+            <h3>Home</h3>
+          </div>
+          <p>The Home Page serves as your document management command center with instant access to all key features and real-time notifications to keep your team aligned.</p>
+        </div>
+        <div className="feature-card">
+          <div className="feature-header">
+            <img src="src/assets/upload doc.png" alt="Dashboard Icon" className="feature-icon" />
+            <h3>Dashboard</h3>
+          </div>
+          <p>Streamlined drag-and-drop dashboard with batch processing, file-type categorization, and upload analytics for smart document organization.</p>
+        </div>
+        <div className="feature-card">
+          <div className="feature-header">
+            <img src="src/assets/status tracker.png" alt="Status Tracker Icon" className="feature-icon" />
+            <h3>Status Tracker</h3>
+          </div>
+          <p>Full visibility of document status with real-time stage tracking and timestamps, removing guesswork and improving accountability.</p>
+        </div>
+        <div className="feature-card">
+          <div className="feature-header">
+            <img src="src/assets/data view.png" alt="Data View Icon" className="feature-icon" />
+            <h3>Data View</h3>
+          </div>
+          <p>Powerful filterable table with sorting, presets, and bulk actions for managing and processing documents at scale.</p>
+        </div>
+      </div>
         <p className='Copyright'>© Copyright <b>Techstar Group.</b> All Rights Reserved</p>
       </div>
      

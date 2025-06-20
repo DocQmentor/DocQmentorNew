@@ -24,9 +24,11 @@
 .red-letter {
   color: #ed2224;
 }
+
 .blue-letter {
   color: #0071bc;
 }
+
 .header-component-container header {
     background: white;
     position: fixed;
@@ -213,9 +215,7 @@
   transition: background-color 0.2s;
 }
 
-.logout-button:hover {
-  background-color: #f8f8f8;
-}
+
 
 /* Add this to make sure the profile li has relative positioning */
 .header-component-container li {

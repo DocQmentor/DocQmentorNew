@@ -270,8 +270,18 @@ const Dashboard = () => {
           <div className="stat-box Total"><FileText className="i" size={24} /><p>Total</p><div className="total">{stats.total}</div></div>
           <div className="stat-box completed"><CheckCircle className="i" size={24} /><p>Completed</p><div className="total">{stats.completed}</div></div>
           <div className="stat-box inprocess"><Clock className="i" size={24} /><p>In Process</p><div className="total">{stats.inProcess}</div></div>
-          <div className="stat-box manual-review" onClick={() => navigate('/manualreview')}>
-            <AlertTriangle className="i" size={24} /><p>Manual Review</p><div className="total">{stats.manualReview}</div>
+          <div className="stat-box manual-review" onClick={() => {
+              const manualReviewDocs = allDocuments.filter(doc => 
+                  doc.status === "Completed" && !hasAllMandatoryFields(doc)
+              );
+              navigate('/manualreview', { 
+                  state: { 
+                      manualReviewDocs,
+                      selectedVendor: selectedVendor // Pass the currently selected vendor
+                  } 
+              });
+              }}>
+              <AlertTriangle className="i" size={24} /><p>Manual Review</p><div className="total">{stats.manualReview}</div>
           </div>
         </main>
 
