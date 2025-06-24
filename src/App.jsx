@@ -9,7 +9,6 @@ import Table from "./components/Table";
 import Dashboard from "./components/Dashboard";
 import Header from "./Layout/Header";
 import Footer from "./Layout/Footer";
-import ManualReview from "./components/ManualReview";
  
 const msalConfig = {
   auth: {
@@ -62,7 +61,7 @@ const AppRoutes = () => {
         <Route path="/home" element={<Home />} />
         <Route path="/table" element={<Table />} />
         <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/manualreview" element={<ManualReview />} />
+                <Route path="/manualreview" element={<Dashboard />} />
 
       </Route>
  
