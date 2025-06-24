@@ -66,37 +66,66 @@ function Table() {
       setLoading(true);
       try {
         const response = await fetch(
-          "https://docap.azurewebsites.net/api/DocQmentorFunc?code=n4SOThz-nkfGfs96hGTtAsvm3ZS2wt7O3pqELLzWqi38AzFuUm090A=="
+          "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ=="
         );
         if (!response.ok) throw new Error("Failed to fetch invoice data");
         const data = await response.json();
 
         const processed = Array.isArray(data)
-  ? data.map((doc) => {
-      const extracted = doc.extractedData || {};
-      return {
-        vendorName: getString(extracted.VendorName || doc.vendorName),
-        invoiceId: getString(extracted.InvoiceId || doc.invoiceId),
-        invoiceDate: getString(
-          extracted.InvoiceDate || doc.invoiceDate
-        ),
-        lpoNo: getString(
-          extracted["LPO NO"] || extracted.lpoNo || doc.lpoNo
-        ),
-        subTotal: getString(extracted.SubTotal || doc.subTotal),
-        vat: getString(extracted.VAT || doc.vat),
-        invoicetotal: getString(
-          extracted.InvoiceTotal || doc.invoicetotal || doc.invoiceTotal
-        ),
-        uploadDate: doc.timestamp
-          ? new Date(doc.timestamp).toLocaleDateString("en-CA")
-          : "",
-        rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
-        fileUrl: doc.fileUrl || null, // Add this line
-        _rawDocument: doc,
-      };
-    })
-  : [];
+          ? data
+              .filter((doc) => {
+                const extracted = doc.extractedData || {};
+                const confidence = doc.confidence || {}; // If confidence not available, assume full (1)
+
+                const requiredFields = [
+                  "VendorName",
+                  "InvoiceId",
+                  "InvoiceDate",
+                  "LPO NO",
+                  "SubTotal",
+                  "VAT",
+                  "InvoiceTotal",
+                ];
+
+                // Reject if any field is missing or confidence is low
+                for (const field of requiredFields) {
+                  const val = extracted[field];
+                  const score = confidence[field] ?? 1; // Default to 1 if no score provided
+                  if (!val || score < 0.85) return false;
+                }
+
+                return true; // keep only valid documents
+              })
+              .map((doc) => {
+                const extracted = doc.extractedData || {};
+                return {
+                  vendorName: getString(extracted.VendorName || doc.vendorName),
+                  invoiceId: getString(extracted.InvoiceId || doc.invoiceId),
+                  invoiceDate: getString(
+                    extracted.InvoiceDate || doc.invoiceDate
+                  ),
+                  lpoNo: getString(
+                    extracted["LPO NO"] || extracted.lpoNo || doc.lpoNo
+                  ),
+                  subTotal: getString(extracted.SubTotal || doc.subTotal),
+                  vat: getString(extracted.VAT || doc.vat),
+                  invoicetotal: getString(
+                    extracted.InvoiceTotal ||
+                      doc.invoicetotal ||
+                      doc.invoiceTotal
+                  ),
+                  uploadDate: doc.timestamp
+                    ? new Date(doc.timestamp).toLocaleDateString("en-CA")
+                    : "",
+                  rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
+                  fileUrl: doc.fileUrl || null,
+                  confidenceScore:
+                    doc.totalConfidenceScore?.toFixed(2) || "0.00", // 👈 use exact field name from DB
+
+                  _rawDocument: doc,
+                };
+              })
+          : [];
 
         setInvoiceData(processed);
         setError(null);
@@ -250,7 +279,29 @@ function Table() {
     sortOrder,
     searchQuery,
   ]);
+  const handleViewDocument = (file) => {
+    console.log("📂 Opening document:", file);
 
+    let url = null;
+
+    // Priority 1: blobUrl from DB
+    if (file.blobUrl && file.blobUrl.startsWith("http")) {
+      url = file.blobUrl;
+    }
+    // Fallbacks (in case blobUrl not available)
+    else if (file.url && file.url.startsWith("http")) {
+      url = file.url;
+    } else if (file.processedData?.blobUrl) {
+      url = file.processedData.blobUrl;
+    }
+
+    if (url) {
+      window.open(url, "_blank");
+    } else {
+      toast.error("File URL is not available");
+      console.warn("⚠️ Cannot open file. Data:", file);
+    }
+  };
   return (
     <div className="table-component-container">
       <Header />
@@ -365,6 +416,13 @@ function Table() {
                     >
                       Upload Date {renderSortIcon("uploadDate")}
                     </th>
+                    <th
+                      style={{ width: "150px" }}
+                      onClick={() => toggleSort("confidenceScore")}
+                    >
+                      Confidence Score {renderSortIcon("confidenceScore")}
+                    </th>
+
                     <th style={{ width: "150px" }}>Action</th>
                   </tr>
                 </thead>
@@ -396,20 +454,20 @@ function Table() {
                         <td style={{ width: "150px" }}>{item.vat}</td>
                         <td style={{ width: "150px" }}>{item.invoicetotal}</td>
                         <td style={{ width: "150px" }}>{item.uploadDate}</td>
+                        <td style={{ width: "150px" }}>
+                          {item.confidenceScore}%
+                        </td>
+
                         <td>
-  <button 
-    className="table-container-file-view-button"
-    onClick={() => {
-      if (item.fileUrl) {
-        window.open(item.fileUrl, "_blank");
-      } else {
-        toast.error("File URL not available");
-      }
-    }}
-  >
-    View
-  </button>
-</td>
+                          <button
+                            className="action-btn"
+                            onClick={() =>
+                              handleViewDocument(item._rawDocument)
+                            }
+                          >
+                            View
+                          </button>
+                        </td>
                       </tr>
                     ))
                   ) : (
@@ -445,7 +503,7 @@ function Table() {
           )}
         </ErrorBoundary>
       </div>
-       <ToastContainer />
+      <ToastContainer />
       <Footer />
     </div>
   );

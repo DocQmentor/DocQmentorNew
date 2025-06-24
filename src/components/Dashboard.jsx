@@ -8,11 +8,10 @@ import {
   Clock,
   AlertTriangle,
 } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate } from "react-router-dom";
+import { sasToken, uploadToAzure } from "../utils/azureUploader";
 import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
-import { uploadToAzure } from "../utils/azureUploader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getVendorFolders } from "../utils/blobService";
@@ -46,30 +45,74 @@ const Dashboard = () => {
     setMyFiles(localUploads);
   }, []);
 
+  const hasAllMandatoryFields = (doc) => {
+    if (!doc || !doc.extractedData) return false;
+
+    const requiredFields = [
+      "VendorName",
+      "InvoiceId",
+      "InvoiceDate",
+      "LPO NO",
+      "SubTotal",
+      "VAT",
+      "InvoiceTotal",
+    ];
+
+    return requiredFields.every((field) => {
+      const value = doc.extractedData[field];
+      return (
+        value !== undefined && value !== null && String(value).trim() !== ""
+      );
+    });
+  };
+
+  const determineStatus = (doc) => {
+    if (!doc || !doc.extractedData || !doc.confidenceScores) {
+      return "Manual Review";
+    }
+
+    if (!hasAllMandatoryFields(doc)) return "Manual Review";
+
+    const scores = Object.values(doc.confidenceScores || {});
+    if (scores.length === 0) return "Manual Review";
+
+    const avg =
+      scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
+    return avg >= 0.85 ? "Completed" : "Manual Review";
+  };
+
   useEffect(() => {
     const fetchDocumentsFromBackend = async () => {
       try {
         const response = await fetch(
-          "https://docap.azurewebsites.net/api/DocQmentorFunc?code=n4SOThz-nkfGfs96hGTtAsvm3ZS2wt7O3pqELLzWqi38AzFuUm090A=="
+          "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ=="
         );
         if (!response.ok) throw new Error("Failed to fetch document data");
 
         const documents = await response.json();
-        setAllDocuments(documents);
+        const withStatus = documents.map((doc) => ({
+          ...doc,
+          status: determineStatus(doc),
+        }));
 
-        const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
+        setAllDocuments(withStatus);
+
+        const localUploads = JSON.parse(
+          localStorage.getItem("myUploads") || "[]"
+        );
         const updatedFiles = localUploads.map((localFile) => {
-          const backendDoc = documents.find(
+          const backendDoc = withStatus.find(
             (doc) =>
               doc.documentName === localFile.fileName ||
               doc.fileName === localFile.fileName
           );
           if (backendDoc) {
-            const status = determineStatus(backendDoc);
             return {
               ...localFile,
-              status,
-              url: backendDoc.fileUrl || localFile.url || null,
+              status: backendDoc.status,
+              url: backendDoc.fileUrl?.includes("?")
+                ? backendDoc.fileUrl
+                : `${backendDoc.fileUrl}${sasToken}`,
               processedData: backendDoc,
             };
           }
@@ -83,25 +126,6 @@ const Dashboard = () => {
       }
     };
 
-    const determineStatus = (doc) => {
-      if (String(doc.status).toLowerCase() === "completed") {
-        return hasAllMandatoryFields(doc) ? "Completed" : "Manual Review";
-      }
-      return "In Process";
-    };
-
-    const hasAllMandatoryFields = (doc) => {
-      const mandatoryFields = [
-        doc.vendorName,
-        doc.invoiceId,
-        doc.invoiceDate,
-        doc.invoiceTotal || doc.invoicetotal,
-      ];
-      return mandatoryFields.every(
-        (field) => field !== undefined && field !== null && String(field).trim() !== ""
-      );
-    };
-
     fetchDocumentsFromBackend();
     const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
     return () => clearInterval(intervalId);
@@ -110,7 +134,9 @@ const Dashboard = () => {
   const getFilteredDocuments = () => {
     if (!selectedVendor) return allDocuments;
     return allDocuments.filter((doc) =>
-      (doc.documentName || "").toLowerCase().includes(selectedVendor.toLowerCase())
+      (doc.documentName || "")
+        .toLowerCase()
+        .includes(selectedVendor.toLowerCase())
     );
   };
 
@@ -125,31 +151,24 @@ const Dashboard = () => {
   const getDocumentStats = () => {
     const filteredDocs = getFilteredDocuments();
     const total = filteredDocs.length;
-    const completed = filteredDocs.filter((doc) =>
-      doc.status === "Completed" && hasAllMandatoryFields(doc)
-    ).length;
-    const inProcess = filteredDocs.filter((doc) => doc.status !== "Completed").length;
-    const manualReview = filteredDocs.filter((doc) =>
-      doc.status === "Completed" && !hasAllMandatoryFields(doc)
-    ).length;
-    return { total, completed, inProcess, manualReview };
-  };
 
-  const hasAllMandatoryFields = (doc) => {
-    const mandatoryFields = [
-      doc.vendorName,
-      doc.invoiceId,
-      doc.invoiceDate,
-      doc.invoiceTotal || doc.invoicetotal,
-    ];
-    return mandatoryFields.every(
-      (field) => field !== undefined && field !== null && String(field).trim() !== ""
-    );
+    let completed = 0;
+    let manualReview = 0;
+    let inProcess = 0;
+
+    filteredDocs.forEach((doc) => {
+      const status = determineStatus(doc);
+      if (status === "Completed") completed++;
+      else if (status === "Manual Review") manualReview++;
+      else inProcess++;
+    });
+
+    return { total, completed, inProcess, manualReview };
   };
 
   const handleVendorChange = (e) => {
     setSelectedVendor(e.target.value);
-    setCurrentPage(1); // Reset to first page on vendor change
+    setCurrentPage(1);
   };
 
   const FileChange = (e) => {
@@ -191,7 +210,9 @@ const Dashboard = () => {
     setMyFiles((prev) => [...newUploads, ...prev]);
 
     for (const fileObj of selectedFiles) {
-      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, { autoClose: 1000 });
+      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
+        autoClose: 1000,
+      });
       try {
         const result = await uploadToAzure(fileObj.file, (percent) => {
           toast.update(toastId, {
@@ -230,25 +251,69 @@ const Dashboard = () => {
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
     if (diffInSeconds < 60) return "Just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     return date.toLocaleString();
   };
 
   const filteredMyFiles = getFilteredMyFiles()
     .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
-    .slice(0, 50); // Keep last 50
+    .slice(0, 50);
 
   const indexOfLast = currentPage * documentsPerPage;
   const indexOfFirst = indexOfLast - documentsPerPage;
   const currentDocs = filteredMyFiles.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredMyFiles.length / documentsPerPage);
-
   const stats = getDocumentStats();
+
+  const handleManualReviewClick = () => {
+    const manualReviewDocs = allDocuments.filter(
+      (doc) => doc.status === "Manual Review" || !hasAllMandatoryFields(doc)
+    );
+
+    if (manualReviewDocs.length === 0) {
+      toast.info("No documents require manual review");
+      return;
+    }
+
+    navigate("/manualreview", {
+      state: {
+        manualReviewDocs,
+        selectedVendor,
+      },
+    });
+  };
+  const handleViewDocument = (file) => {
+    console.log("📂 Opening document:", file);
+
+    let url = null;
+
+    // Priority 1: blobUrl from DB
+    if (file.blobUrl && file.blobUrl.startsWith("http")) {
+      url = file.blobUrl;
+    }
+    // Fallbacks (in case blobUrl not available)
+    else if (file.url && file.url.startsWith("http")) {
+      url = file.url;
+    } else if (file.processedData?.blobUrl) {
+      url = file.processedData.blobUrl;
+    }
+
+    if (url) {
+      window.open(url, "_blank");
+    } else {
+      toast.error("File URL is not available");
+      console.warn("⚠️ Cannot open file. Data:", file);
+    }
+  };
 
   return (
     <div className="dashboard-total-container">
-      <header className="header"><Header /></header>
+      <header className="header">
+        <Header />
+      </header>
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
           <div>
@@ -257,31 +322,44 @@ const Dashboard = () => {
           </div>
           <div>
             <label className="select">Select Vendor:</label>
-            <select className="vendor-dropdown" value={selectedVendor} onChange={handleVendorChange}>
+            <select
+              className="vendor-dropdown"
+              value={selectedVendor}
+              onChange={handleVendorChange}
+            >
               <option value="">All Vendors</option>
               {vendors.map((vendor, i) => (
-                <option key={i} value={vendor}>{vendor}</option>
+                <option key={i} value={vendor}>
+                  {vendor}
+                </option>
               ))}
             </select>
           </div>
         </nav>
 
         <main className="stats-container">
-          <div className="stat-box Total"><FileText className="i" size={24} /><p>Total</p><div className="total">{stats.total}</div></div>
-          <div className="stat-box completed"><CheckCircle className="i" size={24} /><p>Completed</p><div className="total">{stats.completed}</div></div>
-          <div className="stat-box inprocess"><Clock className="i" size={24} /><p>In Process</p><div className="total">{stats.inProcess}</div></div>
-          <div className="stat-box manual-review" onClick={() => {
-              const manualReviewDocs = allDocuments.filter(doc => 
-                  doc.status === "Completed" && !hasAllMandatoryFields(doc)
-              );
-              navigate('/manualreview', { 
-                  state: { 
-                      manualReviewDocs,
-                      selectedVendor: selectedVendor // Pass the currently selected vendor
-                  } 
-              });
-              }}>
-              <AlertTriangle className="i" size={24} /><p>Manual Review</p><div className="total">{stats.manualReview}</div>
+          <div className="stat-box Total">
+            <FileText className="i" size={24} />
+            <p>Total</p>
+            <div className="total">{stats.total}</div>
+          </div>
+          <div className="stat-box completed">
+            <CheckCircle className="i" size={24} />
+            <p>Completed</p>
+            <div className="total">{stats.completed}</div>
+          </div>
+          <div className="stat-box inprocess">
+            <Clock className="i" size={24} />
+            <p>In Process</p>
+            <div className="total">{stats.inProcess}</div>
+          </div>
+          <div
+            className="stat-box manual-review"
+            onClick={handleManualReviewClick}
+          >
+            <AlertTriangle className="i" size={24} />
+            <p>Manual Review</p>
+            <div className="total">{stats.manualReview}</div>
           </div>
         </main>
 
@@ -293,10 +371,25 @@ const Dashboard = () => {
             </div>
             <div className="input-section" onClick={handleClick}>
               <Upload className="Upload" size={48} />
-              <h3 className="upload-section-h3">Drop files here or click to upload</h3>
+              <h3 className="upload-section-h3">
+                Drop files here or click to upload
+              </h3>
               <p className="mb-4">Support for PDF, Word, JPG, PNG files</p>
-              <input type="file" ref={fileInputRef} style={{ display: "none" }} multiple onChange={FileChange} accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
-              <label className="btn btn-outline" onClick={(e) => { e.stopPropagation(); fileInputRef.current.click(); }}>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                multiple
+                onChange={FileChange}
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              />
+              <label
+                className="btn btn-outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current.click();
+                }}
+              >
                 <Upload size={16} className="selecte-icon" /> Select Files
               </label>
             </div>
@@ -307,11 +400,20 @@ const Dashboard = () => {
                     {selectedFiles.map((fileObj, index) => (
                       <li key={index}>
                         {fileObj.fileName}
-                        <button onClick={() => handleDeleteFile(index)} className="delete-btn"><Trash2 size={16} /></button>
+                        <button
+                          onClick={() => handleDeleteFile(index)}
+                          className="delete-btn"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </li>
                     ))}
                   </ul>
-                  <button className="process-btn" onClick={handleProcessFiles} disabled={isUploading}>
+                  <button
+                    className="process-btn"
+                    onClick={handleProcessFiles}
+                    disabled={isUploading}
+                  >
                     {isUploading ? "Uploading..." : "Process Files"}
                   </button>
                 </>
@@ -322,36 +424,69 @@ const Dashboard = () => {
           <div className="status-section">
             <div className="status-header">
               <h3>Recent Documents</h3>
-              <p>{selectedVendor ? `Documents for vendor: ${selectedVendor}` : "List of your uploaded documents"}</p>
+              <p>
+                {selectedVendor
+                  ? `Documents for vendor: ${selectedVendor}`
+                  : "List of your uploaded documents"}
+              </p>
             </div>
             <table>
               <thead>
-                <tr><th>Name</th><th>Status</th><th>Uploaded</th><th>Date</th><th>Actions</th></tr>
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Uploaded</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
               </thead>
               <tbody>
                 {currentDocs.length > 0 ? (
                   currentDocs.map((file, index) => (
                     <tr key={index}>
                       <td>{file.fileName}</td>
-                      <td><span className={`badge ${file.status?.toLowerCase().replace(" ", "-")}`}>{file.status}</span></td>
+                      <td>
+                        <span
+                          className={`badge ${file.status
+                            ?.toLowerCase()
+                            .replace(" ", "-")}`}
+                        >
+                          {file.status}
+                        </span>
+                      </td>
                       <td>{formatDate(file.uploadedAt)}</td>
                       <td>{new Date(file.uploadedAt).toLocaleDateString()}</td>
                       <td>
-                        <button className="action-btn" onClick={() => file.url ? window.open(file.url, "_blank") : toast.error("File URL not available")}>
+                        <button
+                          className="action-btn"
+                          onClick={() => handleViewDocument(file)}
+                        >
                           View
                         </button>
                       </td>
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="5" style={{ textAlign: "center" }}>{selectedVendor ? `No documents found for vendor: ${selectedVendor}` : "No documents uploaded yet"}</td></tr>
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: "center" }}>
+                      {selectedVendor
+                        ? `No documents found for vendor: ${selectedVendor}`
+                        : "No documents uploaded yet"}
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
 
             <div className="pagination">
               {Array.from({ length: totalPages }, (_, i) => (
-                <button key={i} className={`page-btn ${currentPage === i + 1 ? "active" : ""}`} onClick={() => setCurrentPage(i + 1)}>
+                <button
+                  key={i}
+                  className={`page-btn ${
+                    currentPage === i + 1 ? "active" : ""
+                  }`}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
                   {i + 1}
                 </button>
               ))}
@@ -360,7 +495,9 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <footer><Footer /></footer>
+      <footer>
+        <Footer />
+      </footer>
       <ToastContainer />
     </div>
   );
