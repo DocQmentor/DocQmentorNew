@@ -3,7 +3,7 @@
 /* ===== Base Styles ===== */
 .ManualReview-full-container {
   width: 100%;
-  min-height: 93vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   font-family: "Nunito", sans-serif;
@@ -12,6 +12,7 @@
 
 /* ===== Main Content ===== */
 .ManualReview-main-container {
+  margin-top: 20px;
   flex: 1;
   padding: 40px 30px;
   box-sizing: border-box;
@@ -113,7 +114,7 @@ footer {
 
 /* ===== ManualReview-Edit-container ===== */
 .ManualReview-Edit-container{
-  margin-top: 30px;
+  margin-top: 60px;
   display: flex;
   width: 100%;
   padding: 0px 30px 0px 30px;
@@ -130,7 +131,7 @@ footer {
 }
 /* ===== ManualReview-Edit-options ===== */
 .ManualReview-Edit-options{
-  width: 100%;
+  width: 60%;
   padding: 10px;
   border: #ccc 1px solid;
   border-radius: 10px;
@@ -184,10 +185,13 @@ footer {
   width: 100%;
 }
 .ManualReview-Edit-editDetails-form{
-  gap: 2px;
+  gap: 6px;
   justify-content: space-around;
   display: flex;
   flex-direction: column;
+}
+.ManualReview-Edit-editDetails-form label{
+  font-weight: bold;
 }
 .ManualReview-Edit-editDetails-form h3{
   color: #004080;

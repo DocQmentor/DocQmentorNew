@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, useRef} from "react";
 import './ManualReview.css';
 import Footer from "../Layout/Footer";
 import { Edit, History, File, FileText, X, Save } from 'lucide-react';
@@ -19,6 +19,7 @@ const ManualReview = () => {
 // ////////
     const [selectedFile, setSelectedFile] = useState(null);
     const [fileUrl, setFileUrl] = useState(null);
+    const fileInputRef = useRef(null);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -167,6 +168,12 @@ const ManualReview = () => {
                     <div className="ManualReview-Edit-container">
                         <div className="ManualReview-Edit-show-file">
                             <header>{selectedDocument?.fileName || selectedDocument?.documentName || 'Document'}</header>
+                            <input 
+                                type="file" 
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                            />
                             <div>
                             {selectedFile && (
                                 <div className="file-display-section">
@@ -217,12 +224,12 @@ const ManualReview = () => {
                                         onClick={() => showSection('pdfDetails')}>
                                         <File size={20} /> PDF Details
                                     </li>
-                                    <li className={`ManualReview-Edit-options-nav-li ${Properties ? 'active' : ''}`} 
+                                    {/* <li className={`ManualReview-Edit-options-nav-li ${Properties ? 'active' : ''}`} 
                                         onClick={() => showSection('properties')}>
                                         <FileText size={20} /> Properties
-                                    </li>
+                                    </li> */}
                                     <li onClick={() => setShow(!show)}>
-                                        <X size={20} /> Close
+                                        <X size={20} />
                                     </li>
                                 </ul>
                             </nav>
@@ -247,12 +254,6 @@ const ManualReview = () => {
                                             type="number" 
                                             defaultValue={selectedDocument.lpoNumber || ''}
                                             placeholder="Please write Vendor Number..."
-                                        />
-                                        <label>Confidence Score</label>
-                                        <input 
-                                            type="number" 
-                                            defaultValue={selectedDocument.confidenceScore || ''}
-                                            placeholder="Please write Confidence Score..."
                                         />
                                         <label>Sub Total</label>
                                         <input 

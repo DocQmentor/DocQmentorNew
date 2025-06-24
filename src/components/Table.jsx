@@ -3,6 +3,8 @@ import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
 import "./Table.css";
 import { saveAs } from "file-saver";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -70,30 +72,31 @@ function Table() {
         const data = await response.json();
 
         const processed = Array.isArray(data)
-          ? data.map((doc) => {
-              const extracted = doc.extractedData || {};
-              return {
-                vendorName: getString(extracted.VendorName || doc.vendorName),
-                invoiceId: getString(extracted.InvoiceId || doc.invoiceId),
-                invoiceDate: getString(
-                  extracted.InvoiceDate || doc.invoiceDate
-                ),
-                lpoNo: getString(
-                  extracted["LPO NO"] || extracted.lpoNo || doc.lpoNo
-                ),
-                subTotal: getString(extracted.SubTotal || doc.subTotal),
-                vat: getString(extracted.VAT || doc.vat),
-                invoicetotal: getString(
-                  extracted.InvoiceTotal || doc.invoicetotal || doc.invoiceTotal
-                ),
-                uploadDate: doc.timestamp
-                  ? new Date(doc.timestamp).toLocaleDateString("en-CA")
-                  : "",
-                rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
-                _rawDocument: doc,
-              };
-            })
-          : [];
+  ? data.map((doc) => {
+      const extracted = doc.extractedData || {};
+      return {
+        vendorName: getString(extracted.VendorName || doc.vendorName),
+        invoiceId: getString(extracted.InvoiceId || doc.invoiceId),
+        invoiceDate: getString(
+          extracted.InvoiceDate || doc.invoiceDate
+        ),
+        lpoNo: getString(
+          extracted["LPO NO"] || extracted.lpoNo || doc.lpoNo
+        ),
+        subTotal: getString(extracted.SubTotal || doc.subTotal),
+        vat: getString(extracted.VAT || doc.vat),
+        invoicetotal: getString(
+          extracted.InvoiceTotal || doc.invoicetotal || doc.invoiceTotal
+        ),
+        uploadDate: doc.timestamp
+          ? new Date(doc.timestamp).toLocaleDateString("en-CA")
+          : "",
+        rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
+        fileUrl: doc.fileUrl || null, // Add this line
+        _rawDocument: doc,
+      };
+    })
+  : [];
 
         setInvoiceData(processed);
         setError(null);
@@ -393,7 +396,20 @@ function Table() {
                         <td style={{ width: "150px" }}>{item.vat}</td>
                         <td style={{ width: "150px" }}>{item.invoicetotal}</td>
                         <td style={{ width: "150px" }}>{item.uploadDate}</td>
-                        <td></td>
+                        <td>
+  <button 
+    className="table-container-file-view-button"
+    onClick={() => {
+      if (item.fileUrl) {
+        window.open(item.fileUrl, "_blank");
+      } else {
+        toast.error("File URL not available");
+      }
+    }}
+  >
+    View
+  </button>
+</td>
                       </tr>
                     ))
                   ) : (
@@ -429,6 +445,7 @@ function Table() {
           )}
         </ErrorBoundary>
       </div>
+       <ToastContainer />
       <Footer />
     </div>
   );
