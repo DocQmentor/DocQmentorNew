@@ -3,6 +3,7 @@ import "./ManualReview.css";
 import Footer from "../Layout/Footer";
 import EditModal from "./EditModal";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const ManualReview = () => {
   const [show, setShow] = useState(true);
@@ -19,7 +20,16 @@ const ManualReview = () => {
     InvoiceTotal: "",
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
+
   const location = useLocation();
+const sanitizeNumeric = (val) => {
+  if (!val) return "";
+  const str = typeof val === "object" ? val?.valueString || JSON.stringify(val) : val.toString();
+  return str.replace(/[^\d.-]/g, ""); // remove ₹, commas, spaces
+};
+const navigate = useNavigate();
 
   const getString = (val) => {
     if (!val) return "";
@@ -92,21 +102,31 @@ const ManualReview = () => {
     }
   }, [manualReviewDocs, selectedVendor]);
 
-  const handleToggle = (doc) => {
-    setSelectedDocument(doc);
-    setEditedData({
-      VendorName: getString(doc.extractedData?.VendorName),
-      InvoiceDate: getString(doc.extractedData?.InvoiceDate),
-      LPO: getString(doc.extractedData?.["LPO NO"]),
-      SubTotal: getString(doc.extractedData?.SubTotal),
-      VAT: getString(doc.extractedData?.VAT),
-      InvoiceTotal: getString(doc.extractedData?.InvoiceTotal),
-    });
-    setShow(false);
+const handleToggle = (doc) => {
+  const editedDoc = {
+    VendorName: getString(doc.extractedData?.VendorName),
+    InvoiceDate: getString(doc.extractedData?.InvoiceDate),
+    LPO: getString(doc.extractedData?.["LPO NO"]),
+    SubTotal: sanitizeNumeric(doc.extractedData?.SubTotal),
+    VAT: sanitizeNumeric(doc.extractedData?.VAT),
+    InvoiceTotal: sanitizeNumeric(doc.extractedData?.InvoiceTotal),
   };
+
+  navigate("/editmodal", {
+    state: {
+      selectedDocument: doc,
+      editedData: editedDoc,
+    },
+  });
+};
+
+
+
+  // console.log("extractedData keys for debug:", Object.keys(doc.extractedData));
 
   const handleVendorChange = (e) => {
     setSelectedVendor(e.target.value);
+    setCurrentPage(1); // reset pagination on filter change
   };
 
   const vendorOptions = [
@@ -118,6 +138,21 @@ const ManualReview = () => {
   ]
     .filter(Boolean)
     .sort();
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredDocs.length / rowsPerPage);
+  const paginatedDocs = filteredDocs.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handlePrevious = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
 
   return (
     <div className="ManualReview-full-container">
@@ -142,32 +177,35 @@ const ManualReview = () => {
             </div>
             <p>{filteredDocs.length} documents requiring manual review</p>
           </div>
+
           <table className="ManualReview-Table">
             <thead>
               <tr>
                 <th>Vendor Name</th>
-                <th>File Name</th>
+                {/* <th>File Name</th> */}
                 <th>Invoice ID</th>
                 <th>Invoice Date</th>
                 <th>LPO Number</th>
                 <th>Sub Total</th>
                 <th>VAT</th>
                 <th>Total</th>
+                <th>Confidence Score</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredDocs.length > 0 ? (
-                filteredDocs.map((doc, index) => (
+              {paginatedDocs.length > 0 ? (
+                paginatedDocs.map((doc, index) => (
                   <tr key={index}>
                     <td>{getString(doc?.extractedData?.VendorName)}</td>
-                    <td>{doc?.fileName || doc?.documentName || ""}</td>
+                    {/* <td>{doc?.fileName || doc?.documentName || ""}</td> */}
                     <td>{getString(doc?.extractedData?.InvoiceId)}</td>
                     <td>{getString(doc?.extractedData?.InvoiceDate)}</td>
                     <td>{getString(doc?.extractedData?.["LPO NO"])}</td>
                     <td>{getString(doc?.extractedData?.SubTotal)}</td>
                     <td>{getString(doc?.extractedData?.VAT)}</td>
                     <td>{getString(doc?.extractedData?.InvoiceTotal)}</td>
+                    <td>{doc.totalConfidenceScore?.toFixed(2) || "0.00"}%</td>
                     <td>
                       <button onClick={() => handleToggle(doc)}>Edit</button>
                     </td>
@@ -175,7 +213,7 @@ const ManualReview = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: "center" }}>
+                  <td colSpan="10" style={{ textAlign: "center" }}>
                     {selectedVendor
                       ? `No documents requiring manual review for vendor: ${selectedVendor}`
                       : "No documents requiring manual review"}
@@ -184,6 +222,27 @@ const ManualReview = () => {
               )}
             </tbody>
           </table>
+
+          {/* Pagination Controls */}
+          {filteredDocs.length > rowsPerPage && (
+            <div style={{ marginTop: "15px", textAlign: "center" }}>
+              <button
+                onClick={handlePrevious}
+                disabled={currentPage === 1}
+                style={{ padding: "6px 10px", marginRight: "10px" }}
+              >
+                Previous
+              </button>
+              Page {currentPage} of {totalPages}
+              <button
+                onClick={handleNext}
+                disabled={currentPage === totalPages}
+                style={{ padding: "6px 10px", marginLeft: "10px" }}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <EditModal

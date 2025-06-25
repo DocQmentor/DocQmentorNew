@@ -1,16 +1,27 @@
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Edit, History, File, X, Save } from "lucide-react";
-import "./ManualReview.css"; // or use EditModal.css if you separate styles
+import "./EditModal.css";
 
-const EditModal = ({ selectedDocument, editedData, setEditedData, setShow }) => {
+const EditModal = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const { selectedDocument, editedData: initialEditedData } = location.state || {};
+
   const [editDetails, setEditDetails] = useState(true);
   const [versionHistory, setVersionHistory] = useState(false);
   const [pdfDetails, setPDFDetails] = useState(false);
+  const [editedData, setEditedData] = useState(initialEditedData || {});
 
   const showSection = (section) => {
     setEditDetails(section === "editDetails");
     setVersionHistory(section === "versionHistory");
     setPDFDetails(section === "pdfDetails");
+  };
+
+  const handleCancel = () => {
+    navigate(-1); // Go back to ManualReview
   };
 
   return (
@@ -50,7 +61,7 @@ const EditModal = ({ selectedDocument, editedData, setEditedData, setShow }) => 
             >
               <File size={20} /> PDF Details
             </li>
-            <li onClick={() => setShow(true)}>
+            <li onClick={handleCancel}>
               <X size={20} />
             </li>
           </ul>
@@ -61,10 +72,11 @@ const EditModal = ({ selectedDocument, editedData, setEditedData, setShow }) => 
             <form className="ManualReview-Edit-editDetails-form">
               <h3>Edit Details</h3>
 
+              {/* All your inputs */}
               <label>Vendor Name</label>
               <input
                 type="text"
-                value={editedData.VendorName}
+                value={editedData.VendorName || ""}
                 onChange={(e) =>
                   setEditedData({ ...editedData, VendorName: e.target.value })
                 }
@@ -73,7 +85,7 @@ const EditModal = ({ selectedDocument, editedData, setEditedData, setShow }) => 
               <label>Invoice Date</label>
               <input
                 type="date"
-                value={editedData.InvoiceDate}
+                value={editedData.InvoiceDate || ""}
                 onChange={(e) =>
                   setEditedData({ ...editedData, InvoiceDate: e.target.value })
                 }
@@ -82,7 +94,7 @@ const EditModal = ({ selectedDocument, editedData, setEditedData, setShow }) => 
               <label>LPO Number</label>
               <input
                 type="text"
-                value={editedData.LPO}
+                value={editedData.LPO || ""}
                 onChange={(e) =>
                   setEditedData({ ...editedData, LPO: e.target.value })
                 }
@@ -91,7 +103,7 @@ const EditModal = ({ selectedDocument, editedData, setEditedData, setShow }) => 
               <label>Sub Total</label>
               <input
                 type="number"
-                value={editedData.SubTotal}
+                value={editedData.SubTotal || ""}
                 onChange={(e) =>
                   setEditedData({ ...editedData, SubTotal: e.target.value })
                 }
@@ -100,7 +112,7 @@ const EditModal = ({ selectedDocument, editedData, setEditedData, setShow }) => 
               <label>VAT</label>
               <input
                 type="number"
-                value={editedData.VAT}
+                value={editedData.VAT || ""}
                 onChange={(e) =>
                   setEditedData({ ...editedData, VAT: e.target.value })
                 }
@@ -109,22 +121,22 @@ const EditModal = ({ selectedDocument, editedData, setEditedData, setShow }) => 
               <label>Invoice Total</label>
               <input
                 type="number"
-                value={editedData.InvoiceTotal}
+                value={editedData.InvoiceTotal || ""}
                 onChange={(e) =>
                   setEditedData({ ...editedData, InvoiceTotal: e.target.value })
                 }
               />
 
               <ul className="ManualReview-Edit-editDetails-form-ul">
-                <li
-                  className="ManualReview-Edit-editDetails-form-ul-Cancel"
-                  onClick={() => setShow(true)}
-                >
+                <li className="ManualReview-Edit-editDetails-form-ul-Cancel" onClick={handleCancel}>
                   <X size={20} /> Cancel
                 </li>
                 <li
                   className="ManualReview-Edit-editDetails-form-ul-Save-Changes"
-                  onClick={() => setShow(true)} // Add save logic here if needed
+                  onClick={() => {
+                    // save logic here
+                    navigate(-1);
+                  }}
                 >
                   <Save size={20} /> Save Changes
                 </li>

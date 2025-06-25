@@ -1,139 +1,31 @@
-/* ManualReview.css */
-
-/* ===== Base Styles ===== */
-.ManualReview-full-container {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  font-family: "Nunito", sans-serif;
-  background-color: #f9f9f9;
-}
-
-/* ===== Main Content ===== */
-.ManualReview-main-container {
-  margin-top: 20px;
-  flex: 1;
-  padding: 40px 30px;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.ManualReview-Table-header h1 {
-  font-size: 28px;
-  font-weight: bold;
-  color: #0d3c61;
-  margin-bottom: 25px;
-}
-
-/* ===== Table Styles ===== */
-.ManualReview-Table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-}
-
-.ManualReview-Table th,
-.ManualReview-Table td {
-  padding: 14px 18px;
-  text-align: left;
-  font-size: 15px;
-  border-bottom: 1px solid #ddd;
-}
-
-.ManualReview-Table th {
-  background-color: #0d3c61;
-  color: white;
-  font-weight: 600;
-}
-
-.ManualReview-Table tr:nth-child(even) {
-  background-color: #f4f7fa;
-}
-
-.ManualReview-Table tr:hover {
-  background-color: #eaf1f5;
-}
-
-/* ===== Button Styles ===== */
-.ManualReview-Table button {
-  background-color: #0d3c61;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.ManualReview-Table button:hover {
-  background-color: #004080;
-}
-
-/* ===== Pagination Styles ===== */
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  align-items: center;
-}
-
-.pagination button {
-  background-color: #f8f8f8;
-  border: 1px solid #ddd;
-  color: #0d3c61;
-  padding: 6px 12px;
-  margin: 0 5px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-}
-
-.pagination button:hover {
-  background-color: #e9e9e9;
-}
-
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination span {
-  margin: 0 10px;
-}
-
-/* ===== Footer ===== */
-footer {
-  margin-top: auto;
-  width: 100%;
-}
-
-/* ===== ManualReview-Edit-container ===== */
-.ManualReview-Edit-container{
+/* ===== Edit Modal Container ===== */
+.ManualReview-Edit-container {
   margin-top: 60px;
   display: flex;
   width: 100%;
-  padding: 0px 30px 0px 30px;
+  padding: 0 30px;
   gap: 10px;
   align-items: center;
   justify-content: space-around;
 }
 
-/* ===== ManualReview-Edit-show-file ===== */
-.ManualReview-Edit-show-file{
+/* ===== PDF Viewer Panel ===== */
+.ManualReview-Edit-show-file {
   width: 100%;
-  border: #ccc 1px solid;
+  border: 1px solid #ccc;
   border-radius: 10px;
 }
-/* ===== ManualReview-Edit-options ===== */
-.ManualReview-Edit-options{
+.pdf-preview {
+  width: 100%;
+  height: 600px;
+  border: 1px solid #ccc;
+}
+
+/* ===== Right Panel (Options + Forms) ===== */
+.ManualReview-Edit-options {
   width: 60%;
   padding: 10px;
-  border: #ccc 1px solid;
+  border: 1px solid #ccc;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -141,9 +33,11 @@ footer {
   gap: 5px;
   justify-content: space-around;
 }
+
+/* ===== Navigation Tabs ===== */
 .ManualReview-Edit-options-nav {
-  position: relative;
   width: 100%;
+  position: relative;
 }
 
 .ManualReview-Edit-options-nav-ul {
@@ -155,15 +49,15 @@ footer {
 
 .ManualReview-Edit-options-nav-ul::after {
   content: '';
-  display: block;
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100%;
   height: 2px;
+  width: 100%;
   background-color: #266898;
 }
-.ManualReview-Edit-options nav li{
+
+.ManualReview-Edit-options-nav-li {
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -173,92 +67,71 @@ footer {
   border-radius: 10px;
   transition: background-color 0.2s;
 }
-.ManualReview-Edit-options nav li:hover{
-  border: #266898 1px dashed;
+
+.ManualReview-Edit-options-nav-li:hover {
+  border: 1px dashed #266898;
 }
-.ManualReview-Edit-options-nav-li.active{
+
+.ManualReview-Edit-options-nav-li.active {
   color: #ed2224;
   font-weight: bold;
 }
-/* ===== ManualReview-Edit-editDetails ===== */
-.ManualReview-Edit-editDetails{
+
+/* ===== Edit Details Form ===== */
+.ManualReview-Edit-editDetails {
   width: 100%;
 }
-.ManualReview-Edit-editDetails-form{
-  gap: 6px;
-  justify-content: space-around;
+
+.ManualReview-Edit-editDetails-form {
   display: flex;
   flex-direction: column;
-}
-.ManualReview-Edit-editDetails-form label{
-  font-weight: bold;
-}
-.ManualReview-Edit-editDetails-form h3{
-  color: #004080;
-}
-.ManualReview-Edit-editDetails-form input{
-  padding: 3px;
-  border: #ccc solid 1px;
-  border-radius: 5px;
-}
-.ManualReview-Edit-editDetails-form input:focus{
-  border: #004080 1px solid;
-  outline: none;
-}
-.ManualReview-Edit-editDetails-form-ul{
-  display: flex;
-  gap: 20px;
-}
-.ManualReview-Edit-editDetails-form-ul li{
-  border: #ccc 1px solid;
-  color: white;
-  list-style-type: none;
-  margin-top: 1px;
-  padding: 4px;
-  border-radius: 5px;
-}
-.ManualReview-Edit-editDetails-form-ul-Cancel,
-.ManualReview-Edit-editDetails-form-ul-Cancel-i{
-  cursor: pointer;
-  background-color: #ed2224;
+  gap: 6px;
+  justify-content: space-around;
 }
 
-.ManualReview-Edit-editDetails-form-ul-Save-Changes,
-.ManualReview-Edit-editDetails-form-ul-Save-Changes-i{
-  cursor: pointer;
-  background-color: #2e9a55;
+.ManualReview-Edit-editDetails-form h3 {
+  color: #004080;
 }
-.ManualReview-Edit-editDetails-form-ul-Cancel,
-.ManualReview-Edit-editDetails-form-ul-Save-Changes{
+
+.ManualReview-Edit-editDetails-form label {
+  font-weight: bold;
+}
+
+.ManualReview-Edit-editDetails-form input {
+  padding: 3px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.ManualReview-Edit-editDetails-form input:focus {
+  border: 1px solid #004080;
+  outline: none;
+}
+
+/* ===== Form Buttons ===== */
+.ManualReview-Edit-editDetails-form-ul {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.ManualReview-Edit-editDetails-form-ul li {
+  list-style-type: none;
+  padding: 4px 10px;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 4px;
 }
-/* ===== ManualReview-Edit-versionHistory ===== */
-.ManualReview-Edit-versionHistory h3{
-  color: #004080;
-}
-/* ===== ManualReview-Edit-pdfDetails ===== */
-.ManualReview-Edit-pdfDetails h3{
-  color: #004080;
-}
-.ManualReview-Edit-pdfDetails-ul li{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+
+.ManualReview-Edit-editDetails-form-ul-Cancel {
+  background-color: #ed2224;
+  border: 1px solid #ccc;
 }
 
-/* ===== ManualReview-Edit-Properties ===== */
-.ManualReview-Edit-Properties h3{
-  color: #004080;
-}
-.ManualReview-Edit-Properties-ul li{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.pdf-preview {
-  width: 100%;
-  height: 600px;
+.ManualReview-Edit-editDetails-form-ul-Save-Changes {
+  background-color: #2e9a55;
   border: 1px solid #ccc;
 }
