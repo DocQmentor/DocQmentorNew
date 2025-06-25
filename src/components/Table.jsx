@@ -120,7 +120,10 @@ function Table() {
                   rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
                   fileUrl: doc.fileUrl || null,
                   confidenceScore:
-                    doc.totalConfidenceScore?.toFixed(2) || "0.00", // 👈 use exact field name from DB
+                    typeof doc.totalConfidenceScore === "string"
+                      ? doc.totalConfidenceScore
+                      : `${(doc.totalConfidenceScore || 0).toFixed(2)}`,
+                  // 👈 use exact field name from DB
 
                   _rawDocument: doc,
                 };
@@ -236,6 +239,12 @@ function Table() {
   const handlePrevious = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const handleNext = () =>
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+ const getConfidenceScore = (item) => {
+  return item._rawDocument?.totalConfidenceScore || "N/A";
+};
+
+
+
 
   const handleExportCSV = () => {
     const csvHeader = [
@@ -454,9 +463,10 @@ function Table() {
                         <td style={{ width: "150px" }}>{item.vat}</td>
                         <td style={{ width: "150px" }}>{item.invoicetotal}</td>
                         <td style={{ width: "150px" }}>{item.uploadDate}</td>
-                        <td style={{ width: "150px" }}>
-                          {item.confidenceScore}%
-                        </td>
+<td style={{ width: "150px" }}>
+  {item._rawDocument?.totalConfidenceScore || "N/A"}
+</td>
+
 
                         <td>
                           <button

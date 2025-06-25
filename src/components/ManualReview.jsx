@@ -2,35 +2,16 @@ import React, { useState, useEffect } from "react";
 import "./ManualReview.css";
 import Footer from "../Layout/Footer";
 import EditModal from "./EditModal";
-import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
 const ManualReview = () => {
   const [show, setShow] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [manualReviewDocs, setManualReviewDocs] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState("");
   const [filteredDocs, setFilteredDocs] = useState([]);
-  const [editedData, setEditedData] = useState({
-    VendorName: "",
-    InvoiceDate: "",
-    LPO: "",
-    SubTotal: "",
-    VAT: "",
-    InvoiceTotal: "",
-  });
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
-
-  const location = useLocation();
-const sanitizeNumeric = (val) => {
-  if (!val) return "";
-  const str = typeof val === "object" ? val?.valueString || JSON.stringify(val) : val.toString();
-  return str.replace(/[^\d.-]/g, ""); // remove ₹, commas, spaces
-};
+  const [editedData, setEditedData] = useState({});
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
 const navigate = useNavigate();
-
   const getString = (val) => {
     if (!val) return "";
     if (typeof val === "string" || typeof val === "number") return val;
@@ -38,6 +19,19 @@ const navigate = useNavigate();
       return val?.valueString || val?.content || JSON.stringify(val);
     }
     return "";
+  };
+const handleEditClick = () => {
+    navigate("/editmodal");
+  };
+
+  const refreshData = () => {
+    setRefreshTrigger((prev) => !prev);
+  };
+  const formatNumber = (value) => {
+    if (!value) return "";
+    const num = parseFloat(String(value).replace(/[^\d.-]/g, ""));
+    if (isNaN(num)) return "";
+    return num.toLocaleString("en-IN"); // Indian comma format
   };
 
   useEffect(() => {
@@ -48,8 +42,9 @@ const navigate = useNavigate();
         );
         const data = await response.json();
         const docsNeedingReview = data.filter((doc) => {
+          if (doc.wasReviewed) return false;
           const extracted = doc.extractedData || {};
-          const confidence = doc.confidence || {};
+          const confidence = doc.confidenceScores || {};
           const totalScore = doc.totalConfidenceScore || 0;
 
           const requiredFields = [
@@ -83,7 +78,7 @@ const navigate = useNavigate();
     }
 
     fetchDocsFromCosmos();
-  }, []);
+  }, [refreshTrigger]);
 
   useEffect(() => {
     if (!selectedVendor) {
@@ -102,14 +97,15 @@ const navigate = useNavigate();
     }
   }, [manualReviewDocs, selectedVendor]);
 
-const handleToggle = (doc) => {
+  const handleToggle = (doc) => {
   const editedDoc = {
     VendorName: getString(doc.extractedData?.VendorName),
+    InvoiceId: getString(doc.extractedData?.InvoiceId),
     InvoiceDate: getString(doc.extractedData?.InvoiceDate),
     LPO: getString(doc.extractedData?.["LPO NO"]),
-    SubTotal: sanitizeNumeric(doc.extractedData?.SubTotal),
-    VAT: sanitizeNumeric(doc.extractedData?.VAT),
-    InvoiceTotal: sanitizeNumeric(doc.extractedData?.InvoiceTotal),
+    SubTotal: getString(doc.extractedData?.SubTotal),
+    VAT: getString(doc.extractedData?.VAT),
+    InvoiceTotal: getString(doc.extractedData?.InvoiceTotal),
   };
 
   navigate("/editmodal", {
@@ -121,12 +117,8 @@ const handleToggle = (doc) => {
 };
 
 
-
-  // console.log("extractedData keys for debug:", Object.keys(doc.extractedData));
-
   const handleVendorChange = (e) => {
     setSelectedVendor(e.target.value);
-    setCurrentPage(1); // reset pagination on filter change
   };
 
   const vendorOptions = [
@@ -138,21 +130,6 @@ const handleToggle = (doc) => {
   ]
     .filter(Boolean)
     .sort();
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredDocs.length / rowsPerPage);
-  const paginatedDocs = filteredDocs.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-
-  const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
 
   return (
     <div className="ManualReview-full-container">
@@ -177,7 +154,6 @@ const handleToggle = (doc) => {
             </div>
             <p>{filteredDocs.length} documents requiring manual review</p>
           </div>
-
           <table className="ManualReview-Table">
             <thead>
               <tr>
@@ -194,18 +170,23 @@ const handleToggle = (doc) => {
               </tr>
             </thead>
             <tbody>
-              {paginatedDocs.length > 0 ? (
-                paginatedDocs.map((doc, index) => (
+              {filteredDocs.length > 0 ? (
+                filteredDocs.map((doc, index) => (
                   <tr key={index}>
                     <td>{getString(doc?.extractedData?.VendorName)}</td>
                     {/* <td>{doc?.fileName || doc?.documentName || ""}</td> */}
                     <td>{getString(doc?.extractedData?.InvoiceId)}</td>
                     <td>{getString(doc?.extractedData?.InvoiceDate)}</td>
                     <td>{getString(doc?.extractedData?.["LPO NO"])}</td>
-                    <td>{getString(doc?.extractedData?.SubTotal)}</td>
-                    <td>{getString(doc?.extractedData?.VAT)}</td>
-                    <td>{getString(doc?.extractedData?.InvoiceTotal)}</td>
-                    <td>{doc.totalConfidenceScore?.toFixed(2) || "0.00"}%</td>
+                    <td>{formatNumber(doc?.extractedData?.SubTotal)}</td>
+                    <td>{formatNumber(doc?.extractedData?.VAT)}</td>
+                    <td>{formatNumber(doc?.extractedData?.InvoiceTotal)}</td>
+                    <td>
+                      {typeof doc.totalConfidenceScore === "string"
+                        ? doc.totalConfidenceScore
+                        : `${(doc.totalConfidenceScore || 0).toFixed(2)}`}
+                      {doc.wasReviewed && ", reviewed"}
+                    </td>
                     <td>
                       <button onClick={() => handleToggle(doc)}>Edit</button>
                     </td>
@@ -213,7 +194,7 @@ const handleToggle = (doc) => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="10" style={{ textAlign: "center" }}>
+                  <td colSpan="9" style={{ textAlign: "center" }}>
                     {selectedVendor
                       ? `No documents requiring manual review for vendor: ${selectedVendor}`
                       : "No documents requiring manual review"}
@@ -222,27 +203,6 @@ const handleToggle = (doc) => {
               )}
             </tbody>
           </table>
-
-          {/* Pagination Controls */}
-          {filteredDocs.length > rowsPerPage && (
-            <div style={{ marginTop: "15px", textAlign: "center" }}>
-              <button
-                onClick={handlePrevious}
-                disabled={currentPage === 1}
-                style={{ padding: "6px 10px", marginRight: "10px" }}
-              >
-                Previous
-              </button>
-              Page {currentPage} of {totalPages}
-              <button
-                onClick={handleNext}
-                disabled={currentPage === totalPages}
-                style={{ padding: "6px 10px", marginLeft: "10px" }}
-              >
-                Next
-              </button>
-            </div>
-          )}
         </div>
       ) : (
         <EditModal
@@ -250,6 +210,7 @@ const handleToggle = (doc) => {
           editedData={editedData}
           setEditedData={setEditedData}
           setShow={setShow}
+          refreshData={refreshData}
         />
       )}
       <footer>
