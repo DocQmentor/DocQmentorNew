@@ -5,7 +5,7 @@ import "./Table.css";
 import { saveAs } from "file-saver";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import useSortableData from "../utils/useSortableData";
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -53,8 +53,8 @@ function Table() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [uploadDateFilter, setUploadDateFilter] = useState("all");
-  const [sortColumn, setSortColumn] = useState("");
-  const [sortOrder, setSortOrder] = useState("");
+  // const [sortColumn, setSortColumn] = useState("");
+  // const [sortOrder, setSortOrder] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const rowsPerPage = 10;
@@ -140,111 +140,67 @@ function Table() {
     }
     fetchInvoices();
   }, []);
-
-  const toggleSort = (column) => {
-    if (sortColumn === column) {
-      if (sortOrder === "asc") {
-        setSortOrder("desc");
-      } else if (sortOrder === "desc") {
-        setSortColumn("");
-        setSortOrder("");
-      } else {
-        setSortOrder("asc");
-      }
-    } else {
-      setSortColumn(column);
-      setSortOrder("asc");
-    }
-  };
-
-  const renderSortIcon = (column) => {
-    if (sortColumn === column) {
-      if (sortOrder === "asc") return " ▲";
-      if (sortOrder === "desc") return " ▼";
-    }
-    return " ⇅";
-  };
-
-  const filteredData = invoiceData
-    .filter((item) => {
-      const matchesVendor = item.vendorName
+  const filteredData = invoiceData.filter((item) => {
+    const matchesVendor = item.vendorName
+      .toLowerCase()
+      .includes(vendorFilter.toLowerCase());
+    const matchesSearch =
+      (item.invoiceId || "")
         .toLowerCase()
-        .includes(vendorFilter.toLowerCase());
-      const matchesSearch =
-        (item.invoiceId || "")
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        (item.invoiceDate || "")
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        (item.subTotal || "")
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        (item.vat || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.invoicetotal || "")
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        (item.lpoNo || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.vendorName.toLowerCase().includes(searchQuery.toLowerCase());
+        .includes(searchQuery.toLowerCase()) ||
+      (item.invoiceDate || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (item.subTotal || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.vat || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.invoicetotal || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (item.lpoNo || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.vendorName.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const itemInvoiceDate = item.invoiceDate
-        ? new Date(item.invoiceDate)
-        : null;
-      const from = fromDate ? new Date(fromDate) : null;
-      const to = toDate ? new Date(toDate) : null;
-      const matchesInvoiceDate =
-        (!from || (itemInvoiceDate && itemInvoiceDate >= from)) &&
-        (!to || (itemInvoiceDate && itemInvoiceDate <= to));
+    const itemInvoiceDate = item.invoiceDate
+      ? new Date(item.invoiceDate)
+      : null;
+    const from = fromDate ? new Date(fromDate) : null;
+    const to = toDate ? new Date(toDate) : null;
+    const matchesInvoiceDate =
+      (!from || (itemInvoiceDate && itemInvoiceDate >= from)) &&
+      (!to || (itemInvoiceDate && itemInvoiceDate <= to));
 
-      const now = new Date();
-      const uploadDate = item.rawUploadDate;
-      let matchesUploadFilter = true;
-      if (uploadDateFilter === "7days") {
-        const sevenDaysAgo = new Date(now);
-        sevenDaysAgo.setDate(now.getDate() - 7);
-        matchesUploadFilter = uploadDate >= sevenDaysAgo && uploadDate <= now;
-      } else if (uploadDateFilter === "30days") {
-        const thirtyDaysAgo = new Date(now);
-        thirtyDaysAgo.setDate(now.getDate() - 30);
-        matchesUploadFilter = uploadDate >= thirtyDaysAgo && uploadDate <= now;
-      }
+    const now = new Date();
+    const uploadDate = item.rawUploadDate;
+    let matchesUploadFilter = true;
+    if (uploadDateFilter === "7days") {
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(now.getDate() - 7);
+      matchesUploadFilter = uploadDate >= sevenDaysAgo && uploadDate <= now;
+    } else if (uploadDateFilter === "30days") {
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+      matchesUploadFilter = uploadDate >= thirtyDaysAgo && uploadDate <= now;
+    }
 
-      return (
-        matchesVendor &&
-        matchesInvoiceDate &&
-        matchesUploadFilter &&
-        matchesSearch
-      );
-    })
-    .sort((a, b) => {
-      if (!sortColumn) return 0;
-      let valA = a[sortColumn];
-      let valB = b[sortColumn];
-      if (sortColumn.toLowerCase().includes("date")) {
-        valA = valA ? new Date(valA) : new Date(0);
-        valB = valB ? new Date(valB) : new Date(0);
-      } else {
-        valA = valA?.toString().toLowerCase() || "";
-        valB = valB?.toString().toLowerCase() || "";
-      }
-      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
+    return (
+      matchesVendor &&
+      matchesInvoiceDate &&
+      matchesUploadFilter &&
+      matchesSearch
+    );
+  });
+  const { sortedData, toggleSort, renderSortIcon, sortColumn, sortOrder } =
+    useSortableData(filteredData);
 
-  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const currentRows = filteredData.slice(startIndex, startIndex + rowsPerPage);
+  const currentRows = sortedData.slice(startIndex, startIndex + rowsPerPage);
 
   const handlePrevious = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const handleNext = () =>
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
- const getConfidenceScore = (item) => {
-  return item._rawDocument?.totalConfidenceScore || "N/A";
-};
-
-
-
+  const getConfidenceScore = (item) => {
+    return item._rawDocument?.totalConfidenceScore || "N/A";
+  };
 
   const handleExportCSV = () => {
     const csvHeader = [
@@ -463,10 +419,9 @@ function Table() {
                         <td style={{ width: "150px" }}>{item.vat}</td>
                         <td style={{ width: "150px" }}>{item.invoicetotal}</td>
                         <td style={{ width: "150px" }}>{item.uploadDate}</td>
-<td style={{ width: "150px" }}>
-  {item._rawDocument?.totalConfidenceScore || "N/A"}
-</td>
-
+                        <td style={{ width: "150px" }}>
+                          {item._rawDocument?.totalConfidenceScore || "N/A"}
+                        </td>
 
                         <td>
                           <button
