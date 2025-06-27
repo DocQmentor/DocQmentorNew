@@ -1,3 +1,4 @@
+// Dashboard.jsx
 import React, { useRef, useState, useEffect } from "react";
 import "./Dashboard.css";
 import {
@@ -66,20 +67,28 @@ const Dashboard = () => {
     });
   };
 
-  const determineStatus = (doc) => {
-    if (!doc || !doc.extractedData || !doc.confidenceScores) {
-      return "Manual Review";
-    }
+ const determineStatus = (doc) => {
+  if (!doc || !doc.extractedData || !doc.confidenceScores) {
+    return "Manual Review";
+  }
 
-    if (!hasAllMandatoryFields(doc)) return "Manual Review";
+  // Check if it's a reviewed document (based on totalConfidenceScore string)
+  const scoreStr = String(doc.totalConfidenceScore || "").toLowerCase();
+  if (scoreStr.includes("reviewed")) {
+    return "Reviewed";
+  }
 
-    const scores = Object.values(doc.confidenceScores || {});
-    if (scores.length === 0) return "Manual Review";
+  if (!hasAllMandatoryFields(doc)) return "Manual Review";
 
-    const avg =
-      scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
-    return avg >= 0.85 ? "Completed" : "Manual Review";
-  };
+  const scores = Object.values(doc.confidenceScores || {});
+  if (scores.length === 0) return "Manual Review";
+
+  const avg =
+    scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
+
+  return avg >= 0.85 ? "Completed" : "Manual Review";
+};
+
 
   useEffect(() => {
     const fetchDocumentsFromBackend = async () => {
@@ -158,7 +167,7 @@ const Dashboard = () => {
 
     filteredDocs.forEach((doc) => {
       const status = determineStatus(doc);
-      if (status === "Completed") completed++;
+      if (status === "Completed" || status === "Reviewed") completed++;
       else if (status === "Manual Review") manualReview++;
       else inProcess++;
     });
@@ -270,7 +279,7 @@ const Dashboard = () => {
 
   const handleManualReviewClick = () => {
     const manualReviewDocs = allDocuments.filter(
-      (doc) => doc.status === "Manual Review" || !hasAllMandatoryFields(doc)
+      (doc) => determineStatus(doc) === "Manual Review"
     );
 
     if (manualReviewDocs.length === 0) {
@@ -285,17 +294,13 @@ const Dashboard = () => {
       },
     });
   };
-  const handleViewDocument = (file) => {
-    console.log("📂 Opening document:", file);
 
+  const handleViewDocument = (file) => {
     let url = null;
 
-    // Priority 1: blobUrl from DB
     if (file.blobUrl && file.blobUrl.startsWith("http")) {
       url = file.blobUrl;
-    }
-    // Fallbacks (in case blobUrl not available)
-    else if (file.url && file.url.startsWith("http")) {
+    } else if (file.url && file.url.startsWith("http")) {
       url = file.url;
     } else if (file.processedData?.blobUrl) {
       url = file.processedData.blobUrl;

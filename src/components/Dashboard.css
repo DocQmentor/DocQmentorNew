@@ -494,4 +494,10 @@
         ;
     }
 }
- 
+ .badge.reviewed {
+  background-color: #28a745;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
