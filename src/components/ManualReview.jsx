@@ -263,7 +263,7 @@ const ManualReview = () => {
                 />
               </label>
             </div>
-            <p>{filteredDocs.length} documents requiring manual review</p>
+            {/* <p>{filteredDocs.length} documents requiring manual review</p> */}
           </div>
  
           {loading && <p>Loading documents...</p>}

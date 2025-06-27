@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Edit, History, File, X, Save } from "lucide-react";
 import "./EditModal.css";
+import Footer from '../Layout/Footer';
 
 const sanitizeNumeric = (value) => {
   if (!value) return "";
@@ -119,152 +120,174 @@ const EditModal = () => {
 
 
   return (
-    <div className="ManualReview-Edit-container">
-      <div className="ManualReview-Edit-show-file">
-        <header>
-          {selectedDocument?.fileName ||
-            selectedDocument?.documentName ||
-            "Document"}
-        </header>
-        {selectedDocument?.blobUrl ? (
-          <iframe
-            src={selectedDocument.blobUrl}
-            className="pdf-preview"
-            title="PDF Viewer"
-          />
-        ) : (
-          <p>No PDF URL found for this document</p>
-        )}
-      </div>
+    <div className="ManualReview-Edit-main-container">
+      <div className="ManualReview-Edit-container">
+        <div className="ManualReview-Edit-show-file">
+          <header className="ManualReview-Edit-show-file-name">  
+            {selectedDocument?.fileName ||
+              selectedDocument?.documentName ||
+              "Document"}
+          </header>
+          {selectedDocument?.blobUrl ? (
+            <iframe
+              src={selectedDocument.blobUrl}
+              className="ManualReview-Edit-show-file-pdf-preview"
+              title="PDF Viewer"
+            />
+          ) : (
+            <p>No PDF URL found for this document</p>
+          )}
+        </div>
 
-      <div className="ManualReview-Edit-options">
-        <nav className="ManualReview-Edit-options-nav">
-          <ul className="ManualReview-Edit-options-nav-ul">
-            <li
-              className={`ManualReview-Edit-options-nav-li ${
-                editDetails ? "active" : ""
-              }`}
-              onClick={() => showSection("editDetails")}
-            >
-              <Edit size={20} /> Edit Details
-            </li>
-            <li
-              className={`ManualReview-Edit-options-nav-li ${
-                versionHistory ? "active" : ""
-              }`}
-              onClick={() => showSection("versionHistory")}
-            >
-              <History size={20} /> Version History
-            </li>
-            <li
-              className={`ManualReview-Edit-options-nav-li ${
-                pdfDetails ? "active" : ""
-              }`}
-              onClick={() => showSection("pdfDetails")}
-            >
-              <File size={20} /> PDF Details
-            </li>
-            <li onClick={handleCancel}>
-              <X size={20} />
-            </li>
-          </ul>
-        </nav>
+        <div className="ManualReview-Edit-options">
+          <nav className="ManualReview-Edit-options-nav">
+            <ul className="ManualReview-Edit-options-nav-ul">
+              <li
+                className={`ManualReview-Edit-options-nav-li ${
+                  editDetails ? "active" : ""
+                }`}
+                onClick={() => showSection("editDetails")}
+              >
+                <Edit size={20} /> Edit Details
+              </li>
+              <li
+                className={`ManualReview-Edit-options-nav-li ${
+                  versionHistory ? "active" : ""
+                }`}
+                onClick={() => showSection("versionHistory")}
+              >
+                <History size={20} /> Version History
+              </li>
+              <li
+                className={`ManualReview-Edit-options-nav-li ${
+                  pdfDetails ? "active" : ""
+                }`}
+                onClick={() => showSection("pdfDetails")}
+              >
+                <File size={20} /> PDF Details
+              </li>
+              <li onClick={handleCancel}>
+                <X size={20} />
+              </li>
+            </ul>
+          </nav>
 
-        {editDetails && (
-          <div className="ManualReview-Edit-editDetails">
-            <form className="ManualReview-Edit-editDetails-form">
-              <h3>Edit Details</h3>
+          {editDetails && (
+            <div className="ManualReview-Edit-editDetails">
+              <form className="ManualReview-Edit-editDetails-form">
+                <h3>Edit Details</h3>
 
-              <label>Vendor Name</label>
-              <input
-                type="text"
-                value={edited.VendorName}
-                onChange={(e) =>
-                  setEdited({ ...edited, VendorName: e.target.value })
-                }
-              />
+                <label>Vendor Name</label>
+                <input
+                  type="text"
+                  value={edited.VendorName}
+                  onChange={(e) =>
+                    setEdited({ ...edited, VendorName: e.target.value })
+                  }
+                />
 
-              <label>Invoice ID</label>
-              <input
-                type="text"
-                value={edited.InvoiceId}
-                onChange={(e) =>
-                  setEdited({ ...edited, InvoiceId: e.target.value })
-                }
-              />
+                <label>Invoice ID</label>
+                <input
+                  type="text"
+                  value={edited.InvoiceId}
+                  onChange={(e) =>
+                    setEdited({ ...edited, InvoiceId: e.target.value })
+                  }
+                />
 
-              <label>Invoice Date</label>
-              <input
-                type="date"
-                value={edited.InvoiceDate}
-                onChange={(e) =>
-                  setEdited({ ...edited, InvoiceDate: e.target.value })
-                }
-              />
+                <label>Invoice Date</label>
+                <input
+                  type="date"
+                  value={edited.InvoiceDate}
+                  onChange={(e) =>
+                    setEdited({ ...edited, InvoiceDate: e.target.value })
+                  }
+                />
 
-              <label>LPO Number</label>
-              <input
-                type="text"
-                value={edited.LPO}
-                onChange={(e) =>
-                  setEdited({ ...edited, LPO: sanitizeNumeric(e.target.value) })
-                }
-              />
+                <label>LPO Number</label>
+                <input
+                  type="text"
+                  value={edited.LPO}
+                  onChange={(e) =>
+                    setEdited({ ...edited, LPO: sanitizeNumeric(e.target.value) })
+                  }
+                />
 
-              <label>Sub Total</label>
-              <input
-                type="text"
-                value={edited.SubTotal}
-                onChange={(e) =>
-                  setEdited({
-                    ...edited,
-                    SubTotal: sanitizeNumeric(e.target.value),
-                  })
-                }
-              />
+                <label>Sub Total</label>
+                <input
+                  type="text"
+                  value={edited.SubTotal}
+                  onChange={(e) =>
+                    setEdited({
+                      ...edited,
+                      SubTotal: sanitizeNumeric(e.target.value),
+                    })
+                  }
+                />
 
-              <label>VAT</label>
-              <input
-                type="text"
-                value={edited.VAT}
-                onChange={(e) =>
-                  setEdited({
-                    ...edited,
-                    VAT: sanitizeNumeric(e.target.value),
-                  })
-                }
-              />
+                <label>VAT</label>
+                <input
+                  type="text"
+                  value={edited.VAT}
+                  onChange={(e) =>
+                    setEdited({
+                      ...edited,
+                      VAT: sanitizeNumeric(e.target.value),
+                    })
+                  }
+                />
 
-              <label>Invoice Total</label>
-              <input
-                type="text"
-                value={edited.InvoiceTotal}
-                onChange={(e) =>
-                  setEdited({
-                    ...edited,
-                    InvoiceTotal: sanitizeNumeric(e.target.value),
-                  })
-                }
-              />
+                <label>Invoice Total</label>
+                <input
+                  type="text"
+                  value={edited.InvoiceTotal}
+                  onChange={(e) =>
+                    setEdited({
+                      ...edited,
+                      InvoiceTotal: sanitizeNumeric(e.target.value),
+                    })
+                  }
+                />
 
-              <ul className="ManualReview-Edit-editDetails-form-ul">
-                <li
-                  className="ManualReview-Edit-editDetails-form-ul-Cancel"
-                  onClick={handleCancel}
-                >
-                  <X size={20} /> Cancel
-                </li>
-                <li
-                  className="ManualReview-Edit-editDetails-form-ul-Save-Changes"
-                  onClick={handleSave}
-                >
-                  <Save size={20} /> Save Changes
-                </li>
+                <ul className="ManualReview-Edit-editDetails-form-ul">
+                  <li
+                    className="ManualReview-Edit-editDetails-form-ul-Cancel"
+                    onClick={handleCancel}
+                  >
+                    <X size={20} className="ManualReview-Edit-editDetails-form-ul-Cancel-i"/> Cancel
+                  </li>
+                  <li
+                    className="ManualReview-Edit-editDetails-form-ul-Save-Changes"
+                    onClick={handleSave}
+                  >
+                    <Save size={20} className="ManualReview-Edit-editDetails-form-ul-Save-Changes-i"/> Save Changes
+                  </li>
+                </ul>
+              </form>
+            </div>
+          )}
+          {versionHistory && (
+            <div>
+              <ul>
+                <li>Name</li>
+                <li>Date</li>
+                <li>Changes: Vendor Name</li>
               </ul>
-            </form>
-          </div>
-        )}
+            </div>
+          )}
+          {pdfDetails && (
+            <div>
+              <ul>
+                <li><p>name:</p><p>{selectedDocument.documentName}</p></li>
+                <li><p>PDF version:</p><p>1.4</p></li>
+                <li><p>Page count:</p><p>1</p></li>
+                <li><p>Page size:</p><p>8.26 x 11.69 in (portrait)</p></li>
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
+      <Footer></Footer>
     </div>
   );
 };
