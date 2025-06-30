@@ -72,53 +72,63 @@ const EditModal = () => {
     setShow(true);
   };
 
-  const handleSave = async () => {
-    try {
-      // Clean the original score
-      const score = selectedDocument.totalConfidenceScore;
-      let numericScore =
-        typeof score === "string"
-          ? parseFloat(score.replace(/[^\d.]/g, ""))
-          : Number(score);
+ const handleSave = async () => {
+  // Basic field validation
+  const isEmpty = Object.entries(edited).some(
+    ([key, value]) => !value || value.trim() === ""
+  );
 
-      const reviewedScore = isNaN(numericScore)
-        ? "Reviewed"
-        : `${numericScore.toFixed(2)}% Reviewed`;
+  if (isEmpty) {
+    alert("⚠️ Please fill all fields before saving.");
+    return;
+  }
 
-      const updatedDoc = {
-        ...selectedDocument,
-        extractedData: {
-          VendorName: edited.VendorName,
-          InvoiceId: edited.InvoiceId,
-          InvoiceDate: edited.InvoiceDate,
-          "LPO NO": edited.LPO,
-          SubTotal: edited.SubTotal,
-          VAT: edited.VAT,
-          InvoiceTotal: edited.InvoiceTotal,
-        },
-        wasReviewed: true,
-        totalConfidenceScore: reviewedScore, // ✅ Update with readable reviewed score
-        status: "Reviewed", // ✅ ADD THIS LINE to reflect in Dashboard and Table
-      };
+  try {
+    const score = selectedDocument.totalConfidenceScore;
+    let numericScore =
+      typeof score === "string"
+        ? parseFloat(score.replace(/[^\d.]/g, ""))
+        : Number(score);
 
-      const response = await fetch(
-        "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedDoc),
-        }
-      );
+    const reviewedScore = isNaN(numericScore)
+      ? "Reviewed"
+      : `${numericScore.toFixed(2)}% Reviewed`;
 
-      if (!response.ok) throw new Error("Failed to update");
+    const updatedDoc = {
+      ...selectedDocument,
+      extractedData: {
+        VendorName: edited.VendorName,
+        InvoiceId: edited.InvoiceId,
+        InvoiceDate: edited.InvoiceDate,
+        "LPO NO": edited.LPO,
+        SubTotal: edited.SubTotal,
+        VAT: edited.VAT,
+        InvoiceTotal: edited.InvoiceTotal,
+      },
+      wasReviewed: true,
+      totalConfidenceScore: reviewedScore,
+      status: "Reviewed",
+    };
 
-      refreshData(); // Reload the table data
-      setShow(true); // Hide modal
-      setSaveSuccessful(true); // Redirect to table
-    } catch (err) {
-      console.error("❌ Save error:", err);
-    }
-  };
+    const response = await fetch(
+      "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedDoc),
+      }
+    );
+
+    if (!response.ok) throw new Error("Failed to update");
+
+    refreshData();
+    setShow(true);
+    setSaveSuccessful(true);
+  } catch (err) {
+    console.error("❌ Save error:", err);
+  }
+};
+
 
   return (
     <div className="ManualReview-Edit-main-container">

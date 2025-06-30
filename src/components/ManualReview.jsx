@@ -4,7 +4,8 @@ import Footer from "../Layout/Footer";
 import EditModal from "./EditModal";
 import { useNavigate } from "react-router-dom";
 import useSortableData from "../utils/useSortableData";
- 
+import { saveAs } from "file-saver";
+
 const ManualReview = () => {
   const [show, setShow] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -22,7 +23,7 @@ const ManualReview = () => {
   const [error, setError] = useState(null);
   const rowsPerPage = 10;
   const navigate = useNavigate();
- 
+
   const getString = (val) => {
     if (!val) return "";
     if (typeof val === "string" || typeof val === "number") return val;
@@ -31,22 +32,57 @@ const ManualReview = () => {
     }
     return "";
   };
- 
+
   const handleEditClick = () => {
     navigate("/editmodal");
   };
- 
+
   const refreshData = () => {
     setRefreshTrigger((prev) => !prev);
   };
- 
+
   const formatNumber = (value) => {
     if (!value) return "";
     const num = parseFloat(String(value).replace(/[^\d.-]/g, ""));
     if (isNaN(num)) return "";
     return num.toLocaleString("en-IN"); // Indian comma format
   };
- 
+
+  const handleExportCSV = () => {
+    const csvHeader = [
+      "Vendor Name",
+      "Invoice ID",
+      "Invoice Date",
+      "LPO No",
+      "Sub Total",
+      "VAT",
+      "Invoice Total",
+      "Upload Date",
+      "Confidence Score",
+    ];
+
+    const csvRows = filteredDocs.map((item) =>
+      [
+        `"${item.vendorName.replace(/"/g, '""')}"`,
+        `"${item.invoiceId.replace(/"/g, '""')}"`,
+        `"${item.invoiceDate.replace(/"/g, '""')}"`,
+        `"${item.lpoNo.replace(/"/g, '""')}"`,
+        `"${item.subTotal.replace(/"/g, '""')}"`,
+        `"${item.vat.replace(/"/g, '""')}"`,
+        `"${item.invoicetotal.replace(/"/g, '""')}"`,
+        `"${item.uploadDate?.replace(/"/g, '""') || ""}"`,
+        `"${item.confidenceScore.replace(/"/g, '""')}"`,
+      ].join(",")
+    );
+
+    const csvContent = [csvHeader.join(","), ...csvRows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    saveAs(
+      blob,
+      `ManualReview_Report_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+  };
+
   useEffect(() => {
     async function fetchDocsFromCosmos() {
       setLoading(true);
@@ -60,7 +96,7 @@ const ManualReview = () => {
           const extracted = doc.extractedData || {};
           const confidence = doc.confidenceScores || {};
           const totalScore = doc.totalConfidenceScore || 0;
- 
+
           const requiredFields = [
             "VendorName",
             "InvoiceId",
@@ -70,21 +106,21 @@ const ManualReview = () => {
             "VAT",
             "InvoiceTotal",
           ];
- 
+
           const hasMissing = requiredFields.some(
             (field) => !extracted[field] || !getString(extracted[field])
           );
- 
+
           const lowFieldConfidence = requiredFields.some(
             (field) =>
               confidence[field] !== undefined && confidence[field] < 0.85
           );
- 
+
           const lowTotalConfidence = totalScore < 85;
- 
+
           return hasMissing || lowFieldConfidence || lowTotalConfidence;
         });
- 
+
         setManualReviewDocs(docsNeedingReview);
         setError(null);
       } catch (error) {
@@ -94,10 +130,10 @@ const ManualReview = () => {
         setLoading(false);
       }
     }
- 
+
     fetchDocsFromCosmos();
   }, [refreshTrigger]);
- 
+
   useEffect(() => {
     const filtered = manualReviewDocs
       .map((doc) => {
@@ -142,9 +178,11 @@ const ManualReview = () => {
           (item.invoicetotal || "")
             .toLowerCase()
             .includes(searchQuery.toLowerCase()) ||
-          (item.lpoNo || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (item.lpoNo || "")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
           item.vendorName.toLowerCase().includes(searchQuery.toLowerCase());
- 
+
         const itemInvoiceDate = item.invoiceDate
           ? new Date(item.invoiceDate)
           : null;
@@ -153,7 +191,7 @@ const ManualReview = () => {
         const matchesInvoiceDate =
           (!from || (itemInvoiceDate && itemInvoiceDate >= from)) &&
           (!to || (itemInvoiceDate && itemInvoiceDate <= to));
- 
+
         const now = new Date();
         const uploadDate = item.rawUploadDate;
         let matchesUploadFilter = true;
@@ -164,9 +202,10 @@ const ManualReview = () => {
         } else if (uploadDateFilter === "30days") {
           const thirtyDaysAgo = new Date(now);
           thirtyDaysAgo.setDate(now.getDate() - 30);
-          matchesUploadFilter = uploadDate >= thirtyDaysAgo && uploadDate <= now;
+          matchesUploadFilter =
+            uploadDate >= thirtyDaysAgo && uploadDate <= now;
         }
- 
+
         return (
           matchesVendor &&
           matchesInvoiceDate &&
@@ -174,13 +213,21 @@ const ManualReview = () => {
           matchesSearch
         );
       });
- 
+
     setFilteredDocs(filtered);
     setCurrentPage(1);
-  }, [manualReviewDocs, vendorFilter, fromDate, toDate, uploadDateFilter, searchQuery]);
- 
-  const { sortedData, toggleSort, renderSortIcon } = useSortableData(filteredDocs);
- 
+  }, [
+    manualReviewDocs,
+    vendorFilter,
+    fromDate,
+    toDate,
+    uploadDateFilter,
+    searchQuery,
+  ]);
+
+  const { sortedData, toggleSort, renderSortIcon } =
+    useSortableData(filteredDocs);
+
   const handleToggle = (doc) => {
     const editedDoc = {
       VendorName: getString(doc.extractedData?.VendorName),
@@ -191,7 +238,7 @@ const ManualReview = () => {
       VAT: getString(doc.extractedData?.VAT),
       InvoiceTotal: getString(doc.extractedData?.InvoiceTotal),
     };
- 
+
     navigate("/editmodal", {
       state: {
         selectedDocument: doc,
@@ -199,17 +246,17 @@ const ManualReview = () => {
       },
     });
   };
- 
+
   const totalPages = Math.ceil(filteredDocs.length / rowsPerPage);
   const paginatedData = sortedData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
- 
+
   const handlePrevious = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const handleNext = () =>
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
- 
+
   return (
     <div className="ManualReview-full-container">
       {show ? (
@@ -262,13 +309,24 @@ const ManualReview = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </label>
+              <label>
+  {/* <strong>Export:</strong> */}
+  <button
+    className="export-button"
+    style={{ marginLeft: "10px" }}
+    onClick={handleExportCSV}
+  >
+    Export CSV
+  </button>
+</label>
+
             </div>
             {/* <p>{filteredDocs.length} documents requiring manual review</p> */}
           </div>
- 
+
           {loading && <p>Loading documents...</p>}
           {error && <p style={{ color: "red" }}>Error: {error}</p>}
- 
+
           <table className="ManualReview-Table">
             <thead>
               <tr>
@@ -329,7 +387,7 @@ const ManualReview = () => {
               )}
             </tbody>
           </table>
- 
+
           {filteredDocs.length > rowsPerPage && (
             <div style={{ marginTop: "15px", textAlign: "center" }}>
               <button
@@ -365,6 +423,5 @@ const ManualReview = () => {
     </div>
   );
 };
- 
+
 export default ManualReview;
- 

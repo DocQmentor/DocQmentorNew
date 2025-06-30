@@ -193,6 +193,44 @@ footer {
 .ManualReview-Edit-editDetails-form label{
   font-weight: bold;
 }
+.filters {
+  display: flex;
+  flex-wrap: nowrap; /* force everything to one line */
+  gap: 20px;
+  justify-content: space-between;
+  align-items: flex-end; /* aligns inputs/buttons to same bottom line */
+  flex-direction: row;
+  flex-wrap: wrap; /* allow wrap if window gets too small */
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.export-button {
+  background-color: #004080;
+  color: white;
+  /* padding: 8px 16px; */
+  border: none;
+  border-radius: 6px;
+  font-weight: bolder;
+  cursor: pointer;
+  height: 38px; /*match input height*/
+  width: 90px;
+  margin-top: 22px;
+  transition: background 0.3s ease;
+}
+
+.export-button:hover {
+  background-color: red;
+}
+
+
+
 .ManualReview-Edit-editDetails-form h3{
   color: #004080;
 }

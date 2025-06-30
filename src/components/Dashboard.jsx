@@ -48,7 +48,6 @@ const Dashboard = () => {
 
   const hasAllMandatoryFields = (doc) => {
     if (!doc || !doc.extractedData) return false;
-
     const requiredFields = [
       "VendorName",
       "InvoiceId",
@@ -58,7 +57,6 @@ const Dashboard = () => {
       "VAT",
       "InvoiceTotal",
     ];
-
     return requiredFields.every((field) => {
       const value = doc.extractedData[field];
       return (
@@ -67,28 +65,26 @@ const Dashboard = () => {
     });
   };
 
- const determineStatus = (doc) => {
-  if (!doc || !doc.extractedData || !doc.confidenceScores) {
-    return "Manual Review";
-  }
-
-  // Check if it's a reviewed document (based on totalConfidenceScore string)
-  const scoreStr = String(doc.totalConfidenceScore || "").toLowerCase();
-  if (scoreStr.includes("reviewed")) {
-    return "Reviewed";
-  }
-
-  if (!hasAllMandatoryFields(doc)) return "Manual Review";
-
-  const scores = Object.values(doc.confidenceScores || {});
-  if (scores.length === 0) return "Manual Review";
-
-  const avg =
-    scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
-
-  return avg >= 0.85 ? "Completed" : "Manual Review";
-};
-
+  const determineStatus = (doc) => {
+    if (
+      doc.status === "Reviewed" ||
+      doc.reviewStatus === "Reviewed" ||
+      doc.reviewedBy
+    ) {
+      return "Reviewed";
+    }
+    if (!doc || !doc.extractedData || !doc.confidenceScores) {
+      return "Manual Review";
+    }
+    const scoreStr = String(doc.totalConfidenceScore || "").toLowerCase();
+    if (scoreStr.includes("reviewed")) return "Reviewed";
+    if (!hasAllMandatoryFields(doc)) return "Manual Review";
+    const scores = Object.values(doc.confidenceScores || {});
+    if (scores.length === 0) return "Manual Review";
+    const avg =
+      scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
+    return avg >= 0.85 ? "Completed" : "Manual Review";
+  };
 
   useEffect(() => {
     const fetchDocumentsFromBackend = async () => {
@@ -105,27 +101,69 @@ const Dashboard = () => {
         }));
 
         setAllDocuments(withStatus);
-
         const localUploads = JSON.parse(
           localStorage.getItem("myUploads") || "[]"
         );
+
         const updatedFiles = localUploads.map((localFile) => {
-          const backendDoc = withStatus.find(
-            (doc) =>
-              doc.documentName === localFile.fileName ||
-              doc.fileName === localFile.fileName
+          let backendDoc = withStatus.find(
+            (doc) => doc.uploadId === localFile.uploadId
           );
-          if (backendDoc) {
-            return {
-              ...localFile,
-              status: backendDoc.status,
+          if (!backendDoc) {
+            backendDoc = withStatus.find(
+              (doc) =>
+                doc.documentName === localFile.fileName ||
+                doc.fileName === localFile.fileName
+            );
+          }
+
+          const isReviewed =
+            localFile.status === "Reviewed" ||
+            localFile.reviewStatus === "Reviewed" ||
+            localFile.processedData?.status === "Reviewed" ||
+            backendDoc?.status === "Reviewed" ||
+            backendDoc?.reviewStatus === "Reviewed" ||
+            backendDoc?.reviewedBy;
+
+          return {
+            ...localFile,
+            status: isReviewed
+              ? "Reviewed"
+              : determineStatus(backendDoc || localFile),
+            url: backendDoc?.fileUrl?.includes("?")
+              ? backendDoc.fileUrl
+              : `${backendDoc?.fileUrl || localFile.url}${sasToken}`,
+            processedData: backendDoc || localFile.processedData,
+          };
+        });
+
+        withStatus.forEach((backendDoc) => {
+          const exists = updatedFiles.some(
+            (file) =>
+              file.uploadId === backendDoc.uploadId ||
+              file.fileName === (backendDoc.documentName || backendDoc.fileName)
+          );
+          if (!exists) {
+            const isReviewed =
+              backendDoc.status === "Reviewed" ||
+              backendDoc.reviewStatus === "Reviewed" ||
+              backendDoc.reviewedBy;
+
+            updatedFiles.push({
+              fileName: backendDoc.documentName || backendDoc.fileName,
+              status: isReviewed ? "Reviewed" : determineStatus(backendDoc),
+              uploadedAt: backendDoc.processedAt || new Date().toISOString(),
               url: backendDoc.fileUrl?.includes("?")
                 ? backendDoc.fileUrl
                 : `${backendDoc.fileUrl}${sasToken}`,
               processedData: backendDoc,
-            };
+              uploadId:
+                backendDoc.uploadId ||
+                `${
+                  backendDoc.documentName || backendDoc.fileName
+                }-${Date.now()}`,
+            });
           }
-          return localFile;
         });
 
         setMyFiles(updatedFiles);
@@ -160,7 +198,6 @@ const Dashboard = () => {
   const getDocumentStats = () => {
     const filteredDocs = getFilteredDocuments();
     const total = filteredDocs.length;
-
     let completed = 0;
     let manualReview = 0;
     let inProcess = 0;
@@ -184,14 +221,12 @@ const Dashboard = () => {
     const newFiles = Array.from(e.target.files).map((file) => ({
       file,
       fileName: file.name,
+      uploadId: `${file.name}-${Date.now()}`,
       uploadedAt: new Date().toISOString(),
       status: "In Process",
       url: null,
     }));
-    setSelectedFiles((prev) => {
-      const existing = new Set(prev.map((f) => f.fileName));
-      return [...prev, ...newFiles.filter((f) => !existing.has(f.fileName))];
-    });
+    setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
 
   const handleDeleteFile = (index) => {
@@ -208,15 +243,15 @@ const Dashboard = () => {
     if (selectedFiles.length === 0) return;
     setIsUploading(true);
     const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
+
     const newUploads = selectedFiles.map((fileObj) => ({
-      fileName: fileObj.fileName,
-      status: "In Process",
-      uploadedAt: new Date().toISOString(),
-      url: null,
+      ...fileObj,
+      uploadId: fileObj.uploadId || `${fileObj.fileName}-${Date.now()}`,
     }));
+
     const updatedLocalUploads = [...newUploads, ...localUploads];
     localStorage.setItem("myUploads", JSON.stringify(updatedLocalUploads));
-    setMyFiles((prev) => [...newUploads, ...prev]);
+    setMyFiles(updatedLocalUploads);
 
     for (const fileObj of selectedFiles) {
       const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
@@ -235,11 +270,11 @@ const Dashboard = () => {
           toast.success(`${fileObj.fileName} uploaded successfully!`);
           setMyFiles((prev) =>
             prev.map((f) =>
-              f.fileName === fileObj.fileName ? { ...f, url: result.url } : f
+              f.uploadId === fileObj.uploadId ? { ...f, url: result.url } : f
             )
           );
           const updated = updatedLocalUploads.map((f) =>
-            f.fileName === fileObj.fileName ? { ...f, url: result.url } : f
+            f.uploadId === fileObj.uploadId ? { ...f, url: result.url } : f
           );
           localStorage.setItem("myUploads", JSON.stringify(updated));
         }
@@ -281,12 +316,10 @@ const Dashboard = () => {
     const manualReviewDocs = allDocuments.filter(
       (doc) => determineStatus(doc) === "Manual Review"
     );
-
     if (manualReviewDocs.length === 0) {
       toast.info("No documents require manual review");
       return;
     }
-
     navigate("/manualreview", {
       state: {
         manualReviewDocs,
@@ -297,21 +330,11 @@ const Dashboard = () => {
 
   const handleViewDocument = (file) => {
     let url = null;
-
-    if (file.blobUrl && file.blobUrl.startsWith("http")) {
-      url = file.blobUrl;
-    } else if (file.url && file.url.startsWith("http")) {
-      url = file.url;
-    } else if (file.processedData?.blobUrl) {
-      url = file.processedData.blobUrl;
-    }
-
-    if (url) {
-      window.open(url, "_blank");
-    } else {
-      toast.error("File URL is not available");
-      console.warn("⚠️ Cannot open file. Data:", file);
-    }
+    if (file.blobUrl?.startsWith("http")) url = file.blobUrl;
+    else if (file.url?.startsWith("http")) url = file.url;
+    else if (file.processedData?.blobUrl) url = file.processedData.blobUrl;
+    if (url) window.open(url, "_blank");
+    else toast.error("File URL is not available");
   };
 
   return (
@@ -482,7 +505,6 @@ const Dashboard = () => {
                 )}
               </tbody>
             </table>
-
             <div className="pagination">
               {Array.from({ length: totalPages }, (_, i) => (
                 <button
@@ -499,7 +521,6 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
       <footer>
         <Footer />
       </footer>
