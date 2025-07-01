@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, LayoutDashboard, FileText, User, LogOut } from 'lucide-react';
+import { Home,Search, LayoutDashboard, FileText, User, LogOut } from 'lucide-react';
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
-
+import useGroupAccess from "../utils/userGroupAccess";
 const Header = () => {
+  const hasAccess = useGroupAccess();
   const location = useLocation();
   const navigate = useNavigate();
   const { instance, accounts } = useMsal();
@@ -16,14 +17,14 @@ const Header = () => {
     if (accounts && accounts.length > 0) {
       const account = accounts[0];
       setUserEmail(account.username || 'user@example.com');
-      const nameParts = (account.name || 'User Name').split(' ');
-      setUserName(`${nameParts[0]}${nameParts[1] ? ' ' + nameParts[1] : ''}`);
+      // const nameParts = (account.name || 'User Name').split(' ');
+      setUserName(account.name || 'User Name');
     } else {
       const storedUser = JSON.parse(localStorage.getItem('user'));
       if (storedUser) {
         setUserEmail(storedUser.email || 'user@example.com');
-        const nameParts = (storedUser.name || 'User Name').split(' ');
-        setUserName(`${nameParts[0]}${nameParts[1] ? ' ' + nameParts[1] : ''}`);
+        // const nameParts = (storedUser.name || 'User Name').split(' ');
+        setUserName(storedUser.name || 'User Name');
       } else {
         console.log('No user in Header');
         navigate('/');
@@ -80,6 +81,18 @@ const Header = () => {
               <FileText size={20} className="i" /> Data View
             </NavLink>
           </li>
+          {hasAccess === true && (
+            <li className={location.pathname === '/manualreview' ? 'active' : ''}>
+                <NavLink
+                to="/manualreview"
+                className="a"
+                onClick={(e) => handleNavigationClick(e, '/manualreview')}
+              >
+                <Search size={20} className="i" /> Manual Review
+              </NavLink>
+            </li>
+          )}
+ 
           <li className={location.pathname === '/profile' ? 'active' : ''} onClick={toggleProfile}>
             <div className="a" style={{ cursor: 'pointer' }}>
               <User size={20} className="i" /> {userName}

@@ -17,8 +17,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { getVendorFolders } from "../utils/blobService";
 import { useMsal } from "@azure/msal-react";
 import { useUser } from "../context/UserContext";
-
+import useGroupAccess from "../utils/userGroupAccess";
 const Dashboard = () => {
+  const hasAccess = useGroupAccess();
   const { accounts } = useMsal();
   const currentUser = {
     id: accounts[0]?.username || "unknown@user.com",
@@ -358,22 +359,26 @@ const Dashboard = () => {
   const totalPages = Math.ceil(filteredMyFiles.length / documentsPerPage);
   const stats = getDocumentStats();
 
-  const handleManualReviewClick = () => {
-    const manualReviewDocs = allDocuments.filter(
-      (doc) => determineStatus(doc) === "Manual Review"
-    );
-    if (manualReviewDocs.length === 0) {
-      toast.info("No documents require manual review");
-      return;
+const handleManualReviewClick = () => {
+    if(hasAccess === true){
+      const manualReviewDocs = allDocuments.filter(
+        (doc) => determineStatus(doc) === "Manual Review"
+      );
+      if (manualReviewDocs.length === 0) {
+        toast.info("No documents require manual review");
+        return;
+      }
+      navigate("/manualreview", {
+        state: {
+          manualReviewDocs,
+          selectedVendor,
+        },
+      });
+    } else {
+      toast.error("You do not have permission to view this Manual Review page.");
     }
-    navigate("/manualreview", {
-      state: {
-        manualReviewDocs,
-        selectedVendor,
-      },
-    });
   };
-
+ 
 const handleViewDocument = (file) => {
   console.log("📂 Opening document:", file);
 
