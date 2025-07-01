@@ -152,3 +152,57 @@
   background-color: #2e9a55;
   border: 1px solid #ccc;
 }
+/* ===== Version History Section ===== */
+.ManualReview-Edit-versionHistory {
+  width: 100%;
+  background: #fdfdfd;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  font-size: 14px;
+  color: #222;
+}
+
+.ManualReview-Edit-versionHistory h3 {
+  font-size: 18px;
+  color: #004080;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #266898;
+  padding-bottom: 5px;
+}
+
+.ManualReview-Edit-versionHistory ul {
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.ManualReview-Edit-versionHistory li {
+  background-color: #f8f9fb;
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  border-radius: 6px;
+  border: 1px solid #e2e2e2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  line-height: 1.4;
+  color: #333;
+}
+
+.ManualReview-Edit-versionHistory li strong {
+  color: #004080;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.ManualReview-Edit-versionHistory span {
+  font-weight: 500;
+  color: #444;
+}
+
+.ManualReview-Edit-versionHistory em {
+  font-style: italic;
+  color: #666;
+}

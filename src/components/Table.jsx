@@ -6,6 +6,8 @@ import { saveAs } from "file-saver";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useSortableData from "../utils/useSortableData";
+import { Info } from "lucide-react";
+
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -53,13 +55,16 @@ function Table() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [uploadDateFilter, setUploadDateFilter] = useState("all");
-  // const [sortColumn, setSortColumn] = useState("");
-  // const [sortOrder, setSortOrder] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const rowsPerPage = 10;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [versionModal, setVersionModal] = useState({
+    visible: false,
+    history: [],
+    docName: "",
+  });
 
   useEffect(() => {
     async function fetchInvoices() {
@@ -75,7 +80,7 @@ function Table() {
           ? data
               .filter((doc) => {
                 const extracted = doc.extractedData || {};
-                const confidence = doc.confidence || {}; // If confidence not available, assume full (1)
+                const confidence = doc.confidence || {};
 
                 const requiredFields = [
                   "VendorName",
@@ -87,14 +92,13 @@ function Table() {
                   "InvoiceTotal",
                 ];
 
-                // Reject if any field is missing or confidence is low
                 for (const field of requiredFields) {
                   const val = extracted[field];
-                  const score = confidence[field] ?? 1; // Default to 1 if no score provided
+                  const score = confidence[field] ?? 1;
                   if (!val || score < 0.85) return false;
                 }
 
-                return true; // keep only valid documents
+                return true;
               })
               .map((doc) => {
                 const extracted = doc.extractedData || {};
@@ -123,8 +127,6 @@ function Table() {
                     typeof doc.totalConfidenceScore === "string"
                       ? doc.totalConfidenceScore
                       : `${(doc.totalConfidenceScore || 0).toFixed(2)}`,
-                  // 👈 use exact field name from DB
-
                   _rawDocument: doc,
                 };
               })
@@ -140,6 +142,19 @@ function Table() {
     }
     fetchInvoices();
   }, []);
+
+  const handleInfoClick = (file) => {
+    if (file.versionHistory && Array.isArray(file.versionHistory)) {
+      setVersionModal({
+        visible: true,
+        history: file.versionHistory,
+        docName: file.documentName || file.blobUrl || "Document",
+      });
+    } else {
+      toast.info("No version history available.");
+    }
+  };
+
   const filteredData = invoiceData.filter((item) => {
     const matchesVendor = item.vendorName
       .toLowerCase()
@@ -188,6 +203,7 @@ function Table() {
       matchesSearch
     );
   });
+
   const { sortedData, toggleSort, renderSortIcon, sortColumn, sortOrder } =
     useSortableData(filteredData);
 
@@ -198,9 +214,6 @@ function Table() {
   const handlePrevious = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const handleNext = () =>
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const getConfidenceScore = (item) => {
-    return item._rawDocument?.totalConfidenceScore || "N/A";
-  };
 
   const handleExportCSV = () => {
     const csvHeader = [
@@ -233,28 +246,11 @@ function Table() {
     );
   };
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    vendorFilter,
-    fromDate,
-    toDate,
-    uploadDateFilter,
-    sortColumn,
-    sortOrder,
-    searchQuery,
-  ]);
   const handleViewDocument = (file) => {
-    console.log("📂 Opening document:", file);
-
     let url = null;
-
-    // Priority 1: blobUrl from DB
     if (file.blobUrl && file.blobUrl.startsWith("http")) {
       url = file.blobUrl;
-    }
-    // Fallbacks (in case blobUrl not available)
-    else if (file.url && file.url.startsWith("http")) {
+    } else if (file.url && file.url.startsWith("http")) {
       url = file.url;
     } else if (file.processedData?.blobUrl) {
       url = file.processedData.blobUrl;
@@ -267,6 +263,19 @@ function Table() {
       console.warn("⚠️ Cannot open file. Data:", file);
     }
   };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    vendorFilter,
+    fromDate,
+    toDate,
+    uploadDateFilter,
+    sortColumn,
+    sortOrder,
+    searchQuery,
+  ]);
+
   return (
     <div className="table-component-container">
       <Header />
@@ -333,96 +342,65 @@ function Table() {
               <table>
                 <thead>
                   <tr>
-                    <th
-                      style={{ width: "150px" }}
-                      onClick={() => toggleSort("vendorName")}
-                    >
+                    <th onClick={() => toggleSort("vendorName")}>
                       Vendor Name {renderSortIcon("vendorName")}
                     </th>
-                    <th
-                      style={{ width: "150px" }}
-                      onClick={() => toggleSort("invoiceId")}
-                    >
+                    <th onClick={() => toggleSort("invoiceId")}>
                       Invoice ID {renderSortIcon("invoiceId")}
                     </th>
-                    <th
-                      style={{ width: "150px" }}
-                      onClick={() => toggleSort("invoiceDate")}
-                    >
+                    <th onClick={() => toggleSort("invoiceDate")}>
                       Invoice Date {renderSortIcon("invoiceDate")}
                     </th>
-                    <th
-                      style={{ width: "150px" }}
-                      onClick={() => toggleSort("lpoNo")}
-                    >
+                    <th onClick={() => toggleSort("lpoNo")}>
                       LPO No {renderSortIcon("lpoNo")}
                     </th>
-                    <th
-                      style={{ width: "150px" }}
-                      onClick={() => toggleSort("subTotal")}
-                    >
+                    <th onClick={() => toggleSort("subTotal")}>
                       Sub Total {renderSortIcon("subTotal")}
                     </th>
-                    <th
-                      style={{ width: "150px" }}
-                      onClick={() => toggleSort("vat")}
-                    >
+                    <th onClick={() => toggleSort("vat")}>
                       VAT {renderSortIcon("vat")}
                     </th>
-                    <th
-                      style={{ width: "150px" }}
-                      onClick={() => toggleSort("invoicetotal")}
-                    >
+                    <th onClick={() => toggleSort("invoicetotal")}>
                       Invoice Total {renderSortIcon("invoicetotal")}
                     </th>
-                    <th
-                      style={{ width: "150px" }}
-                      onClick={() => toggleSort("uploadDate")}
-                    >
+                    <th onClick={() => toggleSort("uploadDate")}>
                       Upload Date {renderSortIcon("uploadDate")}
                     </th>
-                    <th
-                      style={{ width: "150px" }}
-                      onClick={() => toggleSort("confidenceScore")}
-                    >
+                    <th onClick={() => toggleSort("confidenceScore")}>
                       Confidence Score {renderSortIcon("confidenceScore")}
                     </th>
-
-                    <th style={{ width: "150px" }}>Action</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentRows.length > 0 ? (
                     currentRows.map((item, index) => (
-                      <tr
-                        key={index}
-                        style={{
-                          backgroundColor: (() => {
-                            const invoiceDate = item.invoiceDate
-                              ? new Date(item.invoiceDate)
-                              : null;
-                            if (!invoiceDate) return "";
-                            const today = new Date();
-                            const diff =
-                              (today - invoiceDate) / (1000 * 60 * 60 * 24);
-                            if (diff <= 7) return "#d4edda";
-                            else if (diff <= 30) return "#fff3cd";
-                            else return "#f8d7da";
-                          })(),
-                        }}
-                      >
-                        <td style={{ width: "150px" }}>{item.vendorName}</td>
-                        <td style={{ width: "150px" }}>{item.invoiceId}</td>
-                        <td style={{ width: "150px" }}>{item.invoiceDate}</td>
-                        <td style={{ width: "150px" }}>{item.lpoNo}</td>
-                        <td style={{ width: "150px" }}>{item.subTotal}</td>
-                        <td style={{ width: "150px" }}>{item.vat}</td>
-                        <td style={{ width: "150px" }}>{item.invoicetotal}</td>
-                        <td style={{ width: "150px" }}>{item.uploadDate}</td>
-                        <td style={{ width: "150px" }}>
-                          {item._rawDocument?.totalConfidenceScore || "N/A"}
+                      <tr key={index}>
+                        <td>{item.vendorName}</td>
+                        <td>{item.invoiceId}</td>
+                        <td>{item.invoiceDate}</td>
+                        <td>{item.lpoNo}</td>
+                        <td>{item.subTotal}</td>
+                        <td>{item.vat}</td>
+                        <td>{item.invoicetotal}</td>
+                        <td>{item.uploadDate}</td>
+                        <td>
+                          {item._rawDocument?.status === "Reviewed" ? (
+                            <span>
+                              {item._rawDocument?.totalConfidenceScore || "N/A"}{" "}
+                              <Info
+                                size={16}
+                                color="#007bff"
+                                style={{ cursor: "pointer" }}
+                                onClick={() =>
+                                  handleInfoClick(item._rawDocument)
+                                }
+                              />
+                            </span>
+                          ) : (
+                            item._rawDocument?.totalConfidenceScore || "N/A"
+                          )}
                         </td>
-
                         <td>
                           <button
                             className="action-btn"
@@ -437,7 +415,7 @@ function Table() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="9" style={{ textAlign: "center" }}>
+                      <td colSpan="10" style={{ textAlign: "center" }}>
                         No records found.
                       </td>
                     </tr>
@@ -445,12 +423,50 @@ function Table() {
                 </tbody>
               </table>
 
+              {versionModal.visible && (
+                <div className="modal-backdrop">
+                  <div className="modal">
+                    <h3>Version History - {versionModal.docName}</h3>
+                    <table className="version-table">
+                      <thead>
+                        <tr>
+                          <th>Version</th>
+                          <th>Action</th>
+                          <th>User</th>
+                          <th>Timestamp</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {versionModal.history.map((v, i) => (
+                          <tr key={i}>
+                            <td>{v.version}</td>
+                            <td>{v.action}</td>
+                            <td>{v.user?.name || v.user?.id}</td>
+                            <td>{new Date(v.timestamp).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <button
+                      onClick={() =>
+                        setVersionModal({
+                          visible: false,
+                          history: [],
+                          docName: "",
+                        })
+                      }
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {filteredData.length > rowsPerPage && (
                 <div style={{ marginTop: "15px", textAlign: "center" }}>
                   <button
                     onClick={handlePrevious}
                     disabled={currentPage === 1}
-                    style={{ padding: "6px 10px", marginRight: "10px" }}
                   >
                     Previous
                   </button>
@@ -458,7 +474,6 @@ function Table() {
                   <button
                     onClick={handleNext}
                     disabled={currentPage === totalPages}
-                    style={{ padding: "6px 10px", marginLeft: "10px" }}
                   >
                     Next
                   </button>

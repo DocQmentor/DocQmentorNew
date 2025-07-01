@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import { Routes, Route, Navigate, useNavigate, Outlet } from "react-router-dom";
 import {
@@ -11,14 +11,16 @@ import {
   PublicClientApplication,
   InteractionStatus,
 } from "@azure/msal-browser";
+
 import Login from "./components/Login";
 import Home from "./components/Home";
 import Table from "./components/Table";
 import Dashboard from "./components/Dashboard";
-import Header from "./Layout/Header";
-import Footer from "./Layout/Footer";
 import ManualReview from "./components/ManualReview";
 import EditModal from "./components/EditModal";
+import Header from "./Layout/Header";
+
+import { UserProvider, useUser } from "./context/UserContext";
 
 const msalConfig = {
   auth: {
@@ -34,19 +36,28 @@ const pca = new PublicClientApplication(msalConfig);
 const ProtectedLayout = () => {
   const { accounts } = useMsal();
   const navigate = useNavigate();
+  const { setUser } = useUser();
 
-  if (accounts.length === 0) {
-    navigate("/");
-    return null;
-  }
+  useEffect(() => {
+    if (accounts.length === 0) {
+      navigate("/");
+    } else {
+      const account = accounts[0];
+      setUser({
+        email: account.username,
+        name: account.name,
+      });
+    }
+  }, [accounts, navigate, setUser]);
+
+  if (accounts.length === 0) return null;
 
   return (
     <div className="app-container">
-      <Header user={accounts[0]} />
+      <Header />
       <main className="main-content">
         <Outlet />
       </main>
-      {/* <Footer /> */}
     </div>
   );
 };
@@ -54,15 +65,16 @@ const ProtectedLayout = () => {
 const AppRoutes = () => {
   const { accounts, inProgress } = useMsal();
   const navigate = useNavigate();
-  // Redirect to home if authenticated and on login page
-  if (
-    accounts.length > 0 &&
-    inProgress === InteractionStatus.None &&
-    window.location.pathname === "/"
-  ) {
-    navigate("/dashboard");
-    return null;
-  }
+
+  useEffect(() => {
+    if (
+      accounts.length > 0 &&
+      inProgress === InteractionStatus.None &&
+      window.location.pathname === "/"
+    ) {
+      navigate("/dashboard");
+    }
+  }, [accounts, inProgress, navigate]);
 
   return (
     <Routes>
@@ -74,7 +86,6 @@ const AppRoutes = () => {
           </UnauthenticatedTemplate>
         }
       />
-
       <Route element={<ProtectedLayout />}>
         <Route path="/home" element={<Home />} />
         <Route path="/table" element={<Table />} />
@@ -82,7 +93,6 @@ const AppRoutes = () => {
         <Route path="/manualreview" element={<ManualReview />} />
         <Route path="/editmodal" element={<EditModal />} />
       </Route>
-
       <Route
         path="*"
         element={
@@ -100,7 +110,9 @@ const AppRoutes = () => {
 const App = () => {
   return (
     <MsalProvider instance={pca}>
-      <AppRoutes />
+      <UserProvider>
+        <AppRoutes />
+      </UserProvider>
     </MsalProvider>
   );
 };

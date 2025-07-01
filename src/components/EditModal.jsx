@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import { useMsal } from "@azure/msal-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Edit, History, File, X, Save } from "lucide-react";
 import "./EditModal.css";
@@ -15,17 +15,21 @@ const formatNumber = (value) => {
   return parseFloat(value).toLocaleString("en-IN");
 };
 
-// import { useLocation, useNavigate } from "react-router-dom";
-
 const EditModal = () => {
   const { state } = useLocation();
+  const { accounts } = useMsal();
   const navigate = useNavigate();
+
+  const currentUser = {
+    id: accounts[0]?.username,
+    name: accounts[0]?.name,
+  };
 
   const selectedDocument = state?.selectedDocument;
   const initialEditedData = state?.editedData;
 
-  const refreshData = () => window.location.reload(); // fallback if no prop
-  const setShow = () => navigate(-1); // fallback for closing modal
+  const refreshData = () => window.location.reload(); // fallback
+  const setShow = () => navigate(-1); // fallback
 
   const [editDetails, setEditDetails] = useState(true);
   const [versionHistory, setVersionHistory] = useState(false);
@@ -72,63 +76,83 @@ const EditModal = () => {
     setShow(true);
   };
 
- const handleSave = async () => {
-  // Basic field validation
-  const isEmpty = Object.entries(edited).some(
-    ([key, value]) => !value || value.trim() === ""
-  );
-
-  if (isEmpty) {
-    alert("⚠️ Please fill all fields before saving.");
-    return;
-  }
-
-  try {
-    const score = selectedDocument.totalConfidenceScore;
-    let numericScore =
-      typeof score === "string"
-        ? parseFloat(score.replace(/[^\d.]/g, ""))
-        : Number(score);
-
-    const reviewedScore = isNaN(numericScore)
-      ? "Reviewed"
-      : `${numericScore.toFixed(2)}% Reviewed`;
-
-    const updatedDoc = {
-      ...selectedDocument,
-      extractedData: {
-        VendorName: edited.VendorName,
-        InvoiceId: edited.InvoiceId,
-        InvoiceDate: edited.InvoiceDate,
-        "LPO NO": edited.LPO,
-        SubTotal: edited.SubTotal,
-        VAT: edited.VAT,
-        InvoiceTotal: edited.InvoiceTotal,
-      },
-      wasReviewed: true,
-      totalConfidenceScore: reviewedScore,
-      status: "Reviewed",
-    };
-
-    const response = await fetch(
-      "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedDoc),
-      }
+  const handleSave = async () => {
+    const isEmpty = Object.entries(edited).some(
+      ([key, value]) => !value || value.trim() === ""
     );
 
-    if (!response.ok) throw new Error("Failed to update");
+    if (isEmpty) {
+      alert("⚠️ Please fill all fields before saving.");
+      return;
+    }
 
-    refreshData();
-    setShow(true);
-    setSaveSuccessful(true);
-  } catch (err) {
-    console.error("❌ Save error:", err);
-  }
-};
+    try {
+      const score = selectedDocument.totalConfidenceScore;
+      let numericScore =
+        typeof score === "string"
+          ? parseFloat(score.replace(/[^\d.]/g, ""))
+          : Number(score);
 
+      const reviewedScore = isNaN(numericScore)
+        ? "Reviewed"
+        : `${numericScore.toFixed(2)}% Reviewed`;
+
+      const existingHistory = Array.isArray(selectedDocument.versionHistory)
+        ? [...selectedDocument.versionHistory]
+        : [];
+
+      const newVersion = {
+        version: existingHistory.length + 1,
+        action: "Reviewed",
+        timestamp: new Date().toISOString(),
+        user: {
+          id: currentUser.id || "unknown@domain.com",
+          name: currentUser.name || "Unknown User",
+        },
+      };
+
+      const updatedDoc = {
+        ...selectedDocument,
+        extractedData: {
+          VendorName: edited.VendorName,
+          InvoiceId: edited.InvoiceId,
+          InvoiceDate: edited.InvoiceDate,
+          "LPO NO": edited.LPO,
+          SubTotal: edited.SubTotal,
+          VAT: edited.VAT,
+          InvoiceTotal: edited.InvoiceTotal,
+        },
+        wasReviewed: true,
+        reviewedBy: {
+          id: currentUser.id || "unknown@domain.com",
+          name: currentUser.name || "Unknown User",
+        },
+        reviewedAt: new Date().toISOString(),
+        totalConfidenceScore: reviewedScore,
+        status: "Reviewed",
+        versionHistory: [...existingHistory, newVersion],
+        fileUrl: selectedDocument.fileUrl || "",
+        blobUrl: selectedDocument.blobUrl || "",
+      };
+
+      const response = await fetch(
+        "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedDoc),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update");
+
+      refreshData();
+      setShow(true);
+      setSaveSuccessful(true);
+    } catch (err) {
+      console.error("❌ Save error:", err);
+    }
+  };
 
   return (
     <div className="ManualReview-Edit-main-container">
@@ -268,35 +292,41 @@ const EditModal = () => {
                     className="ManualReview-Edit-editDetails-form-ul-Cancel"
                     onClick={handleCancel}
                   >
-                    <X
-                      size={20}
-                      className="ManualReview-Edit-editDetails-form-ul-Cancel-i"
-                    />{" "}
-                    Cancel
+                    <X size={20} /> Cancel
                   </li>
                   <li
                     className="ManualReview-Edit-editDetails-form-ul-Save-Changes"
                     onClick={handleSave}
                   >
-                    <Save
-                      size={20}
-                      className="ManualReview-Edit-editDetails-form-ul-Save-Changes-i"
-                    />{" "}
-                    Save Changes
+                    <Save size={20} /> Save Changes
                   </li>
                 </ul>
               </form>
             </div>
           )}
+
           {versionHistory && (
-            <div>
-              <ul>
-                <li>Name</li>
-                <li>Date</li>
-                <li>Changes: Vendor Name</li>
-              </ul>
+            <div className="ManualReview-Edit-versionHistory">
+              <h3>Version History</h3>
+              {selectedDocument?.versionHistory?.length > 0 ? (
+                <ul>
+                  {selectedDocument.versionHistory.map((entry, index) => (
+                    <li key={index}>
+                      <strong>v{entry.version}</strong> – {entry.action} by{" "}
+                      <span>
+                        {entry.user.name} ({entry.user.id})
+                      </span>{" "}
+                      on{" "}
+                      <em>{new Date(entry.timestamp).toLocaleString()}</em>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No version history found.</p>
+              )}
             </div>
           )}
+
           {pdfDetails && (
             <div>
               <ul>
@@ -321,7 +351,7 @@ const EditModal = () => {
           )}
         </div>
       </div>
-      <Footer></Footer>
+      <Footer />
     </div>
   );
 };

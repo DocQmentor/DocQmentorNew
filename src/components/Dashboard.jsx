@@ -1,4 +1,3 @@
-// Dashboard.jsx
 import React, { useRef, useState, useEffect } from "react";
 import "./Dashboard.css";
 import {
@@ -16,8 +15,16 @@ import Footer from "../Layout/Footer";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getVendorFolders } from "../utils/blobService";
+import { useMsal } from "@azure/msal-react";
+import { useUser } from "../context/UserContext";
 
 const Dashboard = () => {
+  const { accounts } = useMsal();
+  const currentUser = {
+    id: accounts[0]?.username || "unknown@user.com",
+    name: accounts[0]?.name || "Unknown User",
+  };
+
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [myFiles, setMyFiles] = useState([]);
   const [allDocuments, setAllDocuments] = useState([]);
@@ -28,6 +35,7 @@ const Dashboard = () => {
   const documentsPerPage = 10;
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const { email, name } = useUser();
 
   useEffect(() => {
     const fetchVendors = async () => {
@@ -118,9 +126,6 @@ const Dashboard = () => {
           }
 
           const isReviewed =
-            localFile.status === "Reviewed" ||
-            localFile.reviewStatus === "Reviewed" ||
-            localFile.processedData?.status === "Reviewed" ||
             backendDoc?.status === "Reviewed" ||
             backendDoc?.reviewStatus === "Reviewed" ||
             backendDoc?.reviewedBy;
@@ -177,7 +182,6 @@ const Dashboard = () => {
     const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
     return () => clearInterval(intervalId);
   }, []);
-
   const getFilteredDocuments = () => {
     if (!selectedVendor) return allDocuments;
     return allDocuments.filter((doc) =>
@@ -247,6 +251,7 @@ const Dashboard = () => {
     const newUploads = selectedFiles.map((fileObj) => ({
       ...fileObj,
       uploadId: fileObj.uploadId || `${fileObj.fileName}-${Date.now()}`,
+      status: "In Process",
     }));
 
     const updatedLocalUploads = [...newUploads, ...localUploads];
@@ -257,6 +262,7 @@ const Dashboard = () => {
       const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
         autoClose: 1000,
       });
+
       try {
         const result = await uploadToAzure(fileObj.file, (percent) => {
           toast.update(toastId, {
@@ -268,15 +274,55 @@ const Dashboard = () => {
 
         if (result) {
           toast.success(`${fileObj.fileName} uploaded successfully!`);
-          setMyFiles((prev) =>
-            prev.map((f) =>
-              f.uploadId === fileObj.uploadId ? { ...f, url: result.url } : f
-            )
-          );
+
+          const versionHistory = [
+            {
+              version: 1,
+              action: "Uploaded",
+              timestamp: new Date().toISOString(),
+              user: {
+                id: email || currentUser.id,
+                name: name || currentUser.name,
+              },
+            },
+          ];
+
+          // Update local UI immediately with URL
           const updated = updatedLocalUploads.map((f) =>
-            f.uploadId === fileObj.uploadId ? { ...f, url: result.url } : f
+            f.uploadId === fileObj.uploadId
+              ? {
+                  ...f,
+                  url: result.url,
+                  versionHistory,
+                  status: "In Process",
+                }
+              : f
           );
+          setMyFiles(updated);
           localStorage.setItem("myUploads", JSON.stringify(updated));
+
+          // Send to backend
+          const payload = {
+            documentName: fileObj.fileName,
+            blobUrl: result.url,
+            uploadedBy: {
+              id: email || currentUser.id,
+              name: name || currentUser.name,
+            },
+            versionHistory,
+            uploadId: fileObj.uploadId,
+          };
+
+          await fetch(
+            "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            }
+          );
         }
       } catch (err) {
         console.error(`Failed to upload ${fileObj.fileName}:`, err);
@@ -328,14 +374,35 @@ const Dashboard = () => {
     });
   };
 
-  const handleViewDocument = (file) => {
-    let url = null;
-    if (file.blobUrl?.startsWith("http")) url = file.blobUrl;
-    else if (file.url?.startsWith("http")) url = file.url;
-    else if (file.processedData?.blobUrl) url = file.processedData.blobUrl;
-    if (url) window.open(url, "_blank");
-    else toast.error("File URL is not available");
-  };
+const handleViewDocument = (file) => {
+  console.log("📂 Opening document:", file);
+
+  let url = null;
+
+  if (file.blobUrl && file.blobUrl.startsWith("http")) {
+    url = file.blobUrl;
+  } else if (file.url && file.url.startsWith("http")) {
+    url = file.url;
+  } else if (file.processedData?.blobUrl && file.processedData.blobUrl.startsWith("http")) {
+    url = file.processedData.blobUrl;
+  }
+
+  // ✅ Correctly append SAS token only if not present
+  if (url && !url.includes("?") && sasToken.startsWith("?")) {
+    url += sasToken;
+  } else if (url && !url.includes("?") && !sasToken.startsWith("?")) {
+    url += "?" + sasToken;
+  }
+
+  if (url && url.startsWith("http")) {
+    window.open(url, "_blank");
+  } else {
+    toast.error("File URL is not available");
+    console.warn("⚠️ Cannot open file. Data:", file);
+  }
+};
+
+
 
   return (
     <div className="dashboard-total-container">
@@ -381,10 +448,7 @@ const Dashboard = () => {
             <p>In Process</p>
             <div className="total">{stats.inProcess}</div>
           </div>
-          <div
-            className="stat-box manual-review"
-            onClick={handleManualReviewClick}
-          >
+          <div className="stat-box manual-review" onClick={handleManualReviewClick}>
             <AlertTriangle className="i" size={24} />
             <p>Manual Review</p>
             <div className="total">{stats.manualReview}</div>
