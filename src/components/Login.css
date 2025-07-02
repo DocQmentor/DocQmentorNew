@@ -314,3 +314,7 @@ body {
   bottom: -18px;
   font-family: 'Nunito', sans-serif;
 }
+.footer {
+  margin-top: auto;
+  width: 100%;
+}

@@ -18,6 +18,7 @@
 }
 
 .ManualReview-Table-header h1 {
+  padding-top: 10px;
   font-size: 28px;
   font-weight: bold;
   color: #0d3c61;
@@ -29,8 +30,9 @@
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: flex-end;
+  margin-bottom: 25px;
 }
 
 .filters label {
@@ -39,6 +41,16 @@
   font-weight: 500;
   font-size: 15px;
   white-space: nowrap;
+}
+
+.filters input,
+.filters select {
+  border: 2px solid #0d3c61;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+  margin-top: 4px;
+  min-width: 200px;
 }
 
 /* ===== Export Button ===== */
@@ -62,7 +74,7 @@
 /* ===== Table Styles ===== */
 .ManualReview-Table {
   width: 100%;
-  table-layout: fixed !important; /* Enforce fixed layout */
+  table-layout: fixed !important;
   border-collapse: collapse;
   background: white;
   border-radius: 8px;
@@ -72,12 +84,12 @@
 
 .ManualReview-Table th,
 .ManualReview-Table td {
-  padding: 10px;
+  padding: 14px 18px;
   text-align: left;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  border: 1px solid #ddd;
+  /* border: 1px solid #ddd; */
   font-size: 15px;
 }
 
@@ -86,9 +98,7 @@
   color: #ffffff;
   font-weight: 600;
   font-size: 14px;
-  text-align: left;
 }
-
 
 .ManualReview-Table tr:nth-child(even) {
   background-color: #f4f7fa;
@@ -116,47 +126,52 @@
 /* ===== Fixed Column Widths ===== */
 .ManualReview-Table th:nth-child(1),
 .ManualReview-Table td:nth-child(1) {
-  width: 160px; /* Vendor Name */
+  width: 160px;
+  white-space: normal !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  text-overflow: unset;
+  max-width: 160px;
 }
 
 .ManualReview-Table th:nth-child(2),
 .ManualReview-Table td:nth-child(2) {
-  width: 120px; /* Invoice ID */
+  width: 120px;
 }
 
 .ManualReview-Table th:nth-child(3),
 .ManualReview-Table td:nth-child(3) {
-  width: 130px; /* Invoice Date */
+  width: 130px;
 }
 
 .ManualReview-Table th:nth-child(4),
 .ManualReview-Table td:nth-child(4) {
-  width: 120px; /* LPO Number */
+  width: 120px;
 }
 
 .ManualReview-Table th:nth-child(5),
 .ManualReview-Table td:nth-child(5) {
-  width: 100px; /* Sub Total */
+  width: 100px;
 }
 
 .ManualReview-Table th:nth-child(6),
 .ManualReview-Table td:nth-child(6) {
-  width: 100px; /* VAT */
+  width: 100px;
 }
 
 .ManualReview-Table th:nth-child(7),
 .ManualReview-Table td:nth-child(7) {
-  width: 110px; /* Total */
+  width: 110px;
 }
 
 .ManualReview-Table th:nth-child(8),
 .ManualReview-Table td:nth-child(8) {
-  width: 140px; /* Confidence Score */
+  width: 140px;
 }
 
 .ManualReview-Table th:nth-child(9),
 .ManualReview-Table td:nth-child(9) {
-  width: 80px; /* Actions */
+  width: 80px;
 }
 
 /* ===== Pagination ===== */
@@ -169,7 +184,7 @@
 
 .pagination button {
   background-color: #f8f8f8;
-  border: 1px solid #ddd;
+  /* border: 1px solid #ddd; */
   color: #0d3c61;
   padding: 6px 12px;
   margin: 0 5px;
@@ -203,27 +218,100 @@ footer {
   height: 600px;
   border: 1px solid #ccc;
 }
+
 /* ===== Sortable Header Styling ===== */
 .sortable-header {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   color: white;
-  background-color:#0d3c61;
+  background-color: #0d3c61;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
 }
-/* .sortable-header svg {
-  stroke: #ffffff !important;
-  fill: #ffffff !important;
-  width: 14px;
-  height: 14px;
-} */
 
 .ManualReview-Table th svg {
   width: 16px;
   height: 16px;
   color: white;
   fill: white;
+}
+
+/* ===== Modal Background ===== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* ===== Modal Box ===== */
+.modal {
+  background: #ffffff;
+  padding: 24px 28px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  width: 650px;
+  max-width: 95%;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* ===== Modal Heading ===== */
+.modal h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #222;
+  margin-top: 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+/* ===== Version Table in Modal ===== */
+.version-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.version-table th,
+.version-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border: 1px solid #e5e5e5;
+}
+
+.version-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: #333;
+}
+
+.version-table td {
+  color: #444;
+}
+
+/* ===== Modal Button ===== */
+.modal button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.modal button:hover {
+  background-color: #0056b3;
 }

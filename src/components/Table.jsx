@@ -280,7 +280,7 @@ function Table() {
     <div className="table-component-container">
       <Header />
       <div className="dataview-container">
-        <h2>Data View</h2>
+        <h1>Data View</h1>
 
         <div className="filters">
           <label>
@@ -343,31 +343,49 @@ function Table() {
                 <thead>
                   <tr>
                     <th onClick={() => toggleSort("vendorName")}>
+                      <span className="sortable-header">
                       Vendor Name {renderSortIcon("vendorName")}
+                    </span>
                     </th>
                     <th onClick={() => toggleSort("invoiceId")}>
+                      <span className="sortable-header">
                       Invoice ID {renderSortIcon("invoiceId")}
+                    </span>
                     </th>
                     <th onClick={() => toggleSort("invoiceDate")}>
+                      <span className="sortable-header">
                       Invoice Date {renderSortIcon("invoiceDate")}
+                    </span>
                     </th>
                     <th onClick={() => toggleSort("lpoNo")}>
+                      <span className="sortable-header">
                       LPO No {renderSortIcon("lpoNo")}
+                    </span>
                     </th>
                     <th onClick={() => toggleSort("subTotal")}>
+                      <span className="sortable-header">
                       Sub Total {renderSortIcon("subTotal")}
+                    </span>
                     </th>
                     <th onClick={() => toggleSort("vat")}>
+                      <span className="sortable-header">
                       VAT {renderSortIcon("vat")}
+                    </span>
                     </th>
                     <th onClick={() => toggleSort("invoicetotal")}>
+                      <span className="sortable-header">
                       Invoice Total {renderSortIcon("invoicetotal")}
+                    </span>
                     </th>
                     <th onClick={() => toggleSort("uploadDate")}>
+                      <span className="sortable-header">
                       Upload Date {renderSortIcon("uploadDate")}
+                    </span>
                     </th>
                     <th onClick={() => toggleSort("confidenceScore")}>
+                      <span className="sortable-header">
                       Confidence Score {renderSortIcon("confidenceScore")}
+                    </span>
                     </th>
                     <th>Action</th>
                   </tr>

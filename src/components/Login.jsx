@@ -2,6 +2,7 @@ import './Login.css'
 import React from 'react';
 import { useMsal } from '@azure/msal-react';
 import { useNavigate } from 'react-router-dom';
+import Footer from '../Layout/Footer'; // adjust the path based on your folder structure
 
 const Login = ({ setUser }) => {
   const { instance, accounts } = useMsal();
@@ -21,6 +22,7 @@ const Login = ({ setUser }) => {
 
 
   return (
+    <div>
       <div className='main'>
         <header className='Login-header'>
           <img className='img-doc' src="src/assets/logo-docqmentor.png" alt="DocQmentor Logo" />
@@ -76,9 +78,9 @@ const Login = ({ setUser }) => {
           <p>Powerful filterable table with sorting, presets, and bulk actions for managing and processing documents at scale.</p>
         </div>
       </div>
-        <p className='Copyright'>© Copyright <b>Techstar Group.</b> All Rights Reserved</p>
       </div>
-     
+      <Footer />
+    </div>
     );
 };
 

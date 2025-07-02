@@ -413,7 +413,8 @@ const handleViewDocument = (file) => {
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
           <div>
-            <h2>Dashboard</h2>
+            <h1 className="dashboard-heading">Dashboard</h1>
+
             <p>View your document processing activity and insights</p>
           </div>
           <div className="Dashboard-main-section-vendor-select">
