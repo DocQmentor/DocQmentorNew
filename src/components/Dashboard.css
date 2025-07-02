@@ -28,8 +28,52 @@
   color: #0d3c61;
   margin-bottom: 25px;
 }
+.status-section table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
 
+/* ===== Fixed Column Widths ===== */
+.status-section th:nth-child(1),
+.status-section td:nth-child(1) {
+  width: 300px;  /* Name */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
 
+.status-section th:nth-child(2),
+.status-section td:nth-child(2) {
+  width: 150px; /* Status */
+}
+
+.status-section th:nth-child(3),
+.status-section td:nth-child(3) {
+  width: 140px; /* Uploaded */
+}
+
+.status-section th:nth-child(4),
+.status-section td:nth-child(4) {
+  width: 140px; /* Date */
+}
+
+.status-section th:nth-child(5),
+.status-section td:nth-child(5) {
+  width: 120px; /* Actions */
+  text-align: center;
+}
+
+/* span.sortable-header{
+   display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #0d3c61;
+  background-color:white;
+  font-weight: bolder;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+} */
 .pagination {
   display: flex;
   justify-content: center;

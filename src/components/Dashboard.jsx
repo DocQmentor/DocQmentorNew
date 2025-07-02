@@ -17,7 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { getVendorFolders } from "../utils/blobService";
 import { useMsal } from "@azure/msal-react";
 import { useUser } from "../context/UserContext";
-import {sasToken} from "../sasToken";
+import { sasToken } from "../sasToken";
 import useGroupAccess from "../utils/userGroupAccess";
 const Dashboard = () => {
   const hasAccess = useGroupAccess();
@@ -193,18 +193,20 @@ const Dashboard = () => {
     );
   };
 
- const getFilteredMyFiles = () => {
-  const userEmail = email || currentUser.id;
+  const getFilteredMyFiles = () => {
+    const userEmail = email || currentUser.id;
 
-  return myFiles.filter((file) => {
-    const uploadedBy = file.processedData?.uploadedBy?.id;
-    return uploadedBy === userEmail;
-  }).filter((file) => {
-    if (!selectedVendor) return true;
-    const docName = file.processedData?.documentName || file.fileName;
-    return docName.toLowerCase().includes(selectedVendor.toLowerCase());
-  });
-};
+    return myFiles
+      .filter((file) => {
+        const uploadedBy = file.processedData?.uploadedBy?.id;
+        return uploadedBy === userEmail;
+      })
+      .filter((file) => {
+        if (!selectedVendor) return true;
+        const docName = file.processedData?.documentName || file.fileName;
+        return docName.toLowerCase().includes(selectedVendor.toLowerCase());
+      });
+  };
 
   const getDocumentStats = () => {
     const filteredDocs = getFilteredDocuments();
@@ -244,6 +246,12 @@ const Dashboard = () => {
     const updated = [...selectedFiles];
     updated.splice(index, 1);
     setSelectedFiles(updated);
+  };
+  const handleDeleteMyUpload = (uploadId) => {
+    const updatedFiles = myFiles.filter((file) => file.uploadId !== uploadId);
+    setMyFiles(updatedFiles);
+    localStorage.setItem("myUploads", JSON.stringify(updatedFiles));
+    toast.success("Document removed from recent uploads.");
   };
 
   const handleClick = () => {
@@ -345,14 +353,17 @@ const Dashboard = () => {
     if (!dateString) return "Unknown time";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Unknown time";
+
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
+
     if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+      return `${Math.floor(diffInSeconds / 60)} minute ago`;
     if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    return date.toLocaleString();
+      return `${Math.floor(diffInSeconds / 3600)} hour ago`;
+
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   const filteredMyFiles = getFilteredMyFiles()
@@ -365,8 +376,8 @@ const Dashboard = () => {
   const totalPages = Math.ceil(filteredMyFiles.length / documentsPerPage);
   const stats = getDocumentStats();
 
-const handleManualReviewClick = () => {
-    if(hasAccess === true){
+  const handleManualReviewClick = () => {
+    if (hasAccess === true) {
       const manualReviewDocs = allDocuments.filter(
         (doc) => determineStatus(doc) === "Manual Review"
       );
@@ -381,29 +392,26 @@ const handleManualReviewClick = () => {
         },
       });
     } else {
-      toast.error("You do not have permission to view this Manual Review page.");
+      toast.error(
+        "You do not have permission to view this Manual Review page."
+      );
     }
   };
- 
-const handleViewDocument = (file) => {
-  let rawUrl =
-    file.blobUrl || file.url || file.processedData?.blobUrl;
 
-  if (!rawUrl || !rawUrl.startsWith("http")) {
-    toast.error("File URL is not available");
-    return;
-  }
+  const handleViewDocument = (file) => {
+    let rawUrl = file.blobUrl || file.url || file.processedData?.blobUrl;
 
-  const baseUrl = rawUrl.split("?")[0];
-  const cleanSasToken = sasToken.startsWith("?") ? sasToken : `?${sasToken}`;
-  const finalUrl = `${baseUrl}${cleanSasToken}`;
+    if (!rawUrl || !rawUrl.startsWith("http")) {
+      toast.error("File URL is not available");
+      return;
+    }
 
-  window.open(finalUrl, "_blank");
-};
+    const baseUrl = rawUrl.split("?")[0];
+    const cleanSasToken = sasToken.startsWith("?") ? sasToken : `?${sasToken}`;
+    const finalUrl = `${baseUrl}${cleanSasToken}`;
 
-
-
-
+    window.open(finalUrl, "_blank");
+  };
 
   return (
     <div className="dashboard-total-container">
@@ -450,7 +458,10 @@ const handleViewDocument = (file) => {
             <p>In Process</p>
             <div className="total">{stats.inProcess}</div>
           </div>
-          <div className="stat-box manual-review" onClick={handleManualReviewClick}>
+          <div
+            className="stat-box manual-review"
+            onClick={handleManualReviewClick}
+          >
             <AlertTriangle className="i" size={24} />
             <p>Manual Review</p>
             <div className="total">{stats.manualReview}</div>
@@ -527,11 +538,26 @@ const handleViewDocument = (file) => {
             <table>
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th>Uploaded</th>
-                  <th>Date</th>
-                  <th>Actions</th>
+                  <th>
+                    {" "}
+                    <span className="sortable-header">Name</span>
+                  </th>
+                  <th>
+                    {" "}
+                    <span className="sortable-header">Status</span>
+                  </th>
+                  <th>
+                    {" "}
+                    <span className="sortable-header">Uploaded</span>
+                  </th>
+                  <th>
+                    {" "}
+                    <span className="sortable-header">Date</span>
+                  </th>
+                  <th>
+                    {" "}
+                    <span className="sortable-header">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -557,6 +583,18 @@ const handleViewDocument = (file) => {
                         >
                           View
                         </button>
+                        {/* <button
+                          onClick={() => handleDeleteMyUpload(file.uploadId)}
+                          style={{
+                            marginLeft: "8px",
+                            backgroundColor: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                          title="Delete"
+                        >
+                          <Trash2 size={16} color="#dc3545" />
+                        </button> */}
                       </td>
                     </tr>
                   ))
