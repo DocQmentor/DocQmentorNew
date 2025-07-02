@@ -63,7 +63,7 @@
   text-align: center;
 }
 
-/* span.sortable-header{
+.Dashboard-main-section .sortable-header{
    display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -73,7 +73,7 @@
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-} */
+}
 .pagination {
   display: flex;
   justify-content: center;
