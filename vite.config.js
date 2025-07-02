@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   server: {
-    open: true, // 👈 This line auto-opens browser
+    open: true,             // Auto-opens browser
+    historyApiFallback: true, // ✅ Enables deep linking (e.g., /manualreview won't redirect)
   },
 })

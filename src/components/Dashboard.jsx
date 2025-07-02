@@ -9,7 +9,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { sasToken, uploadToAzure } from "../utils/azureUploader";
+import { uploadToAzure } from "../utils/azureUploader";
 import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
 import { toast, ToastContainer } from "react-toastify";
@@ -17,6 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { getVendorFolders } from "../utils/blobService";
 import { useMsal } from "@azure/msal-react";
 import { useUser } from "../context/UserContext";
+import {sasToken} from "../sasToken";
 import useGroupAccess from "../utils/userGroupAccess";
 const Dashboard = () => {
   const hasAccess = useGroupAccess();
@@ -385,32 +386,22 @@ const handleManualReviewClick = () => {
   };
  
 const handleViewDocument = (file) => {
-  console.log("📂 Opening document:", file);
+  let rawUrl =
+    file.blobUrl || file.url || file.processedData?.blobUrl;
 
-  let url = null;
-
-  if (file.blobUrl && file.blobUrl.startsWith("http")) {
-    url = file.blobUrl;
-  } else if (file.url && file.url.startsWith("http")) {
-    url = file.url;
-  } else if (file.processedData?.blobUrl && file.processedData.blobUrl.startsWith("http")) {
-    url = file.processedData.blobUrl;
-  }
-
-  // ✅ Correctly append SAS token only if not present
-  if (url && !url.includes("?") && sasToken.startsWith("?")) {
-    url += sasToken;
-  } else if (url && !url.includes("?") && !sasToken.startsWith("?")) {
-    url += "?" + sasToken;
-  }
-
-  if (url && url.startsWith("http")) {
-    window.open(url, "_blank");
-  } else {
+  if (!rawUrl || !rawUrl.startsWith("http")) {
     toast.error("File URL is not available");
-    console.warn("⚠️ Cannot open file. Data:", file);
+    return;
   }
+
+  const baseUrl = rawUrl.split("?")[0];
+  const cleanSasToken = sasToken.startsWith("?") ? sasToken : `?${sasToken}`;
+  const finalUrl = `${baseUrl}${cleanSasToken}`;
+
+  window.open(finalUrl, "_blank");
 };
+
+
 
 
 
