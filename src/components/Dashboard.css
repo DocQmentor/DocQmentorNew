@@ -45,11 +45,17 @@
   font-weight: bold;
   font-size: 1.1rem;
 }
+.Dashboard-main-section-vendor-select{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
 .vendor-dropdown{
+    padding: 5px;
+    height: 30px;
     width: 150px;
     border:#1a5276 2px solid;
     border-radius: 5px;
-
 }
 .vendor-select {
   width: 100%;
@@ -162,6 +168,7 @@
     font-size: 14px;
     grid-area: b;
     color: #47556e;
+    font-weight: bold;
     background-color: #ffff;
 }
 .stat-box .total{

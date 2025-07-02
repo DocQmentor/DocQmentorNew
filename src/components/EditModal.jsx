@@ -292,13 +292,13 @@ const EditModal = () => {
                     className="ManualReview-Edit-editDetails-form-ul-Cancel"
                     onClick={handleCancel}
                   >
-                    <X size={20} /> Cancel
+                    <X size={20} className="ManualReview-Edit-editDetails-form-ul-Cancel-i" /> Cancel
                   </li>
                   <li
                     className="ManualReview-Edit-editDetails-form-ul-Save-Changes"
                     onClick={handleSave}
                   >
-                    <Save size={20} /> Save Changes
+                    <Save size={20} className="ManualReview-Edit-editDetails-form-ul-Save-Changes-i"/> Save Changes
                   </li>
                 </ul>
               </form>

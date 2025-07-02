@@ -420,7 +420,7 @@ const handleViewDocument = (file) => {
             <h2>Dashboard</h2>
             <p>View your document processing activity and insights</p>
           </div>
-          <div>
+          <div className="Dashboard-main-section-vendor-select">
             <label className="select">Select Vendor:</label>
             <select
               className="vendor-dropdown"

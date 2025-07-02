@@ -72,15 +72,6 @@ const Header = () => {
               <LayoutDashboard size={20} className="i" /> Dashboard
             </NavLink>
           </li>
-          <li className={location.pathname === '/table' ? 'active' : ''}>
-            <NavLink
-              to="/table"
-              className="a"
-              onClick={(e) => handleNavigationClick(e, '/table')}
-            >
-              <FileText size={20} className="i" /> Data View
-            </NavLink>
-          </li>
           {hasAccess === true && (
             <li className={location.pathname === '/manualreview' ? 'active' : ''}>
                 <NavLink
@@ -92,7 +83,15 @@ const Header = () => {
               </NavLink>
             </li>
           )}
- 
+          <li className={location.pathname === '/table' ? 'active' : ''}>
+            <NavLink
+              to="/table"
+              className="a"
+              onClick={(e) => handleNavigationClick(e, '/table')}
+            >
+              <FileText size={20} className="i" /> Data View
+            </NavLink>
+          </li>
           <li className={location.pathname === '/profile' ? 'active' : ''} onClick={toggleProfile}>
             <div className="a" style={{ cursor: 'pointer' }}>
               <User size={20} className="i" /> {userName}
