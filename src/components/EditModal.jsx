@@ -15,6 +15,26 @@ const formatNumber = (value) => {
   return parseFloat(value).toLocaleString("en-IN");
 };
 
+////
+const formatDate = (timestamp) => {
+  if (!timestamp) return "N/A";
+  const date = new Date(timestamp);
+  return date.toLocaleDateString() + ", " + date.toLocaleTimeString();
+};
+
+const formatFileSize = (bytes) => {
+  if (bytes === undefined || bytes === null) return "N/A";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+const getFileFormat = (fileName) => {
+  if (!fileName) return "PDF";
+  const extension = fileName.split('.').pop().toUpperCase();
+  return extension || "PDF";
+};
+////
 const EditModal = () => {
   const { state } = useLocation();
   const { accounts } = useMsal();
@@ -211,7 +231,6 @@ const EditModal = () => {
             <div className="ManualReview-Edit-editDetails">
               <form className="ManualReview-Edit-editDetails-form">
                 <h3>Edit Details</h3>
-
                 <label>Vendor Name</label>
                 <input
                   type="text"
@@ -328,23 +347,38 @@ const EditModal = () => {
           )}
 
           {pdfDetails && (
-            <div>
-              <ul>
+            <div className="pdf-details-container">
+              <h3>Document Details</h3>
+              <ul className="pdf-details-list">
                 <li>
-                  <p>name:</p>
-                  <p>{selectedDocument.documentName}</p>
+                  <b className="detail-label">File Name:</b>
+                  <span className="detail-value">
+                    {selectedDocument?.metadata?.FileName || selectedDocument?.documentName || "N/A"}
+                  </span>
                 </li>
                 <li>
-                  <p>PDF version:</p>
-                  <p>1.4</p>
+                  <b className="detail-label">File Size:</b>
+                  <span className="detail-value">
+                    {formatFileSize(selectedDocument?.metadata?.FileSize)}
+                  </span>
                 </li>
                 <li>
-                  <p>Page count:</p>
-                  <p>1</p>
+                  <b className="detail-label">Pages:</b>
+                  <span className="detail-value">
+                    {selectedDocument?.metadata?.PageCount || "N/A"}
+                  </span>
                 </li>
                 <li>
-                  <p>Page size:</p>
-                  <p>8.26 x 11.69 in (portrait)</p>
+                  <b className="detail-label">File Format:</b>
+                  <span className="detail-value">
+                    {selectedDocument?.metadata?.FileFormat || getFileFormat(selectedDocument?.documentName)}
+                  </span>
+                </li>
+                <li>
+                  <b className="detail-label">Uploaded Date:</b>
+                  <span className="detail-value">
+                    {formatDate(selectedDocument?.metadata?.UploadDate || selectedDocument?.uploadedAt)}
+                  </span>
                 </li>
               </ul>
             </div>

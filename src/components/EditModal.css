@@ -100,10 +100,17 @@
   flex-direction: column;
   gap: 6px;
   justify-content: space-around;
+  /* border: 1px solid #ccc; */
+  /* border-radius: 10px; */
+  /* padding: 5px; */
 }
 
 .ManualReview-Edit-editDetails-form h3 {
+  font-size: 18px;
   color: #004080;
+  /* margin-bottom: 15px;
+  border-bottom: 2px solid #266898;
+  padding-bottom: 5px; */
 }
 
 .ManualReview-Edit-editDetails-form label {
@@ -152,6 +159,7 @@
   background-color: #2e9a55;
   border: 1px solid #ccc;
 }
+
 /* ===== Version History Section ===== */
 .ManualReview-Edit-versionHistory {
   width: 100%;
@@ -194,15 +202,56 @@
 .ManualReview-Edit-versionHistory li strong {
   color: #004080;
   font-weight: bold;
+  background-color: #f8f9fb;
   margin-right: 4px;
 }
 
 .ManualReview-Edit-versionHistory span {
   font-weight: 500;
+  background-color: #f8f9fb;
   color: #444;
 }
 
 .ManualReview-Edit-versionHistory em {
   font-style: italic;
+  background-color: #f8f9fb;
   color: #666;
+}
+
+/* ===== pdf-details-container ===== */
+.pdf-details-container{
+  width: 100%;
+  background: #fdfdfd;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  font-size: 14px;
+  color: #222;
+}
+.pdf-details-container h3{
+  font-size: 18px;
+  color: #004080;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #266898;
+  padding-bottom: 5px;
+}
+.pdf-details-container ul{
+  border: #ccc 1px solid;
+  border-radius: 10px;
+  background-color: #f8f9fb;
+  padding: 10px;
+}
+.pdf-details-container li{
+  background-color: #f8f9fb;
+  padding: 5px;
+  list-style-type: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.pdf-details-container li b,
+.pdf-details-container li span{
+  background-color: #f8f9fb;
 }
