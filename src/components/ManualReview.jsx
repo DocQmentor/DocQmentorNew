@@ -310,16 +310,15 @@ const ManualReview = () => {
                 />
               </label>
               <label>
-  {/* <strong>Export:</strong> */}
-  <button
-    className="export-button"
-    style={{ marginLeft: "10px" }}
-    onClick={handleExportCSV}
-  >
-    Export CSV
-  </button>
-</label>
-
+                {/* <strong>Export:</strong> */}
+                <button
+                  className="export-button"
+                  style={{ marginLeft: "10px" }}
+                  onClick={handleExportCSV}
+                >
+                  Export CSV
+                </button>
+              </label>
             </div>
             {/* <p>{filteredDocs.length} documents requiring manual review</p> */}
           </div>
@@ -331,32 +330,49 @@ const ManualReview = () => {
             <thead>
               <tr>
                 <th onClick={() => toggleSort("vendorName")}>
-                  Vendor Name {renderSortIcon("vendorName")}
+                  <span className="sortable-header">
+                    Vendor Name {renderSortIcon("vendorName")}
+                  </span>
                 </th>
                 <th onClick={() => toggleSort("invoiceId")}>
-                  Invoice ID {renderSortIcon("invoiceId")}
+                  <span className="sortable-header">
+                    Invoice ID {renderSortIcon("invoiceId")}
+                  </span>
                 </th>
                 <th onClick={() => toggleSort("invoiceDate")}>
-                  Invoice Date {renderSortIcon("invoiceDate")}
+                  <span className="sortable-header">
+                    Invoice Date {renderSortIcon("invoiceDate")}
+                  </span>
                 </th>
                 <th onClick={() => toggleSort("lpoNo")}>
-                  LPO Number {renderSortIcon("lpoNo")}
+                  <span className="sortable-header">
+                    LPO Number {renderSortIcon("lpoNo")}
+                  </span>
                 </th>
                 <th onClick={() => toggleSort("subTotal")}>
-                  Sub Total {renderSortIcon("subTotal")}
+                  <span className="sortable-header">
+                    Sub Total {renderSortIcon("subTotal")}
+                  </span>
                 </th>
                 <th onClick={() => toggleSort("vat")}>
-                  VAT {renderSortIcon("vat")}
+                  <span className="sortable-header">
+                    VAT {renderSortIcon("vat")}
+                  </span>
                 </th>
                 <th onClick={() => toggleSort("invoicetotal")}>
-                  Total {renderSortIcon("invoicetotal")}
+                  <span className="sortable-header">
+                    Total {renderSortIcon("invoicetotal")}
+                  </span>
                 </th>
                 <th onClick={() => toggleSort("confidenceScore")}>
-                  Confidence Score {renderSortIcon("confidenceScore")}
+                  <span className="sortable-header">
+                    Confidence Score {renderSortIcon("confidenceScore")}
+                  </span>
                 </th>
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {paginatedData.length > 0 ? (
                 paginatedData.map((item, index) => (
