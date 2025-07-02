@@ -405,7 +405,7 @@ const ManualReview = () => {
           </table>
 
           {filteredDocs.length > rowsPerPage && (
-            <div style={{ marginTop: "15px", textAlign: "center" }}>
+            <div className="manual-review-table-change-table" style={{ marginTop: "15px", textAlign: "center" }}>
               <button
                 onClick={handlePrevious}
                 disabled={currentPage === 1}

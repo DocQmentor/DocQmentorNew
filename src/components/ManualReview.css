@@ -315,3 +315,12 @@ footer {
 .modal button:hover {
   background-color: #0056b3;
 }
+.manual-review-table-change-table{
+  color: #0056b3;
+}
+.manual-review-table-change-table button{
+  /* border: #004080 1px solid; */
+  border: #007bff 2px solid;
+  border-radius: 10px;
+  color: #004080;
+}
