@@ -66,7 +66,14 @@ function Table() {
     history: [],
     docName: "",
   });
-
+  const handleResetFilters = () => {
+  setVendorFilter("");
+  setFromDate("");
+  setToDate("");
+  setUploadDateFilter("all");
+  setSearchQuery("");
+  setCurrentPage(1);
+};
   useEffect(() => {
     async function fetchInvoices() {
       setLoading(true);
@@ -331,6 +338,11 @@ function Table() {
           </label>
           <div className="search-export-bar">
             <button onClick={handleExportCSV}>Export</button>
+          </div>
+          <div className="reset-export-bar">
+            <button onClick={handleResetFilters}>
+              Reset
+            </button>
           </div>
         </div>
 

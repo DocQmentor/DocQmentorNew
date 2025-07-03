@@ -220,7 +220,7 @@ const EditModal = () => {
               >
                 <File size={20} /> PDF Details
               </li>
-              <li onClick={handleCancel}>
+              <li className="ManualReview-Edit-options-nav-li" onClick={handleCancel}>
                 <X size={20} />
               </li>
             </ul>

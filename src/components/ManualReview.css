@@ -29,9 +29,9 @@
 .filters {
   display: flex;
   gap: 20px;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
   justify-content: space-around;
-  align-items: flex-end;
+  align-items: center;
   margin-bottom: 25px;
 }
 
@@ -50,11 +50,12 @@
   padding: 6px 10px;
   font-size: 14px;
   margin-top: 4px;
-  min-width: 200px;
+  min-width: 100px;
 }
 
 /* ===== Export Button ===== */
-.export-button {
+.export-button,
+.reset-button {
   background-color: #004080;
   color: white;
   border: none;
@@ -67,7 +68,8 @@
   transition: background 0.3s ease;
 }
 
-.export-button:hover {
+.export-button:hover,
+.reset-button:hover {
   background-color: red;
 }
 

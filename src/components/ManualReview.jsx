@@ -25,6 +25,14 @@ const ManualReview = () => {
   const rowsPerPage = 10;
   const navigate = useNavigate();
 
+  const handleResetFilters = () => {
+    setVendorFilter("");
+    setFromDate("");
+    setToDate("");
+    setUploadDateFilter("all");
+    setSearchQuery("");
+  };
+
   const getString = (val) => {
     if (!val) return "";
     if (typeof val === "string" || typeof val === "number") return val;
@@ -275,7 +283,7 @@ const ManualReview = () => {
                 />
               </label>
               <label>
-                <strong>From Date:</strong>
+                <strong>INV From Date:</strong>
                 <input
                   type="date"
                   value={fromDate}
@@ -283,7 +291,7 @@ const ManualReview = () => {
                 />
               </label>
               <label>
-                <strong>To Date:</strong>
+                <strong>INV To Date:</strong>
                 <input
                   type="date"
                   value={toDate}
@@ -320,6 +328,16 @@ const ManualReview = () => {
                   Export CSV
                 </button>
               </label>
+              <label>
+                <button
+                  className="reset-button"
+                  style={{ marginLeft: "10px" }}
+                  onClick={handleResetFilters}
+                >
+                  Reset
+                </button>
+              </label>
+              
             </div>
             {/* <p>{filteredDocs.length} documents requiring manual review</p> */}
           </div>
