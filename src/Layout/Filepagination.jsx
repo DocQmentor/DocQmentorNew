@@ -50,7 +50,8 @@ const FilePagination = ({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className={`pagination ${className}`}>
+  <div className={`pagination-container ${className}`}>
+    <div className="pagination">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -74,7 +75,7 @@ const FilePagination = ({
           )}
         </React.Fragment>
       ))}
-      
+
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
@@ -82,15 +83,17 @@ const FilePagination = ({
       >
         {nextLabel}
       </button>
-
-      {rowsPerPage && totalItems && (
-        <span className="pagination-count">
-          Showing {(currentPage - 1) * rowsPerPage + 1}-
-          {Math.min(currentPage * rowsPerPage, totalItems)} of {totalItems} items
-        </span>
-      )}
     </div>
-  );
+
+    {rowsPerPage && totalItems && (
+      <div className="pagination-count">
+        Showing {(currentPage - 1) * rowsPerPage + 1}-
+        {Math.min(currentPage * rowsPerPage, totalItems)} of {totalItems} items
+      </div>
+    )}
+  </div>
+);
+
 };
 
 FilePagination.propTypes = {

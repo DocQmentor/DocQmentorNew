@@ -1,21 +1,43 @@
+/* ===== Pagination Container ===== */
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  margin-top: 15px;
-  gap: 5px;
+  margin-top: 20px;
+  gap: 8px;
 }
 
-.pagination-button {
-  padding: 6px 12px;
+/* ===== Active Page Button (Matches View Button Style) ===== */
+.pagination-button.active {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #1a5276;
+  color: white;
+  font-size: 14px;
   cursor: pointer;
-  border: 1px solid #ddd;
-  background: white;
-  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.pagination-button.active:hover {
+  background-color: #154360;
+}
+
+/* ===== Regular Page Buttons ===== */
+.pagination-button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #f2f2f2;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .pagination-button:hover:not(:disabled) {
-  background: #f0f0f0;
+  background-color: #dcdcdc;
 }
 
 .pagination-button:disabled {
@@ -23,17 +45,18 @@
   cursor: not-allowed;
 }
 
-.pagination-button.active {
-  background: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
+/* ===== Ellipsis Styling ===== */
 .pagination-ellipsis {
-  padding: 6px 12px;
+  padding: 6px 14px;
+  font-size: 14px;
+  color: #888;
 }
 
+/* ===== "Showing X–Y of Z items" Styling ===== */
 .pagination-count {
-  margin-left: 15px;
-  color: #666;
+  width: 100%;
+  text-align: center;
+  font-size: 15px;
+  color: #555;
+  margin-top: 6px;
 }

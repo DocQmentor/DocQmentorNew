@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Dashboard.css";
-import Filepagination from '../Layout/Filepagination.jsx';
+import Filepagination from "../Layout/Filepagination.jsx";
 import {
   Upload,
   Trash2,
@@ -20,6 +20,7 @@ import { useMsal } from "@azure/msal-react";
 import { useUser } from "../context/UserContext";
 import { sasToken } from "../sasToken";
 import useGroupAccess from "../utils/userGroupAccess";
+import FilePagination from "../Layout/Filepagination.jsx";
 const Dashboard = () => {
   const hasAccess = useGroupAccess();
   const { accounts } = useMsal();
@@ -174,8 +175,12 @@ const Dashboard = () => {
           }
         });
 
-        setMyFiles(updatedFiles);
-        localStorage.setItem("myUploads", JSON.stringify(updatedFiles));
+        const latest50 = updatedFiles
+          .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
+          .slice(0, 50);
+
+        setMyFiles(latest50);
+        localStorage.setItem("myUploads", JSON.stringify(latest50));
       } catch (error) {
         console.error("Error loading backend documents:", error);
       }
@@ -367,14 +372,18 @@ const Dashboard = () => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const filteredMyFiles = getFilteredMyFiles()
-    .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
-    .slice(0, 50);
+  const filteredMyFiles = getFilteredMyFiles().sort(
+    (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)
+  );
 
+  const latest50Files = filteredMyFiles.slice(0, 50);
+
+  const totalItems = latest50Files.length;
   const indexOfLast = currentPage * documentsPerPage;
   const indexOfFirst = indexOfLast - documentsPerPage;
-  const currentDocs = filteredMyFiles.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredMyFiles.length / documentsPerPage);
+  const currentDocs = latest50Files.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(totalItems / documentsPerPage);
+
   const stats = getDocumentStats();
 
   const handleManualReviewClick = () => {
@@ -540,23 +549,18 @@ const Dashboard = () => {
               <thead>
                 <tr>
                   <th>
-                    {" "}
                     <span className="sortable-header">Name</span>
                   </th>
                   <th>
-                    {" "}
                     <span className="sortable-header">Status</span>
                   </th>
                   <th>
-                    {" "}
                     <span className="sortable-header">Uploaded</span>
                   </th>
                   <th>
-                    {" "}
                     <span className="sortable-header">Date</span>
                   </th>
                   <th>
-                    {" "}
                     <span className="sortable-header">Actions</span>
                   </th>
                 </tr>
@@ -610,7 +614,7 @@ const Dashboard = () => {
                 )}
               </tbody>
             </table>
-            <div className="pagination">
+            {/* <div className="pagination">
               {Array.from({ length: totalPages }, (_, i) => (
                 <button
                   key={i}
@@ -622,7 +626,14 @@ const Dashboard = () => {
                   {i + 1}
                 </button>
               ))}
-            </div>
+            </div> */}
+            <FilePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              rowsPerPage={documentsPerPage}
+              totalItems={totalItems}
+            />
           </div>
         </div>
       </div>

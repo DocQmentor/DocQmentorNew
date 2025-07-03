@@ -36,6 +36,9 @@ html, body {
 
 .dataview-container th:nth-child(4),
 .dataview-container td:nth-child(4) {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  text-overflow: unset;
   width: 120px; /* LPO Number */
 }
 

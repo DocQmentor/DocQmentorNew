@@ -7,6 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useSortableData from "../utils/useSortableData";
 import { Info } from "lucide-react";
+import FilePagination from "../Layout/Filepagination";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -480,7 +481,7 @@ function Table() {
                 </div>
               )}
 
-              {filteredData.length > rowsPerPage && (
+              {/* {filteredData.length > rowsPerPage && (
                 <div style={{ marginTop: "15px", textAlign: "center" }}>
                   <button onClick={handlePrevious} disabled={currentPage === 1}>
                     Previous
@@ -493,7 +494,15 @@ function Table() {
                     Next
                   </button>
                 </div>
-              )}
+              )} */}
+              <FilePagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  onPageChange={setCurrentPage}
+  rowsPerPage={rowsPerPage}
+  totalItems={sortedData.length}
+/>
+
             </>
           )}
         </ErrorBoundary>
