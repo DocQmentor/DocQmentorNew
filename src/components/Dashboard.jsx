@@ -54,9 +54,8 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const minimalUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
-setMyFiles(minimalUploads);
-
+    const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
+    setMyFiles(localUploads);
   }, []);
 
   const hasAllMandatoryFields = (doc) => {
@@ -280,14 +279,11 @@ localStorage.setItem("myUploads", JSON.stringify(safeUploads));
     setIsUploading(true);
     const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
 
-   const newUploads = selectedFiles.map((fileObj) => ({
-  fileName: fileObj.fileName,
-  uploadId: fileObj.uploadId || `${fileObj.fileName}-${Date.now()}`,
-  uploadedAt: fileObj.uploadedAt || new Date().toISOString(),
-  status: "In Process",
-  url: null,
-}));
-
+    const newUploads = selectedFiles.map((fileObj) => ({
+      ...fileObj,
+      uploadId: fileObj.uploadId || `${fileObj.fileName}-${Date.now()}`,
+      status: "In Process",
+    }));
 
     const updatedLocalUploads = [...newUploads, ...localUploads];
     localStorage.setItem("myUploads", JSON.stringify(updatedLocalUploads));
@@ -333,18 +329,8 @@ localStorage.setItem("myUploads", JSON.stringify(safeUploads));
                 }
               : f
           );
-          
-setMyFiles(updated);
-
-// Only store safe fields
-const safeUpdated = updated.map(({ fileName, uploadId, uploadedAt, status, url }) => ({
-  fileName,
-  uploadId,
-  uploadedAt,
-  status,
-  url,
-}));
-localStorage.setItem("myUploads", JSON.stringify(safeUpdated));
+          setMyFiles(updated);
+          localStorage.setItem("myUploads", JSON.stringify(updated));
 
           // Send to backend
           const payload = {
