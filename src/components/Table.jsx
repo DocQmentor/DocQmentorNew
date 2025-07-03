@@ -294,7 +294,7 @@ function Table() {
             />
           </label>
           <label>
-            <strong>From Date:</strong>
+            <strong>INV From Date:</strong>
             <input
               type="date"
               value={fromDate}
@@ -302,7 +302,7 @@ function Table() {
             />
           </label>
           <label>
-            <strong>To Date:</strong>
+            <strong>INV To Date:</strong>
             <input
               type="date"
               value={toDate}

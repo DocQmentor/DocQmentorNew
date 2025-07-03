@@ -15,7 +15,6 @@ const formatNumber = (value) => {
   return parseFloat(value).toLocaleString("en-IN");
 };
 
-////
 const formatDate = (timestamp) => {
   if (!timestamp) return "N/A";
   const date = new Date(timestamp);
@@ -34,7 +33,7 @@ const getFileFormat = (fileName) => {
   const extension = fileName.split('.').pop().toUpperCase();
   return extension || "PDF";
 };
-////
+
 const EditModal = () => {
   const { state } = useLocation();
   const { accounts } = useMsal();
@@ -48,8 +47,8 @@ const EditModal = () => {
   const selectedDocument = state?.selectedDocument;
   const initialEditedData = state?.editedData;
 
-  const refreshData = () => window.location.reload(); // fallback
-  const setShow = () => navigate(-1); // fallback
+  const refreshData = () => window.location.reload();
+  const setShow = () => navigate(-1);
 
   const [editDetails, setEditDetails] = useState(true);
   const [versionHistory, setVersionHistory] = useState(false);

@@ -54,8 +54,9 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
-    setMyFiles(localUploads);
+    const minimalUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
+setMyFiles(minimalUploads);
+
   }, []);
 
   const hasAllMandatoryFields = (doc) => {
@@ -180,7 +181,17 @@ const Dashboard = () => {
           .slice(0, 50);
 
         setMyFiles(latest50);
-        localStorage.setItem("myUploads", JSON.stringify(latest50));
+
+// Only store minimal metadata in localStorage to avoid quota overflow
+const safeUploads = latest50.map(({ fileName, uploadId, uploadedAt, status, url }) => ({
+  fileName,
+  uploadId,
+  uploadedAt,
+  status,
+  url,
+}));
+localStorage.setItem("myUploads", JSON.stringify(safeUploads));
+
       } catch (error) {
         console.error("Error loading backend documents:", error);
       }
@@ -269,11 +280,14 @@ const Dashboard = () => {
     setIsUploading(true);
     const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
 
-    const newUploads = selectedFiles.map((fileObj) => ({
-      ...fileObj,
-      uploadId: fileObj.uploadId || `${fileObj.fileName}-${Date.now()}`,
-      status: "In Process",
-    }));
+   const newUploads = selectedFiles.map((fileObj) => ({
+  fileName: fileObj.fileName,
+  uploadId: fileObj.uploadId || `${fileObj.fileName}-${Date.now()}`,
+  uploadedAt: fileObj.uploadedAt || new Date().toISOString(),
+  status: "In Process",
+  url: null,
+}));
+
 
     const updatedLocalUploads = [...newUploads, ...localUploads];
     localStorage.setItem("myUploads", JSON.stringify(updatedLocalUploads));
@@ -319,8 +333,18 @@ const Dashboard = () => {
                 }
               : f
           );
-          setMyFiles(updated);
-          localStorage.setItem("myUploads", JSON.stringify(updated));
+          
+setMyFiles(updated);
+
+// Only store safe fields
+const safeUpdated = updated.map(({ fileName, uploadId, uploadedAt, status, url }) => ({
+  fileName,
+  uploadId,
+  uploadedAt,
+  status,
+  url,
+}));
+localStorage.setItem("myUploads", JSON.stringify(safeUpdated));
 
           // Send to backend
           const payload = {
