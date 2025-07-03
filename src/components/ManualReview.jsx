@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./ManualReview.css";
 import Footer from "../Layout/Footer";
+import FilePagination from '../Layout/Filepagination';
 import EditModal from "./EditModal";
 import { useNavigate } from "react-router-dom";
 import useSortableData from "../utils/useSortableData";
@@ -405,23 +406,15 @@ const ManualReview = () => {
           </table>
 
           {filteredDocs.length > rowsPerPage && (
-            <div className="manual-review-table-change-table" style={{ marginTop: "15px", textAlign: "center" }}>
-              <button
-                onClick={handlePrevious}
-                disabled={currentPage === 1}
-                style={{ padding: "6px 10px", marginRight: "10px" }}
-              >
-                Previous
-              </button>
-              Page {currentPage} of {totalPages}
-              <button
-                onClick={handleNext}
-                disabled={currentPage === totalPages}
-                style={{ padding: "6px 10px", marginLeft: "10px" }}
-              >
-                Next
-              </button>
-            </div>
+            <FilePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              rowsPerPage={10}
+              totalItems={100}
+              previousLabel="Back"
+              nextLabel="Next >"
+            />
           )}
         </div>
       ) : (
