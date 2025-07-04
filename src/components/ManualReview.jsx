@@ -100,35 +100,51 @@ const ManualReview = () => {
           "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ=="
         );
         const data = await response.json();
-        const docsNeedingReview = data.filter((doc) => {
-          if (doc.wasReviewed) return false;
-          const extracted = doc.extractedData || {};
-          const confidence = doc.confidenceScores || {};
-          const totalScore = doc.totalConfidenceScore || 0;
+       const docsNeedingReview = data
+  .filter((doc) => {
+    const extracted = doc.extractedData || {};
+    const confidence = doc.confidenceScores || {};
+    const totalScore = parseFloat(doc.totalConfidenceScore || 0);
 
-          const requiredFields = [
-            "VendorName",
-            "InvoiceId",
-            "InvoiceDate",
-            "LPO NO",
-            "SubTotal",
-            "VAT",
-            "InvoiceTotal",
-          ];
+    // Prevent reviewed files
+    const isReviewed =
+      doc.status === "Reviewed" ||
+      doc.reviewStatus === "Reviewed" ||
+      doc.reviewedBy ||
+      doc.wasReviewed;
 
-          const hasMissing = requiredFields.some(
-            (field) => !extracted[field] || !getString(extracted[field])
-          );
+    // Skip if processing not finished (no confidence at all)
+    const hasNoAIData = !Object.keys(confidence).length;
 
-          const lowFieldConfidence = requiredFields.some(
-            (field) =>
-              confidence[field] !== undefined && confidence[field] < 0.85
-          );
+    if (isReviewed || hasNoAIData) return false;
 
-          const lowTotalConfidence = totalScore < 85;
+    const requiredFields = [
+      "VendorName",
+      "InvoiceId",
+      "InvoiceDate",
+      "LPO NO",
+      "SubTotal",
+      "VAT",
+      "InvoiceTotal",
+    ];
 
-          return hasMissing || lowFieldConfidence || lowTotalConfidence;
-        });
+    const hasMissing = requiredFields.some(
+      (field) => !extracted[field] || getString(extracted[field]).trim() === ""
+    );
+
+    const lowConfidence = requiredFields.some(
+  (field) => confidence[field] !== undefined && parseFloat(confidence[field]) < 0.85
+);
+
+
+    const needsReview =
+  hasMissing ||
+  (lowConfidence && totalScore < 85); // Only flag if BOTH low confidence AND total score is poor
+
+return needsReview;
+
+  });
+
 
         setManualReviewDocs(docsNeedingReview);
         setError(null);

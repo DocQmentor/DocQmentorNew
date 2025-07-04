@@ -96,82 +96,89 @@ const EditModal = () => {
   };
 
   const handleSave = async () => {
-    const isEmpty = Object.entries(edited).some(
-      ([key, value]) => !value || value.trim() === ""
+  const isEmpty = Object.entries(edited).some(
+    ([key, value]) => !value || value.trim() === ""
+  );
+
+  if (isEmpty) {
+    alert("⚠️ Please fill all fields before saving.");
+    return;
+  }
+
+  try {
+    const score = selectedDocument.totalConfidenceScore;
+    let numericScore =
+      typeof score === "string"
+        ? parseFloat(score.replace(/[^\d.]/g, ""))
+        : Number(score);
+
+    const reviewedScore = isNaN(numericScore)
+      ? "Reviewed"
+      : `${numericScore.toFixed(2)}% Reviewed`;
+
+    const existingHistory = Array.isArray(selectedDocument.versionHistory)
+      ? [...selectedDocument.versionHistory]
+      : [];
+
+    const newVersion = {
+      version: existingHistory.length + 1,
+      action: "Reviewed",
+      timestamp: new Date().toISOString(),
+      user: {
+        id: currentUser.id || "unknown@domain.com",
+        name: currentUser.name || "Unknown User",
+      },
+    };
+
+    const updatedDoc = {
+      ...selectedDocument,
+      id: selectedDocument.id, // ⬅️ ensure ID exists
+      extractedData: {
+        VendorName: edited.VendorName,
+        InvoiceId: edited.InvoiceId,
+        InvoiceDate: edited.InvoiceDate,
+        "LPO NO": edited.LPO,
+        SubTotal: edited.SubTotal,
+        VAT: edited.VAT,
+        InvoiceTotal: edited.InvoiceTotal,
+      },
+      wasReviewed: true,
+      reviewedBy: {
+        id: currentUser.id || "unknown@domain.com",
+        name: currentUser.name || "Unknown User",
+      },
+      reviewedAt: new Date().toISOString(),
+      totalConfidenceScore: reviewedScore,
+      status: "Reviewed",
+      versionHistory: [...existingHistory, newVersion],
+      fileUrl: selectedDocument.fileUrl || "",
+      blobUrl: selectedDocument.blobUrl || "",
+    };
+
+    console.log("📤 Sending to PUT:", updatedDoc); // ✅ Debug log
+
+    const response = await fetch(
+      "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedDoc),
+      }
     );
 
-    if (isEmpty) {
-      alert("⚠️ Please fill all fields before saving.");
-      return;
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error("Failed to update: " + errText);
     }
 
-    try {
-      const score = selectedDocument.totalConfidenceScore;
-      let numericScore =
-        typeof score === "string"
-          ? parseFloat(score.replace(/[^\d.]/g, ""))
-          : Number(score);
-
-      const reviewedScore = isNaN(numericScore)
-        ? "Reviewed"
-        : `${numericScore.toFixed(2)}% Reviewed`;
-
-      const existingHistory = Array.isArray(selectedDocument.versionHistory)
-        ? [...selectedDocument.versionHistory]
-        : [];
-
-      const newVersion = {
-        version: existingHistory.length + 1,
-        action: "Reviewed",
-        timestamp: new Date().toISOString(),
-        user: {
-          id: currentUser.id || "unknown@domain.com",
-          name: currentUser.name || "Unknown User",
-        },
-      };
-
-      const updatedDoc = {
-        ...selectedDocument,
-        extractedData: {
-          VendorName: edited.VendorName,
-          InvoiceId: edited.InvoiceId,
-          InvoiceDate: edited.InvoiceDate,
-          "LPO NO": edited.LPO,
-          SubTotal: edited.SubTotal,
-          VAT: edited.VAT,
-          InvoiceTotal: edited.InvoiceTotal,
-        },
-        wasReviewed: true,
-        reviewedBy: {
-          id: currentUser.id || "unknown@domain.com",
-          name: currentUser.name || "Unknown User",
-        },
-        reviewedAt: new Date().toISOString(),
-        totalConfidenceScore: reviewedScore,
-        status: "Reviewed",
-        versionHistory: [...existingHistory, newVersion],
-        fileUrl: selectedDocument.fileUrl || "",
-        blobUrl: selectedDocument.blobUrl || "",
-      };
-
-      const response = await fetch(
-        "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedDoc),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to update");
-
-      refreshData();
-      setShow(true);
-      setSaveSuccessful(true);
-    } catch (err) {
-      console.error("❌ Save error:", err);
-    }
-  };
+    refreshData();     // Refresh ManualReview list
+    setShow(true);     // Navigate back
+    setSaveSuccessful(true); // Redirect to Table
+  } catch (err) {
+    console.error("❌ Save error:", err);
+    alert("❌ Failed to update document:\n" + err.message);
+  }
+};
 
   return (
     <div className="ManualReview-Edit-main-container">

@@ -42,15 +42,19 @@ const extractFolderName = (filename) => {
 };
 
 export const uploadToAzure = async (file, onProgress) => {
-  const fileName = file.name;
-  const folderName = extractFolderName(fileName);
-  const blobPath = `${encodeURIComponent(folderName)}/${encodeURIComponent(
-    fileName
-  )}`;
+  const originalFileName = file.name;
+  const folderName = extractFolderName(originalFileName);
+
+  // ✅ Generate a unique blob file name using timestamp
+  const timestamp = Date.now();
+  const uniqueFileName = `${timestamp}-${originalFileName}`;
+
+  // ✅ Keep folder structure
+  const blobPath = `${encodeURIComponent(folderName)}/${encodeURIComponent(uniqueFileName)}`;
   const blobUrl = `${storageAccountUrl}/${containerName}/${blobPath}${sasToken}`;
 
   try {
-    // Upload file to Azure Blob Storage
+    // Upload to Azure Blob
     const response = await axios.put(blobUrl, file, {
       headers: {
         "x-ms-blob-type": "BlockBlob",
@@ -58,26 +62,25 @@ export const uploadToAzure = async (file, onProgress) => {
       },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           onProgress(percent);
         }
       },
     });
 
     if (response.status === 201 || response.status === 200) {
-      // Now call Azure Function with full blobUrl and documentName
-      await axios.post(
-        "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
-        {
-          blobUrl,
-          documentName: fileName,
-        }
-      );
+      // ✅ Send blobUrl and originalFileName to Azure Function
+      // await axios.post(
+      //   "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
+      //   {
+      //     blobUrl,
+      //     documentName: originalFileName, // ✅ send original name
+      //   }
+      // );
 
       return {
-        fileName,
+        fileName: originalFileName, // shown in UI
+        uniqueBlobName: uniqueFileName, // stored internally
         folderName,
         uploadedAt: new Date(),
         status: "In Process",
@@ -92,3 +95,4 @@ export const uploadToAzure = async (file, onProgress) => {
     return null;
   }
 };
+

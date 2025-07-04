@@ -181,16 +181,17 @@ const Dashboard = () => {
 
         setMyFiles(latest50);
 
-// Only store minimal metadata in localStorage to avoid quota overflow
-const safeUploads = latest50.map(({ fileName, uploadId, uploadedAt, status, url }) => ({
-  fileName,
-  uploadId,
-  uploadedAt,
-  status,
-  url,
-}));
-localStorage.setItem("myUploads", JSON.stringify(safeUploads));
-
+        // Only store minimal metadata in localStorage to avoid quota overflow
+        const safeUploads = latest50.map(
+          ({ fileName, uploadId, uploadedAt, status, url }) => ({
+            fileName,
+            uploadId,
+            uploadedAt,
+            status,
+            url,
+          })
+        );
+        localStorage.setItem("myUploads", JSON.stringify(safeUploads));
       } catch (error) {
         console.error("Error loading backend documents:", error);
       }
