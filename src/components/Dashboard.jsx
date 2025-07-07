@@ -275,95 +275,65 @@ const Dashboard = () => {
     fileInputRef.current.click();
   };
 
-  const handleProcessFiles = async () => {
+ const handleProcessFiles = async () => {
     if (selectedFiles.length === 0) return;
+
     setIsUploading(true);
-    const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
+    const uploadToastId = toast.loading("Uploading files...");
 
-    const newUploads = selectedFiles.map((fileObj) => ({
-      ...fileObj,
-      uploadId: fileObj.uploadId || `${fileObj.fileName}-${Date.now()}`,
-      status: "In Process",
-    }));
-
-    const updatedLocalUploads = [...newUploads, ...localUploads];
-    localStorage.setItem("myUploads", JSON.stringify(updatedLocalUploads));
-    setMyFiles(updatedLocalUploads);
+    const updatedMyFiles = [...myFiles];
 
     for (const fileObj of selectedFiles) {
-      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
-        autoClose: 1000,
-      });
-
       try {
         const result = await uploadToAzure(fileObj.file, (percent) => {
-          toast.update(toastId, {
-            render: `${fileObj.fileName} uploading: ${percent}%`,
+          toast.update(uploadToastId, {
+            render: `Uploading ${fileObj.fileName}: ${percent}%`,
             isLoading: percent < 100,
-            autoClose: percent >= 100 ? 2000 : false,
           });
         });
 
-        if (result) {
-          toast.success(`${fileObj.fileName} uploaded successfully!`);
+        toast.success(`${fileObj.fileName} uploaded successfully!`);
 
-          const versionHistory = [
+        const payload = {
+          documentName: fileObj.fileName,
+          blobUrl: result.url,
+          uploadedBy: { id: email || currentUser.id, name: name || currentUser.name },
+          versionHistory: [
             {
               version: 1,
               action: "Uploaded",
               timestamp: new Date().toISOString(),
-              user: {
-                id: email || currentUser.id,
-                name: name || currentUser.name,
-              },
+              user: { id: email || currentUser.id, name: name || currentUser.name },
             },
-          ];
+          ],
+          uploadId: fileObj.uploadId,
+        };
 
-          // Update local UI immediately with URL
-          const updated = updatedLocalUploads.map((f) =>
-            f.uploadId === fileObj.uploadId
-              ? {
-                  ...f,
-                  url: result.url,
-                  versionHistory,
-                  status: "In Process",
-                }
-              : f
-          );
-          setMyFiles(updated);
-          localStorage.setItem("myUploads", JSON.stringify(updated));
+        await fetch("https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-          // Send to backend
-          const payload = {
-            documentName: fileObj.fileName,
-            blobUrl: result.url,
-            uploadedBy: {
-              id: email || currentUser.id,
-              name: name || currentUser.name,
-            },
-            versionHistory,
-            uploadId: fileObj.uploadId,
-          };
+        updatedMyFiles.unshift({
+          fileName: fileObj.fileName,
+          uploadId: fileObj.uploadId,
+          uploadedAt: new Date().toISOString(),
+          status: "In Process",
+          url: result.url,
+          processedData: payload,
+        });
 
-          await fetch(
-            "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(payload),
-            }
-          );
-        }
       } catch (err) {
-        console.error(`Failed to upload ${fileObj.fileName}:`, err);
+        console.error(`Error uploading ${fileObj.fileName}:`, err);
         toast.error(`Failed to upload ${fileObj.fileName}`);
       }
     }
 
+    setMyFiles(updatedMyFiles);
     setSelectedFiles([]);
     setIsUploading(false);
+    toast.dismiss(uploadToastId);
   };
 
   const formatDate = (dateString) => {
@@ -419,20 +389,24 @@ const Dashboard = () => {
     }
   };
 
-  const handleViewDocument = (file) => {
-    let rawUrl = file.blobUrl || file.url || file.processedData?.blobUrl;
+ const handleViewDocument = (file) => {
+  let url = null;
+  if (file.blobUrl && file.blobUrl.startsWith("http")) {
+    url = file.blobUrl;
+  } else if (file.url && file.url.startsWith("http")) {
+    url = file.url;
+  } else if (file.processedData?.blobUrl) {
+    url = file.processedData.blobUrl;
+  }
 
-    if (!rawUrl || !rawUrl.startsWith("http")) {
-      toast.error("File URL is not available");
-      return;
-    }
+  if (url) {
+    window.open(url, "_blank");
+  } else {
+    toast.error("File URL is not available");
+    console.warn("⚠️ Cannot open file. Data:", file);
+  }
+};
 
-    const baseUrl = rawUrl.split("?")[0];
-    const cleanSasToken = sasToken.startsWith("?") ? sasToken : `?${sasToken}`;
-    const finalUrl = `${baseUrl}${cleanSasToken}`;
-
-    window.open(finalUrl, "_blank");
-  };
 
   return (
     <div className="dashboard-total-container">
