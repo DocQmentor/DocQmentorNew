@@ -210,20 +210,18 @@ const Dashboard = () => {
     );
   };
 
-  const getFilteredMyFiles = () => {
-    const userEmail = email || currentUser.id;
+  const getFilteredRecentDocuments = () => {
+  const userEmail = email || currentUser.id;
 
-    return myFiles
-      .filter((file) => {
-        const uploadedBy = file.processedData?.uploadedBy?.id;
-        return uploadedBy === userEmail;
-      })
-      .filter((file) => {
-        if (!selectedVendor) return true;
-        const docName = file.processedData?.documentName || file.fileName;
-        return docName.toLowerCase().includes(selectedVendor.toLowerCase());
-      });
-  };
+  return allDocuments
+    .filter((doc) => doc.uploadedBy?.id === userEmail)
+    .filter((doc) => {
+      if (!selectedVendor) return true;
+      const docName = doc.documentName || doc.fileName;
+      return docName.toLowerCase().includes(selectedVendor.toLowerCase());
+    })
+    .sort((a, b) => new Date(b.processedAt || b.uploadedAt) - new Date(a.processedAt || a.uploadedAt));
+};
 
   const getDocumentStats = () => {
     const filteredDocs = getFilteredDocuments();
@@ -353,17 +351,12 @@ const Dashboard = () => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const filteredMyFiles = getFilteredMyFiles().sort(
-    (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)
-  );
-
-  const latest50Files = filteredMyFiles.slice(0, 50);
-
-  const totalItems = latest50Files.length;
-  const indexOfLast = currentPage * documentsPerPage;
-  const indexOfFirst = indexOfLast - documentsPerPage;
-  const currentDocs = latest50Files.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(totalItems / documentsPerPage);
+  const recentDocs = getFilteredRecentDocuments();
+const totalItems = recentDocs.length;
+const indexOfLast = currentPage * documentsPerPage;
+const indexOfFirst = indexOfLast - documentsPerPage;
+const currentDocs = recentDocs.slice(indexOfFirst, indexOfLast);
+const totalPages = Math.ceil(totalItems / documentsPerPage); 
 
   const stats = getDocumentStats();
 
@@ -554,39 +547,20 @@ const Dashboard = () => {
                 {currentDocs.length > 0 ? (
                   currentDocs.map((file, index) => (
                     <tr key={index}>
-                      <td>{file.fileName}</td>
-                      <td>
-                        <span
-                          className={`badge ${file.status
-                            ?.toLowerCase()
-                            .replace(" ", "-")}`}
-                        >
-                          {file.status}
-                        </span>
-                      </td>
-                      <td>{formatDate(file.uploadedAt)}</td>
-                      <td>{new Date(file.uploadedAt).toLocaleDateString()}</td>
-                      <td>
-                        <button
-                          className="action-btn"
-                          onClick={() => handleViewDocument(file)}
-                        >
-                          View
-                        </button>
-                        {/* <button
-                          onClick={() => handleDeleteMyUpload(file.uploadId)}
-                          style={{
-                            marginLeft: "8px",
-                            backgroundColor: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                          }}
-                          title="Delete"
-                        >
-                          <Trash2 size={16} color="#dc3545" />
-                        </button> */}
-                      </td>
-                    </tr>
+  <td>{file.documentName || file.fileName}</td>
+  <td>
+    <span className={`badge ${determineStatus(file)?.toLowerCase().replace(" ", "-")}`}>
+      {determineStatus(file)}
+    </span>
+  </td>
+  <td>{formatDate(file.processedAt || file.uploadedAt)}</td>
+  <td>{new Date(file.processedAt || file.uploadedAt).toLocaleDateString()}</td>
+  <td>
+    <button className="action-btn" onClick={() => handleViewDocument(file)}>
+      View
+    </button>
+  </td>
+</tr>
                   ))
                 ) : (
                   <tr>
