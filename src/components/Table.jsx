@@ -67,13 +67,13 @@ function Table() {
     docName: "",
   });
   const handleResetFilters = () => {
-  setVendorFilter("");
-  setFromDate("");
-  setToDate("");
-  setUploadDateFilter("all");
-  setSearchQuery("");
-  setCurrentPage(1);
-};
+    setVendorFilter("");
+    setFromDate("");
+    setToDate("");
+    setUploadDateFilter("all");
+    setSearchQuery("");
+    setCurrentPage(1);
+  };
   useEffect(() => {
     async function fetchInvoices() {
       setLoading(true);
@@ -105,6 +105,12 @@ function Table() {
                   const score = confidence[field] ?? 1;
                   if (!val || score < 0.85) return false;
                 }
+               const totalScoreRaw = doc.totalConfidenceScore || "0";
+const totalScore = parseFloat(totalScoreRaw.toString().replace('%', ''));
+
+const isReviewed = doc.status === "Reviewed";
+
+if ((isNaN(totalScore) || totalScore < 85) && !isReviewed) return false;
 
                 return true;
               })
@@ -340,9 +346,7 @@ function Table() {
             <button onClick={handleExportCSV}>Export</button>
           </div>
           <div className="reset-export-bar">
-            <button onClick={handleResetFilters}>
-              Reset
-            </button>
+            <button onClick={handleResetFilters}>Reset</button>
           </div>
         </div>
 
@@ -416,22 +420,19 @@ function Table() {
                         <td>{item.invoicetotal}</td>
                         <td>{item.uploadDate}</td>
                         <td>
-                          {item._rawDocument?.status === "Reviewed" ? (
-                            <span>
-                              {item._rawDocument?.totalConfidenceScore || "N/A"}{" "}
-                              <Info
-                                size={16}
-                                color="#007bff"
-                                style={{ cursor: "pointer" }}
-                                onClick={() =>
-                                  handleInfoClick(item._rawDocument)
-                                }
-                              />
-                            </span>
-                          ) : (
-                            item._rawDocument?.totalConfidenceScore || "N/A"
+                          {item.confidenceScore
+                            ? `${parseFloat(item.confidenceScore).toFixed(2)}%`
+                            : "N/A"}
+                          {item._rawDocument?.status === "Reviewed" && (
+                            <Info
+                              size={16}
+                              color="#007bff"
+                              style={{ cursor: "pointer", marginLeft: "5px" }}
+                              onClick={() => handleInfoClick(item._rawDocument)}
+                            />
                           )}
                         </td>
+
                         <td>
                           <button
                             className="action-btn"
@@ -508,13 +509,12 @@ function Table() {
                 </div>
               )} */}
               <FilePagination
-  currentPage={currentPage}
-  totalPages={totalPages}
-  onPageChange={setCurrentPage}
-  rowsPerPage={rowsPerPage}
-  totalItems={sortedData.length}
-/>
-
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                rowsPerPage={rowsPerPage}
+                totalItems={sortedData.length}
+              />
             </>
           )}
         </ErrorBoundary>

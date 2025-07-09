@@ -201,7 +201,6 @@ const Dashboard = () => {
     const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
     return () => clearInterval(intervalId);
   }, []);
-
   const getFilteredDocuments = () => {
     if (!selectedVendor) return allDocuments;
     return allDocuments.filter((doc) =>
@@ -263,7 +262,6 @@ const Dashboard = () => {
     updated.splice(index, 1);
     setSelectedFiles(updated);
   };
-
   const handleDeleteMyUpload = (uploadId) => {
     const updatedFiles = myFiles.filter((file) => file.uploadId !== uploadId);
     setMyFiles(updatedFiles);
@@ -464,7 +462,7 @@ const totalPages = Math.ceil(totalItems / documentsPerPage);
               <h3>Upload Documents</h3>
               <p>Upload documents for AI-powered data extraction</p>
             </div>
-            <div className="input-section" >
+            <div className="input-section" onClick={handleClick}>
               <Upload className="Upload" size={48} />
               <h3 className="upload-section-h3">
                 Drop files here or click to upload
@@ -483,9 +481,7 @@ const totalPages = Math.ceil(totalItems / documentsPerPage);
                 onClick={(e) => {
                   e.stopPropagation();
                   fileInputRef.current.click();
-                  onClick={handleClick}
                 }}
-                
               >
                 <Upload size={16} className="selecte-icon" /> Select Files
               </label>
