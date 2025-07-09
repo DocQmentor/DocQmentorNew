@@ -193,17 +193,19 @@ const Dashboard = () => {
     );
   };
 
- const getFilteredMyFiles = () => {
+const getFilteredMyFiles = () => {
   const userEmail = email || currentUser.id;
 
-  return myFiles.filter((file) => {
-    const uploadedBy = file.processedData?.uploadedBy?.id;
-    return uploadedBy === userEmail;
-  }).filter((file) => {
-    if (!selectedVendor) return true;
-    const docName = file.processedData?.documentName || file.fileName;
-    return docName.toLowerCase().includes(selectedVendor.toLowerCase());
-  });
+  return myFiles
+    .filter((file) => {
+      const uploadedBy = file.processedData?.uploadedBy?.id || file.uploadedBy?.id || file.uploadedBy;
+      return uploadedBy === userEmail;
+    })
+    .filter((file) => {
+      if (!selectedVendor) return true;
+      const docName = file.processedData?.documentName || file.fileName;
+      return docName.toLowerCase().includes(selectedVendor.toLowerCase());
+    });
 };
 
   const getDocumentStats = () => {
