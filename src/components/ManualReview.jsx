@@ -52,12 +52,30 @@ const ManualReview = () => {
   };
 
   const formatNumber = (value) => {
-    if (!value) return "";
-    const num = parseFloat(String(value).replace(/[^\d.-]/g, ""));
-    if (isNaN(num)) return "";
-    return num.toLocaleString("en-IN"); // Indian comma format
-  };
-
+  if (!value) return "";
+  const num = parseFloat(String(value).replace(/[^\d.-]/g, ""));
+  if (isNaN(num)) return "";
+  return num.toLocaleString("en-IN"); // Indian comma format
+};
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  
+  let date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    // Try parsing if the date is in format YYYY-MM-DD
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+      date = new Date(`${parts[0]}-${parts[1]}-${parts[2]}`);
+    }
+    if (isNaN(date.getTime())) return dateString;
+  }
+  
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${day}-${month}-${year}`;
+};
   const handleExportCSV = () => {
     const csvHeader = [
       "Vendor Name",
@@ -172,8 +190,8 @@ const ManualReview = () => {
             extracted.InvoiceTotal || doc.invoicetotal || doc.invoiceTotal
           ),
           uploadDate: doc.timestamp
-            ? new Date(doc.timestamp).toLocaleDateString("en-CA")
-            : "",
+  ? formatDate(new Date(doc.timestamp).toISOString().split('T')[0])
+  : "",
           rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
           fileUrl: doc.fileUrl || null,
           confidenceScore:
@@ -414,7 +432,8 @@ const ManualReview = () => {
                   <tr key={index}>
                     <td>{item.vendorName}</td>
                     <td>{item.invoiceId}</td>
-                    <td>{item.invoiceDate}</td>
+                    {/* <td>{item.invoiceDate}</td> */}
+                    <td>{formatDate(item.invoiceDate)}</td>
                     <td>{item.lpoNo}</td>
                     <td>{formatNumber(item.subTotal)}</td>
                     <td>{formatNumber(item.vat)}</td>
