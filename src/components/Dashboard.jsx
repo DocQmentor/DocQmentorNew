@@ -5,7 +5,7 @@ import {
   Upload,
   Trash2,
   FileText,
-  CheckCircle,
+  CheckCircle, 
   Clock,
   AlertTriangle,
 } from "lucide-react";
@@ -57,7 +57,6 @@ const Dashboard = () => {
     const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
     setMyFiles(localUploads);
   }, []);
-
   const hasAllMandatoryFields = (doc) => {
     if (!doc || !doc.extractedData) return false;
     const requiredFields = [
@@ -201,6 +200,7 @@ const Dashboard = () => {
     const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
     return () => clearInterval(intervalId);
   }, []);
+
   const getFilteredDocuments = () => {
     if (!selectedVendor) return allDocuments;
     return allDocuments.filter((doc) =>
@@ -209,7 +209,6 @@ const Dashboard = () => {
         .includes(selectedVendor.toLowerCase())
     );
   };
-
   const getFilteredRecentDocuments = () => {
   const userEmail = email || currentUser.id;
 
@@ -221,7 +220,7 @@ const Dashboard = () => {
       return docName.toLowerCase().includes(selectedVendor.toLowerCase());
     })
     .sort((a, b) => new Date(b.processedAt || b.uploadedAt) - new Date(a.processedAt || a.uploadedAt));
-};
+  };
 
   const getDocumentStats = () => {
     const filteredDocs = getFilteredDocuments();
@@ -262,13 +261,12 @@ const Dashboard = () => {
     updated.splice(index, 1);
     setSelectedFiles(updated);
   };
-  const handleDeleteMyUpload = (uploadId) => {
-    const updatedFiles = myFiles.filter((file) => file.uploadId !== uploadId);
-    setMyFiles(updatedFiles);
-    localStorage.setItem("myUploads", JSON.stringify(updatedFiles));
-    toast.success("Document removed from recent uploads.");
-  };
-
+  // const handleDeleteMyUpload = (uploadId) => {
+  //   const updatedFiles = myFiles.filter((file) => file.uploadId !== uploadId);
+  //   setMyFiles(updatedFiles);
+  //   localStorage.setItem("myUploads", JSON.stringify(updatedFiles));
+  //   toast.success("Document removed from recent uploads.");
+  // };
   const handleClick = () => {
     fileInputRef.current.click();
   };
@@ -351,7 +349,7 @@ const Dashboard = () => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const recentDocs = getFilteredRecentDocuments();
+const recentDocs = getFilteredRecentDocuments();
 const totalItems = recentDocs.length;
 const indexOfLast = currentPage * documentsPerPage;
 const indexOfFirst = indexOfLast - documentsPerPage;
@@ -547,20 +545,20 @@ const totalPages = Math.ceil(totalItems / documentsPerPage);
                 {currentDocs.length > 0 ? (
                   currentDocs.map((file, index) => (
                     <tr key={index}>
-  <td>{file.documentName || file.fileName}</td>
-  <td>
-    <span className={`badge ${determineStatus(file)?.toLowerCase().replace(" ", "-")}`}>
-      {determineStatus(file)}
-    </span>
-  </td>
-  <td>{formatDate(file.processedAt || file.uploadedAt)}</td>
-  <td>{new Date(file.processedAt || file.uploadedAt).toLocaleDateString()}</td>
-  <td>
-    <button className="action-btn" onClick={() => handleViewDocument(file)}>
-      View
-    </button>
-  </td>
-</tr>
+                    <td>{file.documentName || file.fileName}</td>
+                    <td>
+                      <span className={`badge ${determineStatus(file)?.toLowerCase().replace(" ", "-")}`}>
+                        {determineStatus(file)}
+                      </span>
+                    </td>
+                    <td>{formatDate(file.processedAt || file.uploadedAt)}</td>
+                    <td>{new Date(file.processedAt || file.uploadedAt).toLocaleDateString()}</td>
+                    <td>
+                      <button className="action-btn" onClick={() => handleViewDocument(file)}>
+                        View
+                      </button>
+                    </td>
+                  </tr>
                   ))
                 ) : (
                   <tr>

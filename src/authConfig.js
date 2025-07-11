@@ -18,4 +18,3 @@ export const loginRequest = {
 };
  
 export const docQmentorGroupId = "6617eaae-8e80-4228-a917-4345b9023c73"; // ✅ paste your real group object ID from Azure
- 

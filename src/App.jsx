@@ -24,8 +24,8 @@ const msalConfig = {
     redirectUri: window.location.origin,
   },
 };
-
 const pca = new PublicClientApplication(msalConfig);
+
 
 const ProtectedLayout = () => {
   const { accounts, inProgress } = useMsal();

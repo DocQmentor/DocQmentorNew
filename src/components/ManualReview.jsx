@@ -445,7 +445,7 @@ return needsReview;
               totalPages={totalPages}
               onPageChange={setCurrentPage}
               rowsPerPage={10}
-              totalItems={100}
+              totalItems={filteredDocs.length}  // Changed from 100 to filteredDocs.length
               previousLabel="Back"
               nextLabel="Next >"
             />
