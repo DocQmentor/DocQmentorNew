@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./ManualReview.css";
 import Footer from "../Layout/Footer";
-import FilePagination from '../Layout/Filepagination';
+import FilePagination from "../Layout/Filepagination";
 import EditModal from "./EditModal";
 import { useNavigate } from "react-router-dom";
 import useSortableData from "../utils/useSortableData";
@@ -10,6 +10,7 @@ import { saveAs } from "file-saver";
 const ManualReview = () => {
   const [show, setShow] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const today = new Date().toISOString().split("T")[0]; // e.g., "2025-07-11"
   const [manualReviewDocs, setManualReviewDocs] = useState([]);
   const [filteredDocs, setFilteredDocs] = useState([]);
   const [editedData, setEditedData] = useState({});
@@ -100,51 +101,48 @@ const ManualReview = () => {
           "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ=="
         );
         const data = await response.json();
-       const docsNeedingReview = data
-  .filter((doc) => {
-    const extracted = doc.extractedData || {};
-    const confidence = doc.confidenceScores || {};
-    const totalScore = parseFloat(doc.totalConfidenceScore || 0);
+        const docsNeedingReview = data.filter((doc) => {
+          const extracted = doc.extractedData || {};
+          const confidence = doc.confidenceScores || {};
+          const totalScore = parseFloat(doc.totalConfidenceScore || 0);
 
-    // Prevent reviewed files
-    const isReviewed =
-      doc.status === "Reviewed" ||
-      doc.reviewStatus === "Reviewed" ||
-      doc.reviewedBy ||
-      doc.wasReviewed;
+          // Prevent reviewed files
+          const isReviewed =
+            doc.status === "Reviewed" ||
+            doc.reviewStatus === "Reviewed" ||
+            doc.reviewedBy ||
+            doc.wasReviewed;
 
-    // Skip if processing not finished (no confidence at all)
-    const hasNoAIData = !Object.keys(confidence).length;
+          // Skip if processing not finished (no confidence at all)
+          const hasNoAIData = !Object.keys(confidence).length;
 
-    if (isReviewed || hasNoAIData) return false;
+          if (isReviewed || hasNoAIData) return false;
 
-    const requiredFields = [
-      "VendorName",
-      "InvoiceId",
-      "InvoiceDate",
-      "LPO NO",
-      "SubTotal",
-      "VAT",
-      "InvoiceTotal",
-    ];
+          const requiredFields = [
+            "VendorName",
+            "InvoiceId",
+            "InvoiceDate",
+            "LPO NO",
+            "SubTotal",
+            "VAT",
+            "InvoiceTotal",
+          ];
 
-    const hasMissing = requiredFields.some(
-      (field) => !extracted[field] || getString(extracted[field]).trim() === ""
-    );
+          const hasMissing = requiredFields.some(
+            (field) =>
+              !extracted[field] || getString(extracted[field]).trim() === ""
+          );
 
-    const lowConfidence = requiredFields.some(
-  (field) => confidence[field] !== undefined && parseFloat(confidence[field]) < 0.85
-);
+          const lowConfidence = requiredFields.some(
+            (field) =>
+              confidence[field] !== undefined &&
+              parseFloat(confidence[field]) < 0.85
+          );
 
+          const needsReview = hasMissing || (lowConfidence && totalScore < 85); // Only flag if BOTH low confidence AND total score is poor
 
-    const needsReview =
-  hasMissing ||
-  (lowConfidence && totalScore < 85); // Only flag if BOTH low confidence AND total score is poor
-
-return needsReview;
-
-  });
-
+          return needsReview;
+        });
 
         setManualReviewDocs(docsNeedingReview);
         setError(null);
@@ -303,14 +301,17 @@ return needsReview;
                 <input
                   type="date"
                   value={fromDate}
+                  max={today}
                   onChange={(e) => setFromDate(e.target.value)}
                 />
               </label>
+
               <label>
                 <strong>INV To Date:</strong>
                 <input
                   type="date"
                   value={toDate}
+                  max={today}
                   onChange={(e) => setToDate(e.target.value)}
                 />
               </label>
@@ -353,7 +354,6 @@ return needsReview;
                   Reset
                 </button>
               </label>
-              
             </div>
             {/* <p>{filteredDocs.length} documents requiring manual review</p> */}
           </div>
@@ -445,7 +445,7 @@ return needsReview;
               totalPages={totalPages}
               onPageChange={setCurrentPage}
               rowsPerPage={10}
-              totalItems={filteredDocs.length}  // Changed from 100 to filteredDocs.length
+              totalItems={filteredDocs.length} // Changed from 100 to filteredDocs.length
               previousLabel="Back"
               nextLabel="Next >"
             />

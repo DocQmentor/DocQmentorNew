@@ -61,6 +61,8 @@ function Table() {
   const rowsPerPage = 10;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const today = new Date().toISOString().split("T")[0]; // e.g., "2025-07-11"
+
   const [versionModal, setVersionModal] = useState({
     visible: false,
     history: [],
@@ -188,14 +190,16 @@ if ((isNaN(totalScore) || totalScore < 85) && !isReviewed) return false;
       (item.lpoNo || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.vendorName.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const itemInvoiceDate = item.invoiceDate
-      ? new Date(item.invoiceDate)
-      : null;
+        const todayDate = new Date(); todayDate.setHours(0, 0, 0, 0);
+    const itemInvoiceDate = item.invoiceDate ? new Date(item.invoiceDate) : null;
+    if (itemInvoiceDate && itemInvoiceDate > todayDate) return false; // future invoice dates excluded
+
     const from = fromDate ? new Date(fromDate) : null;
     const to = toDate ? new Date(toDate) : null;
-    const matchesInvoiceDate =
-      (!from || (itemInvoiceDate && itemInvoiceDate >= from)) &&
-      (!to || (itemInvoiceDate && itemInvoiceDate <= to));
+    if (from && from > todayDate) return false;
+
+    const matchesInvoiceDate = (!from || (itemInvoiceDate && itemInvoiceDate >= from)) && (!to || (itemInvoiceDate && itemInvoiceDate <= todayDate));
+
 
     const now = new Date();
     const uploadDate = item.rawUploadDate;
@@ -306,22 +310,14 @@ if ((isNaN(totalScore) || totalScore < 85) && !isReviewed) return false;
               placeholder="Enter vendor name"
             />
           </label>
-          <label>
-            <strong>INV From Date:</strong>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-            />
-          </label>
-          <label>
-            <strong>INV To Date:</strong>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-            />
-          </label>
+          <label><strong>INV From Date:</strong>
+  <input type="date" value={fromDate} max={today} onChange={(e) => setFromDate(e.target.value)} />
+</label>
+
+<label><strong>INV To Date:</strong>
+  <input type="date" value={toDate} max={today} onChange={(e) => setToDate(e.target.value)} />
+</label>
+
           <label>
             <strong>Upload Date:</strong>
             <select
