@@ -264,6 +264,18 @@ if ((isNaN(totalScore) || totalScore < 85) && !isReviewed) return false;
     );
   };
 
+  function formatDate(dateString) {
+    if (!dateString) return "";
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // return original if invalid date
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}-${month}-${year}`;
+  }
   const handleViewDocument = (file) => {
     let url = null;
     if (file.blobUrl && file.blobUrl.startsWith("http")) {
@@ -409,12 +421,14 @@ if ((isNaN(totalScore) || totalScore < 85) && !isReviewed) return false;
                       <tr key={index}>
                         <td>{item.vendorName}</td>
                         <td>{item.invoiceId}</td>
-                        <td>{item.invoiceDate}</td>
+                        {/* <td>{item.invoiceDate}</td> */}
+                        <td>{formatDate(item.invoiceDate)}</td>
                         <td>{item.lpoNo}</td>
                         <td>{item.subTotal}</td>
                         <td>{item.vat}</td>
                         <td>{item.invoicetotal}</td>
-                        <td>{item.uploadDate}</td>
+                        {/* <td>{item.uploadDate}</td> */}
+                        <td>{formatDate(item.uploadDate)}</td>
                         <td>
                           {item.confidenceScore
                             ? `${parseFloat(item.confidenceScore).toFixed(2)}%`
