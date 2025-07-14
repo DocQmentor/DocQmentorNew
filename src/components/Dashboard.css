@@ -138,7 +138,32 @@
   min-width: 180px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-
+.Dashboard-reset-button{
+    display: flex;
+    justify-content: space-around;
+    gap: 3px;
+    align-items: center;
+    background-color: #004080;
+    color: white;
+    /* margin-top: 24px; */
+  padding: 7px 16px;
+  border: none;
+  border-radius: 6px;
+ font-weight: bolder;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.Dashboard-reset-button:hover{
+    background-color: red;
+}
+.i-Reset-Dashboard{
+    cursor: pointer;
+    transition: background 0.3s ease;
+    background-color: #004080;
+}
+.Dashboard-reset-button:hover .i-Reset-Dashboard{
+    background-color: red;
+}
 /* Hover + Focus for Dropdown */
 .vendor-select-drop-down select:hover,
 .vendor-select-drop-down select:focus {

@@ -351,7 +351,7 @@ if ((isNaN(totalScore) || totalScore < 85) && !isReviewed) return false;
             />
           </label>
           <div className="search-export-bar">
-            <button onClick={handleExportCSV}>Export</button>
+            <button onClick={handleExportCSV}>Export CSV</button>
           </div>
           <div className="reset-export-bar">
             <button onClick={handleResetFilters}>Reset</button>

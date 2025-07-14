@@ -8,6 +8,7 @@ import {
   CheckCircle, 
   Clock,
   AlertTriangle,
+  Funnel,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { uploadToAzure } from "../utils/azureUploader";
@@ -425,6 +426,15 @@ const totalPages = Math.ceil(totalItems / documentsPerPage);
                 </option>
               ))}
             </select>
+            <button 
+              className="Dashboard-reset-button"
+              onClick={() => {
+                setSelectedVendor("");
+                setCurrentPage(1);
+              }}
+            >
+              <Funnel className="i-Reset-Dashboard" size={16} />Reset
+            </button>
           </div>
         </nav>
 
