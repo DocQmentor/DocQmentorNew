@@ -81,7 +81,7 @@ function Table() {
       setLoading(true);
       try {
         const response = await fetch(
-          "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ=="
+          "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
         if (!response.ok) throw new Error("Failed to fetch invoice data");
         const data = await response.json();

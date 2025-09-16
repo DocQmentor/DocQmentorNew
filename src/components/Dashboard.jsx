@@ -102,7 +102,7 @@ const Dashboard = () => {
     const fetchDocumentsFromBackend = async () => {
       try {
         const response = await fetch(
-          "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ=="
+          "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
         if (!response.ok) throw new Error("Failed to fetch document data");
 
@@ -180,7 +180,7 @@ const Dashboard = () => {
           .slice(0, 50);
 
         setMyFiles(latest50);
-
+        
         // Only store minimal metadata in localStorage to avoid quota overflow
         const safeUploads = latest50.map(
           ({ fileName, uploadId, uploadedAt, status, url }) => ({
@@ -306,7 +306,7 @@ const Dashboard = () => {
           uploadId: fileObj.uploadId,
         };
 
-        await fetch("https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==", {
+        await fetch("https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
