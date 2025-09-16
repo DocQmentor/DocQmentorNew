@@ -44,9 +44,8 @@ const extractFolderName = (filename) => {
 export const uploadToAzure = async (file, onProgress) => {
   const fileName = file.name;
   const folderName = extractFolderName(fileName);
-  const blobPath = `${encodeURIComponent(folderName)}/${encodeURIComponent(
-    fileName
-  )}`;
+  const blobPath = `${encodeURIComponent(domain)}/${encodeURIComponent(folderName)}/${encodeURIComponent(fileName)}`;
+
   const blobUrl = `${storageAccountUrl}/${containerName}/${blobPath}${sasToken}`;
 
   try {

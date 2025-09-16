@@ -17,7 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { getVendorFolders } from "../utils/blobService";
 import { useMsal } from "@azure/msal-react";
 import { useUser } from "../context/UserContext";
-import {sasToken} from "../sasToken";
+import { sasToken } from "../sasToken";
 import useGroupAccess from "../utils/userGroupAccess";
 const Dashboard = () => {
   const hasAccess = useGroupAccess();
@@ -34,10 +34,20 @@ const Dashboard = () => {
   const [vendors, setVendors] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [domain, setDomain] = useState("");
+
   const documentsPerPage = 10;
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const { email, name } = useUser();
+  useEffect(() => {
+    const selectedDomain = localStorage.getItem("selectedDomain");
+    if (selectedDomain) {
+      setDomain(selectedDomain);
+    } else {
+      navigate("/select-document-type"); 
+    }
+  }, []);
 
   useEffect(() => {
     const fetchVendors = async () => {
@@ -184,28 +194,43 @@ const Dashboard = () => {
     const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
     return () => clearInterval(intervalId);
   }, []);
-  const getFilteredDocuments = () => {
-    if (!selectedVendor) return allDocuments;
-    return allDocuments.filter((doc) =>
-      (doc.documentName || "")
-        .toLowerCase()
-        .includes(selectedVendor.toLowerCase())
-    );
-  };
+  // const getFilteredDocuments = () => {
+  //   if (!selectedVendor) return allDocuments;
+  //   return allDocuments.filter((doc) =>
+  //     (doc.documentName || "")
+  //       .toLowerCase()
+  //       .includes(selectedVendor.toLowerCase())
+  //   );
+  // };
+
+  // const getFilteredMyFiles = () => {
+  //   const userEmail = email || currentUser.id;
+
+  //   return myFiles
+  //     .filter((file) => {
+  //       const uploadedBy =
+  //         file.processedData?.uploadedBy?.id ||
+  //         file.uploadedBy?.id ||
+  //         file.uploadedBy;
+  //       return uploadedBy === userEmail;
+  //     })
+  //     .filter((file) => {
+  //       if (!selectedVendor) return true;
+  //       const docName = file.processedData?.documentName || file.fileName;
+  //       return docName.toLowerCase().includes(selectedVendor.toLowerCase());
+  //     });
+  // };
+const getFilteredDocuments = () => {
+  return allDocuments.filter((doc) => doc.domain === domain); // doc.domain must exist
+};
 
 const getFilteredMyFiles = () => {
   const userEmail = email || currentUser.id;
-
-  return myFiles
-    .filter((file) => {
-      const uploadedBy = file.processedData?.uploadedBy?.id || file.uploadedBy?.id || file.uploadedBy;
-      return uploadedBy === userEmail;
-    })
-    .filter((file) => {
-      if (!selectedVendor) return true;
-      const docName = file.processedData?.documentName || file.fileName;
-      return docName.toLowerCase().includes(selectedVendor.toLowerCase());
-    });
+  return myFiles.filter(
+    (file) =>
+      (file.processedData?.uploadedBy?.id || file.uploadedBy?.id || file.uploadedBy) === userEmail &&
+      (file.processedData?.domain || file.domain) === domain
+  );
 };
 
   const getDocumentStats = () => {
@@ -273,7 +298,7 @@ const getFilteredMyFiles = () => {
       });
 
       try {
-        const result = await uploadToAzure(fileObj.file, (percent) => {
+        const result = await uploadToAzure(fileObj.file, domain, (percent) => {
           toast.update(toastId, {
             render: `${fileObj.fileName} uploading: ${percent}%`,
             isLoading: percent < 100,
@@ -367,8 +392,8 @@ const getFilteredMyFiles = () => {
   const totalPages = Math.ceil(filteredMyFiles.length / documentsPerPage);
   const stats = getDocumentStats();
 
-const handleManualReviewClick = () => {
-    if(hasAccess === true){
+  const handleManualReviewClick = () => {
+    if (hasAccess === true) {
       const manualReviewDocs = allDocuments.filter(
         (doc) => determineStatus(doc) === "Manual Review"
       );
@@ -383,29 +408,26 @@ const handleManualReviewClick = () => {
         },
       });
     } else {
-      toast.error("You do not have permission to view this Manual Review page.");
+      toast.error(
+        "You do not have permission to view this Manual Review page."
+      );
     }
   };
- 
-const handleViewDocument = (file) => {
-  let rawUrl =
-    file.blobUrl || file.url || file.processedData?.blobUrl;
 
-  if (!rawUrl || !rawUrl.startsWith("http")) {
-    toast.error("File URL is not available");
-    return;
-  }
+  const handleViewDocument = (file) => {
+    let rawUrl = file.blobUrl || file.url || file.processedData?.blobUrl;
 
-  const baseUrl = rawUrl.split("?")[0];
-  const cleanSasToken = sasToken.startsWith("?") ? sasToken : `?${sasToken}`;
-  const finalUrl = `${baseUrl}${cleanSasToken}`;
+    if (!rawUrl || !rawUrl.startsWith("http")) {
+      toast.error("File URL is not available");
+      return;
+    }
 
-  window.open(finalUrl, "_blank");
-};
+    const baseUrl = rawUrl.split("?")[0];
+    const cleanSasToken = sasToken.startsWith("?") ? sasToken : `?${sasToken}`;
+    const finalUrl = `${baseUrl}${cleanSasToken}`;
 
-
-
-
+    window.open(finalUrl, "_blank");
+  };
 
   return (
     <div className="dashboard-total-container">
@@ -415,7 +437,9 @@ const handleViewDocument = (file) => {
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
           <div>
-            <h2>Dashboard</h2>
+            <h2>{domain} Dashboard</h2>
+<p>Showing documents for {domain}</p>
+
             <p>View your document processing activity and insights</p>
           </div>
           <div className="Dashboard-main-section-vendor-select">
@@ -451,7 +475,10 @@ const handleViewDocument = (file) => {
             <p>In Process</p>
             <div className="total">{stats.inProcess}</div>
           </div>
-          <div className="stat-box manual-review" onClick={handleManualReviewClick}>
+          <div
+            className="stat-box manual-review"
+            onClick={handleManualReviewClick}
+          >
             <AlertTriangle className="i" size={24} />
             <p>Manual Review</p>
             <div className="total">{stats.manualReview}</div>

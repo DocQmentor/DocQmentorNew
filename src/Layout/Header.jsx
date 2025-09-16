@@ -4,7 +4,7 @@ import { Home,Search, LayoutDashboard, FileText, User, LogOut } from 'lucide-rea
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
 import useGroupAccess from "../utils/userGroupAccess";
-const Header = () => {
+const Header = ({ minimal }) => {
   const hasAccess = useGroupAccess();
   const location = useLocation();
   const navigate = useNavigate();
@@ -12,6 +12,8 @@ const Header = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('User');
+  // Accept minimal prop
+  // const minimal = arguments[0]?.minimal;
 
   useEffect(() => {
     if (accounts && accounts.length > 0) {
@@ -63,35 +65,39 @@ const Header = () => {
           <img src="/src/assets/logo-docqmentor.png" alt="DocQmentor Logo" />
         </div>
         <ul>
-          <li className={location.pathname === '/dashboard' ? 'active' : ''}>
-            <NavLink
-              to="/dashboard"
-              className="a"
-              onClick={(e) => handleNavigationClick(e, '/dashboard')}
-            >
-              <LayoutDashboard size={20} className="i" /> Dashboard
-            </NavLink>
-          </li>
-          {hasAccess === true && (
-            <li className={location.pathname === '/manualreview' ? 'active' : ''}>
+          {!minimal && (
+            <>
+              <li className={location.pathname === '/dashboard' ? 'active' : ''}>
                 <NavLink
-                to="/manualreview"
-                className="a"
-                onClick={(e) => handleNavigationClick(e, '/manualreview')}
-              >
-                <Search size={20} className="i" /> Manual Review
-              </NavLink>
-            </li>
+                  to="/dashboard"
+                  className="a"
+                  onClick={(e) => handleNavigationClick(e, '/dashboard')}
+                >
+                  <LayoutDashboard size={20} className="i" /> Dashboard
+                </NavLink>
+              </li>
+              {hasAccess === true && (
+                <li className={location.pathname === '/manualreview' ? 'active' : ''}>
+                    <NavLink
+                    to="/manualreview"
+                    className="a"
+                    onClick={(e) => handleNavigationClick(e, '/manualreview')}
+                  >
+                    <Search size={20} className="i" /> Manual Review
+                  </NavLink>
+                </li>
+              )}
+              <li className={location.pathname === '/table' ? 'active' : ''}>
+                <NavLink
+                  to="/table"
+                  className="a"
+                  onClick={(e) => handleNavigationClick(e, '/table')}
+                >
+                  <FileText size={20} className="i" /> Data View
+                </NavLink>
+              </li>
+            </>
           )}
-          <li className={location.pathname === '/table' ? 'active' : ''}>
-            <NavLink
-              to="/table"
-              className="a"
-              onClick={(e) => handleNavigationClick(e, '/table')}
-            >
-              <FileText size={20} className="i" /> Data View
-            </NavLink>
-          </li>
           <li className={location.pathname === '/profile' ? 'active' : ''} onClick={toggleProfile}>
             <div className="a" style={{ cursor: 'pointer' }}>
               <User size={20} className="i" /> {userName}

@@ -19,6 +19,7 @@ import Dashboard from "./components/Dashboard";
 import ManualReview from "./components/ManualReview";
 import EditModal from "./components/EditModal";
 import Header from "./Layout/Header";
+import SelectDocumentType from "./components/SelectDocumentType";  // New import
 
 import { UserProvider, useUser } from "./context/UserContext";
 
@@ -72,7 +73,7 @@ const AppRoutes = () => {
       inProgress === InteractionStatus.None &&
       window.location.pathname === "/"
     ) {
-      navigate("/dashboard");
+      navigate("/select");  // Redirect to SelectDocumentType after login
     }
   }, [accounts, inProgress, navigate]);
 
@@ -87,6 +88,7 @@ const AppRoutes = () => {
         }
       />
       <Route element={<ProtectedLayout />}>
+        <Route path="/select" element={<SelectDocumentType />} />   {/* New Route */}
         <Route path="/home" element={<Home />} />
         <Route path="/table" element={<Table />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -97,7 +99,7 @@ const AppRoutes = () => {
         path="*"
         element={
           accounts.length > 0 ? (
-            <Navigate to="/dashboard" />
+            <Navigate to="/select" />  
           ) : (
             <Navigate to="/" />
           )

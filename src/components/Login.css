@@ -42,7 +42,7 @@ body {
 /* Summary Section */
 .summary {
   background-color: white;
-  grid-column: 1 / 7;
+  grid-column: 1 / 7; /* This places it in the first 6 columns */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -119,7 +119,7 @@ body {
  
 /* Floating image */
 .image-con {
-  grid-column: 7 / -1;
+  grid-column: 7 / -1; /* This places it in the last 6 columns */
   display: flex;
   justify-content: center;
   align-items: center;
