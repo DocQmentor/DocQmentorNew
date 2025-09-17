@@ -8,6 +8,7 @@ import {
   Clock,
   AlertTriangle,
 } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 import { uploadToAzure } from "../utils/azureUploader";
 import Header from "../Layout/Header";
@@ -35,6 +36,7 @@ const Dashboard = () => {
   const [selectedVendor, setSelectedVendor] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [domain, setDomain] = useState("");
+  const selectedDomain = localStorage.getItem("selectedDomain") || "Invoice";
 
   const documentsPerPage = 10;
   const fileInputRef = useRef(null);
@@ -45,7 +47,7 @@ const Dashboard = () => {
     if (selectedDomain) {
       setDomain(selectedDomain);
     } else {
-      navigate("/select-document-type"); 
+      navigate("/select-document-type");
     }
   }, []);
 
@@ -220,18 +222,20 @@ const Dashboard = () => {
   //       return docName.toLowerCase().includes(selectedVendor.toLowerCase());
   //     });
   // };
-const getFilteredDocuments = () => {
-  return allDocuments.filter((doc) => doc.domain === domain); // doc.domain must exist
-};
+  const getFilteredDocuments = () => {
+    return allDocuments.filter((doc) => doc.domain === domain); // doc.domain must exist
+  };
 
-const getFilteredMyFiles = () => {
-  const userEmail = email || currentUser.id;
-  return myFiles.filter(
-    (file) =>
-      (file.processedData?.uploadedBy?.id || file.uploadedBy?.id || file.uploadedBy) === userEmail &&
-      (file.processedData?.domain || file.domain) === domain
-  );
-};
+  const getFilteredMyFiles = () => {
+    const userEmail = email || currentUser.id;
+    return myFiles.filter(
+      (file) =>
+        (file.processedData?.uploadedBy?.id ||
+          file.uploadedBy?.id ||
+          file.uploadedBy) === userEmail &&
+        (file.processedData?.domain || file.domain) === domain
+    );
+  };
 
   const getDocumentStats = () => {
     const filteredDocs = getFilteredDocuments();
@@ -255,18 +259,28 @@ const getFilteredMyFiles = () => {
     setCurrentPage(1);
   };
 
+  // const FileChange = (e) => {
+  //   const newFiles = Array.from(e.target.files).map((file) => ({
+  //     file,
+  //     fileName: file.name,
+  //     uploadId: `${file.name}-${Date.now()}`,
+  //     uploadedAt: new Date().toISOString(),
+  //     status: "In Process",
+  //     url: null,
+  //   }));
+  //   setSelectedFiles((prev) => [...prev, ...newFiles]);
+  // };
   const FileChange = (e) => {
     const newFiles = Array.from(e.target.files).map((file) => ({
       file,
       fileName: file.name,
-      uploadId: `${file.name}-${Date.now()}`,
+      uploadId: uuidv4(), // Use the unique UUID here
       uploadedAt: new Date().toISOString(),
       status: "In Process",
       url: null,
     }));
     setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
-
   const handleDeleteFile = (index) => {
     const updated = [...selectedFiles];
     updated.splice(index, 1);
@@ -280,17 +294,8 @@ const getFilteredMyFiles = () => {
   const handleProcessFiles = async () => {
     if (selectedFiles.length === 0) return;
     setIsUploading(true);
+
     const localUploads = JSON.parse(localStorage.getItem("myUploads") || "[]");
-
-    const newUploads = selectedFiles.map((fileObj) => ({
-      ...fileObj,
-      uploadId: fileObj.uploadId || `${fileObj.fileName}-${Date.now()}`,
-      status: "In Process",
-    }));
-
-    const updatedLocalUploads = [...newUploads, ...localUploads];
-    localStorage.setItem("myUploads", JSON.stringify(updatedLocalUploads));
-    setMyFiles(updatedLocalUploads);
 
     for (const fileObj of selectedFiles) {
       const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
@@ -298,68 +303,29 @@ const getFilteredMyFiles = () => {
       });
 
       try {
-        const result = await uploadToAzure(fileObj.file, domain, (percent) => {
-          toast.update(toastId, {
-            render: `${fileObj.fileName} uploading: ${percent}%`,
-            isLoading: percent < 100,
-            autoClose: percent >= 100 ? 2000 : false,
-          });
-        });
+        const result = await uploadToAzure(
+          fileObj.file,
+          domain,
+          email || currentUser.id,
+          name || currentUser.name,
+          (percent) => {
+            toast.update(toastId, {
+              render: `${fileObj.fileName} uploading: ${percent}%`,
+              isLoading: percent < 100,
+              autoClose: percent >= 100 ? 2000 : false,
+            });
+          },
+          selectedDomain 
+        );
 
-        if (result) {
-          toast.success(`${fileObj.fileName} uploaded successfully!`);
+        toast.success(`${fileObj.fileName} uploaded successfully!`);
 
-          const versionHistory = [
-            {
-              version: 1,
-              action: "Uploaded",
-              timestamp: new Date().toISOString(),
-              user: {
-                id: email || currentUser.id,
-                name: name || currentUser.name,
-              },
-            },
-          ];
-
-          // Update local UI immediately with URL
-          const updated = updatedLocalUploads.map((f) =>
-            f.uploadId === fileObj.uploadId
-              ? {
-                  ...f,
-                  url: result.url,
-                  versionHistory,
-                  status: "In Process",
-                }
-              : f
-          );
-          setMyFiles(updated);
-          localStorage.setItem("myUploads", JSON.stringify(updated));
-
-          // Send to backend
-          const payload = {
-            documentName: fileObj.fileName,
-            blobUrl: result.url,
-            uploadedBy: {
-              id: email || currentUser.id,
-              name: name || currentUser.name,
-            },
-            versionHistory,
-            uploadId: fileObj.uploadId,
-          };
-
-          await fetch(
-            " https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(payload),
-            }
-          );
-        }
+        // Update localStorage/UI
+        const updatedUploads = [...localUploads, result];
+        setMyFiles(updatedUploads);
+        localStorage.setItem("myUploads", JSON.stringify(updatedUploads));
       } catch (err) {
-        console.error(`Failed to upload ${fileObj.fileName}:`, err);
+        console.error(err);
         toast.error(`Failed to upload ${fileObj.fileName}`);
       }
     }
@@ -438,7 +404,7 @@ const getFilteredMyFiles = () => {
         <nav className="vendor-select">
           <div>
             <h2>{domain} Dashboard</h2>
-<p>Showing documents for {domain}</p>
+            <p>Showing documents for {domain}</p>
 
             <p>View your document processing activity and insights</p>
           </div>
