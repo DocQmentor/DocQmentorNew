@@ -21,6 +21,8 @@ const ManualReview = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const selectedDomain = localStorage.getItem("selectedDomain") || "Invoice";
+
   const rowsPerPage = 10;
   const navigate = useNavigate();
 
@@ -111,14 +113,14 @@ const ManualReview = () => {
             (field) => !extracted[field] || !getString(extracted[field])
           );
 
-          const lowFieldConfidence = requiredFields.some(
-            (field) =>
-              confidence[field] !== undefined && confidence[field] < 0.85
-          );
+          // const lowFieldConfidence = requiredFields.some(
+          //   (field) =>
+          //     confidence[field] !== undefined && confidence[field] < 0.85
+          // );
 
           const lowTotalConfidence = totalScore < 85;
 
-          return hasMissing || lowFieldConfidence || lowTotalConfidence;
+          return hasMissing  || lowTotalConfidence;
         });
 
         setManualReviewDocs(docsNeedingReview);
@@ -159,7 +161,7 @@ const ManualReview = () => {
               : `${(doc.totalConfidenceScore || 0).toFixed(2)}`,
           _rawDocument: doc,
         };
-      })
+      }) .filter((item) => item._rawDocument?.modelType === selectedDomain) 
       .filter((item) => {
         const matchesVendor = item.vendorName
           .toLowerCase()

@@ -41,7 +41,7 @@
 //  return cleaned.trim().toUpperCase();
 // };
 
-// export const uploadToAzure = async (file, domain, userId, userName, onProgress) => {
+// export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
 //  const originalFileName = file.name;
 //  const folderName = extractFolderName(originalFileName);
 
@@ -49,7 +49,7 @@
 // const timestamp = Date.now();
 // const uniqueFileName = `${timestamp}-${file.name}`;
 
-// const blobPath = `${encodeURIComponent(domain)}/${encodeURIComponent(folderName)}/${encodeURIComponent(uniqueFileName)}`;
+// const blobPath = `${encodeURIComponent(modelType)}/${encodeURIComponent(folderName)}/${encodeURIComponent(uniqueFileName)}`;
 // const blobUrl = `${storageAccountUrl}/${containerName}/${blobPath}${sasToken}`;
 
 //  try {
@@ -121,13 +121,13 @@ const extractFolderName = (filename) => {
 };
 
 // Upload function
-export const uploadToAzure = async (file, domain, userId, userName, onProgress,modelType   ) => {
+export const uploadToAzure = async (file, modelType, userId, userName, onProgress   ) => {
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
 
   // Folder
   const folderName = extractFolderName(file.name);
-  const folderPrefix = `${domain}/${folderName}/`;
+  const folderPrefix = `${modelType}/${folderName}/`;
 
   // Check if folder exists (optional, can skip if just uploading)
   let folderExists = false;
@@ -138,7 +138,7 @@ export const uploadToAzure = async (file, domain, userId, userName, onProgress,m
 
   // Unique blob name
   const uniqueFileName = file.name; // keep original name
-  const filePath = `${domain}/${folderName}/${uniqueFileName}`;
+  const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
 
   try {
@@ -162,8 +162,7 @@ export const uploadToAzure = async (file, domain, userId, userName, onProgress,m
       uploadId,           // ✅ unique ID per upload
       blobUrl,
       documentName: file.name,
-      domain,
-      modelType,          
+      modelType,       
       uploadedBy: { id: userId, name: userName },
     });
 

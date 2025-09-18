@@ -7,8 +7,8 @@ import Header from "../Layout/Header";
 const SelectDocumentType = () => {
   const navigate = useNavigate();
 
-  const handleSelectDomain = (domain) => {
-  localStorage.setItem("selectedDomain", domain);
+  const handleSelectmodelType = (modelType) => {
+  localStorage.setItem("selectedModelType", modelType);
   navigate("/dashboard"); // Go to dashboard page
 };
 
@@ -34,7 +34,7 @@ const SelectDocumentType = () => {
             <p>Upload invoices for payments and financial analysis.</p>
             <button
               className="blue"
-              onClick={() => handleSelectDomain("Invoice")}
+              onClick={() => handleSelectmodelType("Invoice")}
             >
               Select
             </button>
@@ -49,7 +49,7 @@ const SelectDocumentType = () => {
             </p>
             <button
               className="green"
-              onClick={() => handleSelectDomain("BankStatement")}
+              onClick={() => handleSelectmodelType("BankStatement")}
             >
               Select
             </button>
@@ -61,7 +61,7 @@ const SelectDocumentType = () => {
             <p>Upload mortgage-related documents for automated processing.</p>
             <button
               className="blue"
-              onClick={() => handleSelectDomain("MortgageForms")}
+              onClick={() => handleSelectmodelType("MortgageForms")}
             >
               Select
             </button>

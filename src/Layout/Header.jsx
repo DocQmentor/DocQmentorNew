@@ -67,6 +67,15 @@ const Header = ({ minimal }) => {
         <ul>
           {!minimal && (
             <>
+            <li className={location.pathname === '/select' ? 'active' : ''}>
+                <NavLink
+                  to="/select"
+                  className="a"
+                  onClick={(e) => handleNavigationClick(e, '/select')}
+                >
+                  <LayoutDashboard size={20} className="i" /> Models
+                </NavLink>
+              </li>
               <li className={location.pathname === '/dashboard' ? 'active' : ''}>
                 <NavLink
                   to="/dashboard"
@@ -76,6 +85,7 @@ const Header = ({ minimal }) => {
                   <LayoutDashboard size={20} className="i" /> Dashboard
                 </NavLink>
               </li>
+              
               {hasAccess === true && (
                 <li className={location.pathname === '/manualreview' ? 'active' : ''}>
                     <NavLink
