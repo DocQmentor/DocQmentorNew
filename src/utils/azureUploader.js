@@ -99,6 +99,92 @@
 //  }
 // };
 
+// import { BlobServiceClient } from "@azure/storage-blob";
+// import { v4 as uuidv4 } from "uuid";
+// import axios from "axios";
+
+// // Azure info
+// const BLOB_SERVICE_URL_WITH_SAS = "https://docqmentor2blob.blob.core.windows.net/?sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-05-31T18:29:59Z&st=2025-05-21T09:45:27Z&spr=https&sig=UO0XVGFTlz3IpM6Q5LIkrTkCDQcr3Rx%2FeXn3FEvsQJM%3D";
+// const CONTAINER_NAME = "docqmentor2";
+// const AZURE_FUNCTION_URL = "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==";
+
+// // Folder name helper
+// const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
+
+// const extractFolderName = (filename) => {
+//   const baseName = filename.substring(0, filename.lastIndexOf(".")) || filename;
+//   let parts = baseName.split(/[\s\-_]+/);
+//   const filteredParts = parts.filter(part => !/^\d+$/.test(part) && !/^copy$/i.test(part) && !/^-/.test(part));
+//   let cleaned = filteredParts.join(" ");
+//   cleaned = splitCamelCase(cleaned);
+//   return cleaned.trim().toUpperCase();
+// };
+
+// // Upload function
+// export const uploadToAzure = async (file, modelType, userId, userName, onProgress   ) => {
+//   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
+//   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
+
+//   // Folder
+//   const folderName = extractFolderName(file.name);
+//   const folderPrefix = `${modelType}/${folderName}/`;
+
+//   // Check if folder exists (optional, can skip if just uploading)
+//   let folderExists = false;
+//   for await (const blob of containerClient.listBlobsFlat({ prefix: folderPrefix })) {
+//     folderExists = true;
+//     break;
+//   }
+
+//   // Unique blob name
+//   const uniqueFileName = file.name; // keep original name
+//   const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
+//   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
+
+//   try {
+//     await blockBlobClient.uploadData(file, {
+//       blobHTTPHeaders: { blobContentType: file.type },
+//       onProgress: (ev) => {
+//         if (onProgress && ev.loadedBytes && file.size) {
+//           const percent = Math.round((ev.loadedBytes * 100) / file.size);
+//           onProgress(percent);
+//         }
+//       },
+//     });
+
+//     const blobUrl = blockBlobClient.url;
+
+//     // Generate unique uploadId for Cosmos
+//     const uploadId = uuidv4();
+
+//     // Send metadata to backend
+//     // await axios.post(AZURE_FUNCTION_URL, {
+//     //   uploadId,           // ✅ unique ID per upload
+//     //   blobUrl,
+//     //   documentName: file.name,
+//     //   modelType,       
+//     //   uploadedBy: { id: userId, name: userName },
+//     // });
+
+//     return {
+//       fileName: file.name,
+//       folderName,
+//       uploadedAt: new Date(),
+//       status: "In Process",
+//       url: blobUrl,
+//       uploadId,   
+//        modelType,        // keep it for localStorage/UI
+//     };
+//   } catch (error) {
+//     console.error("Azure upload error:", error);
+//     throw error;
+//   }
+// };
+
+
+
+// new **********************************************
+
 import { BlobServiceClient } from "@azure/storage-blob";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
@@ -108,7 +194,7 @@ const BLOB_SERVICE_URL_WITH_SAS = "https://docqmentor2blob.blob.core.windows.net
 const CONTAINER_NAME = "docqmentor2";
 const AZURE_FUNCTION_URL = "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==";
 
-// Folder name helper
+// Helpers
 const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
 
 const extractFolderName = (filename) => {
@@ -121,27 +207,21 @@ const extractFolderName = (filename) => {
 };
 
 // Upload function
-export const uploadToAzure = async (file, modelType, userId, userName, onProgress   ) => {
+export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
 
   // Folder
   const folderName = extractFolderName(file.name);
-  const folderPrefix = `${modelType}/${folderName}/`;
 
-  // Check if folder exists (optional, can skip if just uploading)
-  let folderExists = false;
-  for await (const blob of containerClient.listBlobsFlat({ prefix: folderPrefix })) {
-    folderExists = true;
-    break;
-  }
+  // Unique blob name (keep original for now, but you can prepend timestamp if needed)
+ const uniqueFileName = `${uuidv4()}-${file.name}`;
+const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
 
-  // Unique blob name
-  const uniqueFileName = file.name; // keep original name
-  const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
 
   try {
+    // Upload file
     await blockBlobClient.uploadData(file, {
       blobHTTPHeaders: { blobContentType: file.type },
       onProgress: (ev) => {
@@ -153,16 +233,14 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
     });
 
     const blobUrl = blockBlobClient.url;
-
-    // Generate unique uploadId for Cosmos
     const uploadId = uuidv4();
 
-    // Send metadata to backend
+    // ✅ Post metadata to Azure Function
     await axios.post(AZURE_FUNCTION_URL, {
-      uploadId,           // ✅ unique ID per upload
+      uploadId,
       blobUrl,
       documentName: file.name,
-      modelType,       
+      modelType,
       uploadedBy: { id: userId, name: userName },
     });
 
@@ -172,11 +250,11 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
       uploadedAt: new Date(),
       status: "In Process",
       url: blobUrl,
-      uploadId,   
-       modelType,        // keep it for localStorage/UI
+      uploadId,
+      modelType,
     };
   } catch (error) {
-    console.error("Azure upload error:", error);
+    console.error("Azure upload error:", error.response?.data || error.message);
     throw error;
   }
 };
