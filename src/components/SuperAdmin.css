@@ -1,0 +1,161 @@
+.superAdmin-container{
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.superAdmin-main{
+  border: 1px solid #ccc;
+  /* margin-top: 65px; */
+  margin: 65px 10px 0 10px;
+  border-radius: 10px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+.superAdmin-stats-box{
+    width: 100%;
+}
+.superAdmin-stats-box ul{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.superAdmin-stats-box ul li{
+    list-style: none;
+    width: 160px;
+    height: 50px;
+    background-color: #0d3c61;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+}
+.superAdmin-stats-box ul li p{
+    background-color: #0d3c61;
+}
+.superAdmin-add-clients button,
+.superAdmin-table-box table button{
+    background-color: #0d3c61;
+    color: white;
+    border-radius: 10px;
+    border: none;
+}
+.superAdmin-add-table{
+    padding: 10px;
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    width: 100%;
+}
+.superAdmin-add-clients{
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.superAdmin-add-clients h3{
+    color: #0d3c61;
+}
+.superAdmin-add-clients button{
+    width: 100px;
+    height: 40px;
+}
+.superAdmin-table-box{
+    display: flex;
+    justify-content: center;
+    /* width: 100%; */
+    padding: 10px;
+}
+.superAdmin-table-box table{
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+.superAdmin-table-box table th,
+.superAdmin-table-box table td{
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+.superAdmin-table-box table th{
+    color: white;
+  background: #0d3c61;
+  font-weight: 600;
+}
+.superAdmin-table-box button{
+    width: 60px;
+    height: 30px;
+}
+
+
+/* Popup Overlay */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Popup Form */
+.popup-form {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.popup-form h2 {
+  margin-bottom: 15px;
+  color: #0d3c61;
+}
+
+.popup-form label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: 600;
+}
+
+.popup-form input,
+.popup-form select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form-actions button {
+  flex: 1;
+  margin: 5px;
+  padding: 10px;
+  background-color: #0d3c61;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.form-actions button:hover {
+  background-color: #145a87;
+}
