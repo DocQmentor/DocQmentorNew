@@ -88,6 +88,8 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/manualreview" element={<ManualReview />} />
         <Route path="/editmodal" element={<EditModal />} />
+        <Route path="/superadmin" element={<SuperAdmin/>}/>
+        <Route path="/admin" element={<Admin/>}/>
       </Route>
       <Route path="*" element={<p>Page Not Found</p>} />
     </Routes>

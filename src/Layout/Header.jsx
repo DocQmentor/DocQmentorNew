@@ -3,6 +3,8 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home,Search, LayoutDashboard, FileText, User, LogOut } from 'lucide-react';
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
+import SuperAdmin from "./components/SuperAdmin";
+import Admin from "./components/Admin";
 import useGroupAccess from "../utils/userGroupAccess";
 const Header = ({ minimal }) => {
   const hasAccess = useGroupAccess();
@@ -104,6 +106,24 @@ const Header = ({ minimal }) => {
                   onClick={(e) => handleNavigationClick(e, '/table')}
                 >
                   <FileText size={20} className="i" /> Data View
+                </NavLink>
+              </li>
+              {/* <li className={location.pathname === '/superadmin' ? 'active' : ''}>
+                <NavLink
+                  to="/superadmin"
+                  className="a"
+                  onClick={(e) => handleNavigationClick(e, '/superadmin')}
+                >
+                  <FileText size={20} className="i" /> Super Admin
+                </NavLink>
+              </li> */}
+              <li className={location.pathname === '/admin' ? 'active' : ''}>
+                <NavLink
+                  to="/admin"
+                  className="a"
+                  onClick={(e) => handleNavigationClick(e, '/admin')}
+                >
+                  <FileText size={20} className="i" /> Client Admin
                 </NavLink>
               </li>
             </>
