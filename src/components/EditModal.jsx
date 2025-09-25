@@ -157,14 +157,14 @@ const EditModal = () => {
 
     console.log("📤 Sending to PUT:", updatedDoc); // ✅ Debug log
 
-    const response = await fetch(
-      "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==",
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedDoc),
-      }
-    );
+      const response = await fetch(
+        " https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedDoc),
+        }
+      );
 
     if (!response.ok) {
       const errText = await response.text();

@@ -1,0 +1,186 @@
+/* Base */
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background: white;
+  color: #1e1e1e;
+}
+
+/* Container */
+.container {
+  display: flex;
+  background: white;
+
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(90deg, #4a90e2, #5ba5f2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.nav a {
+  margin: 0 16px;
+  text-decoration: none;
+  color: white;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.nav a:hover {
+  opacity: 0.8;
+}
+
+.profile {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  /* background:white; */
+}
+
+/* Main */
+.main1 {
+  display: block;
+  flex: 1;
+  background-color: white;
+  padding: 40px;
+  gap: 40px;
+}
+
+/* Sidebar */
+.sidebar {
+  display: inline;
+  padding-bottom: 40px;
+
+  width: 300px;
+  /* background-color: white; */
+}
+
+.sidebar h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #0d1b2a;
+  background-color: white;
+}
+
+.sidebar p {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.5;
+  background-color: white;
+  padding-bottom: 40px;
+}
+
+
+/* Styling for the container holding all the cards */
+.card-section {
+  display: flex; /* Use Flexbox to arrange cards horizontally */
+  flex-wrap: wrap; /* Allows cards to wrap to the next line on smaller screens */
+  gap: 24px; /* Creates space between the cards */
+  justify-content: center; /* Centers the cards within the section */
+  padding: 40px; /* Adds space around the entire section */
+  background-color: white; /* Ensures the background of the entire section is white */
+}
+
+/* Styling for each individual card */
+.card {
+  background-color: white; /* Ensures each card's background is white */
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); /* Adds a soft shadow for depth */
+  border: 2px solid transparent; /* A transparent border that can change on hover */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  flex: 1 1 300px; /* Allows cards to grow and shrink, with a base width of 300px */
+}
+
+/* Hover effect for the cards */
+.card:hover {
+  transform: translateY(-6px); /* Lifts the card slightly on hover */
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Styling for the icon, heading, and paragraph within the card */
+.card .icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+  background-color: white; /* Explicitly sets the icon's background to white */
+}
+
+.card h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: #0d1b2a;
+  background-color: white; /* Explicitly sets the heading's background to white */
+}
+
+.card p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
+  background-color: white;
+}
+
+/* Styling for the buttons */
+button {
+  border: none;
+  padding: 10px 24px;
+  font-size: 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+button.blue {
+  background: #4a90e2;
+  color: white;
+}
+
+button.blue:hover {
+  background: #357abd;
+}
+
+button.green {
+  background: #2e7d32;
+  color: white;
+}
+
+button.green:hover {
+  background: #1b5e20;
+}
+.invoice {
+  border: 2px solid #4a90e2;
+}
+
+.bank {
+  border: 2px solid #4caf50;
+}
+
+.mortgage {
+  border: 2px solid #ff9800;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 13px;
+  color: #666;
+  border-top: 1px solid #e0e0e0;
+  background: #fff;
+}

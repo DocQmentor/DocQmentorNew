@@ -5,16 +5,21 @@ const BLOB_SERVICE_URL_WITH_SAS =
 
 const CONTAINER_NAME = "docqmentor2";
 
-export const getVendorFolders = async () => {
+export const getVendorFolders = async (domain) => {
+  if (!domain) return []; 
+  
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
 
-  const folderSet = new Set();
+  const vendorFolders = new Set();
 
-  for await (const blob of containerClient.listBlobsFlat()) {
-    const folderName = blob.name.split("/")[0];
-    folderSet.add(folderName);
+  for await (const item of containerClient.listBlobsByHierarchy("/", { prefix: `${domain}/` })) {
+    if (item.kind === "prefix") {
+      // remove domain prefix to get only vendor folder name
+      const vendorName = item.name.replace(`${domain}/`, "").replace("/", "");
+      vendorFolders.add(vendorName);
+    }
   }
 
-  return Array.from(folderSet);
+  return Array.from(vendorFolders);
 };
