@@ -541,8 +541,7 @@ const Admin = () => {
               </li>
               <li onClick={openUserPopup} style={{cursor: 'pointer'}}>
                 <Users className="pp" size={24} />
-                <button style={{background: 'none', border: 'none', color: 'white', fontSize: '14px', cursor: 'pointer'}}>Users Details</button>
-                <p>View</p>
+                <button style={{background: 'none', border: 'none', color: 'white', fontSize: '14px', cursor: 'pointer'}}><p>Users Details</p></button>
               </li>
             </ul>
           </div>
