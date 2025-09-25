@@ -3,8 +3,6 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home,Search, LayoutDashboard, FileText, User, LogOut } from 'lucide-react';
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
-import SuperAdmin from "./components/SuperAdmin";
-import Admin from "./components/Admin";
 import useGroupAccess from "../utils/userGroupAccess";
 const Header = ({ minimal }) => {
   const hasAccess = useGroupAccess();
