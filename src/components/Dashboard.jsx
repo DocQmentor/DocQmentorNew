@@ -691,6 +691,9 @@ useEffect(() => {
       "SubTotal",
       "VAT",
       "InvoiceTotal",
+      //  "AccountHolder","AccountNumber","StatementPeriod","OpeningBalance","ClosingBalance"
+      // "Lendername", "Borrowername", "Loanamount", "Loantenure", "Interest",
+
     ];
     return requiredFields.every((field) => {
       const value = doc.extractedData[field];
@@ -722,40 +725,96 @@ useEffect(() => {
   };
 
   // ✅ fetch only from backend (no localStorage)
-  useEffect(() => {
-    const fetchDocumentsFromBackend = async () => {
-      try {
-        const response = await fetch(
-          "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
+//   useEffect(() => {
+//     const fetchDocumentsFromBackend = async () => {
+//       try {
+//         const response = await fetch(
+//           "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
+//         );
+//         if (!response.ok) throw new Error("Failed to fetch document data");
+
+//         const documents = await response.json();
+//         const withStatus = documents.map((doc) => ({
+//           ...doc,
+//           status: determineStatus(doc),
+//         }));
+
+//         const userEmail = email || currentUser.id;
+
+//         // ✅ filter docs by modelType + user only
+//         // const filteredDocs = withStatus.filter(
+//         //   (doc) =>
+//         //     doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
+//         //     (doc.uploadedBy?.id?.toLowerCase() === userEmail.toLowerCase() ||
+//         //       doc.uploadedBy?.toLowerCase() === userEmail.toLowerCase())
+//         // );
+//         const filteredDocs = withStatus.filter((doc) => {
+//   const uploader =
+//     typeof doc.uploadedBy === "string"
+//       ? doc.uploadedBy
+//       : doc.uploadedBy?.id;
+
+//   return (
+//     doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
+//     uploader?.toLowerCase() === userEmail.toLowerCase()
+//   );
+// });
+
+
+//         setAllDocuments(filteredDocs);
+//       } catch (error) {
+//         console.error("Error loading backend documents:", error);
+//       }
+//     };
+
+//     fetchDocumentsFromBackend();
+//     const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
+//     return () => clearInterval(intervalId);
+//   }, [modelType, email, currentUser]);
+useEffect(() => {
+  let isMounted = true;
+
+  const fetchDocumentsFromBackend = async () => {
+    try {
+      const response = await fetch(
+        "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
+      );
+      if (!response.ok) throw new Error("Failed to fetch document data");
+
+      const documents = await response.json();
+      const withStatus = documents.map((doc) => ({
+        ...doc,
+        status: determineStatus(doc),
+      }));
+
+      const userEmail = email || currentUser.id;
+      const filteredDocs = withStatus.filter((doc) => {
+        const uploader =
+          typeof doc.uploadedBy === "string" ? doc.uploadedBy : doc.uploadedBy?.id;
+
+        return (
+          doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
+          uploader?.toLowerCase() === userEmail.toLowerCase()
         );
-        if (!response.ok) throw new Error("Failed to fetch document data");
+      });
 
-        const documents = await response.json();
-        const withStatus = documents.map((doc) => ({
-          ...doc,
-          status: determineStatus(doc),
-        }));
+      if (isMounted) setAllDocuments(filteredDocs);
+    } catch (error) {
+      console.error("Error loading backend documents:", error);
+    }
+  };
 
-        const userEmail = email || currentUser.id;
+  fetchDocumentsFromBackend();
 
-        // ✅ filter docs by modelType + user only
-        const filteredDocs = withStatus.filter(
-          (doc) =>
-            doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
-            (doc.uploadedBy?.id?.toLowerCase() === userEmail.toLowerCase() ||
-              doc.uploadedBy?.toLowerCase() === userEmail.toLowerCase())
-        );
+  // ✅ interval set only once
+  const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
 
-        setAllDocuments(filteredDocs);
-      } catch (error) {
-        console.error("Error loading backend documents:", error);
-      }
-    };
+  return () => {
+    isMounted = false;
+    clearInterval(intervalId);
+  };
+}, [modelType]); // 🔑 remove `email` & `currentUser` from deps
 
-    fetchDocumentsFromBackend();
-    const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
-    return () => clearInterval(intervalId);
-  }, [modelType, email, currentUser]);
 
   const getFilteredDocuments = () => {
     if (!selectedVendor) return allDocuments;
