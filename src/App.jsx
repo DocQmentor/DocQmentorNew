@@ -7,11 +7,7 @@ import {
   UnauthenticatedTemplate,
 } from "@azure/msal-react";
 import { PublicClientApplication, InteractionStatus } from "@azure/msal-browser";
-<<<<<<< HEAD
-
-=======
  
->>>>>>> ad894ee9a284ef9c3a99a65893cf4a68d02bed9f
 import Login from "./components/Login";
 import Home from "./components/Home";
 import Table from "./components/Table";
@@ -19,10 +15,7 @@ import Dashboard from "./components/Dashboard";
 import ManualReview from "./components/ManualReview";
 import EditModal from "./components/EditModal";
 import Header from "./Layout/Header";
-<<<<<<< HEAD
-=======
 import SelectDocumentType from "./components/SelectDocumentType";
->>>>>>> ad894ee9a284ef9c3a99a65893cf4a68d02bed9f
 import { UserProvider, useUser } from "./context/UserContext";
  
 const msalConfig = {
@@ -33,13 +26,8 @@ const msalConfig = {
   },
 };
 const pca = new PublicClientApplication(msalConfig);
-<<<<<<< HEAD
-
-
-=======
  
  
->>>>>>> ad894ee9a284ef9c3a99a65893cf4a68d02bed9f
 const ProtectedLayout = () => {
   const { accounts, inProgress } = useMsal();
   const navigate = useNavigate();
@@ -58,11 +46,7 @@ const ProtectedLayout = () => {
       }
     }
   }, [accounts, navigate, setUser, inProgress]);
-<<<<<<< HEAD
-
-=======
  
->>>>>>> ad894ee9a284ef9c3a99a65893cf4a68d02bed9f
   if (accounts.length === 0) return null;
  
   return (
@@ -78,30 +62,18 @@ const ProtectedLayout = () => {
 const AppRoutes = () => {
   const { accounts, inProgress } = useMsal();
   const location = useLocation();
-<<<<<<< HEAD
-
-  if (inProgress !== InteractionStatus.None) {
-    return <div>Loading authentication...</div>;
-  }
-
-=======
  
   if (inProgress !== InteractionStatus.None) {
     return <div>Loading authentication...</div>;
   }
  
->>>>>>> ad894ee9a284ef9c3a99a65893cf4a68d02bed9f
   return (
     <Routes>
       <Route
         path="/"
         element={
           accounts.length > 0 ? (
-<<<<<<< HEAD
-            <Navigate to="/dashboard" replace />
-=======
             <Navigate to="/select" replace />
->>>>>>> ad894ee9a284ef9c3a99a65893cf4a68d02bed9f
           ) : (
             <UnauthenticatedTemplate>
               <Login />

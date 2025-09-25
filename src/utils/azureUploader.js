@@ -206,30 +206,6 @@ const extractFolderName = (filename) => {
   return cleaned.trim().toUpperCase();
 };
 
-<<<<<<< HEAD
-export const uploadToAzure = async (file, onProgress) => {
-  const originalFileName = file.name;
-  const folderName = extractFolderName(originalFileName);
-
-  // ✅ Generate a unique blob file name using timestamp
-  const timestamp = Date.now();
-  const uniqueFileName = `${timestamp}-${originalFileName}`;
-
-  // ✅ Keep folder structure
-  const blobPath = `${encodeURIComponent(folderName)}/${encodeURIComponent(uniqueFileName)}`;
-  const blobUrl = `${storageAccountUrl}/${containerName}/${blobPath}${sasToken}`;
-
-  try {
-    // Upload to Azure Blob
-    const response = await axios.put(blobUrl, file, {
-      headers: {
-        "x-ms-blob-type": "BlockBlob",
-        "Content-Type": file.type,
-      },
-      onUploadProgress: (progressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-=======
 // Upload function
 export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
@@ -251,36 +227,11 @@ const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
       onProgress: (ev) => {
         if (onProgress && ev.loadedBytes && file.size) {
           const percent = Math.round((ev.loadedBytes * 100) / file.size);
->>>>>>> ad894ee9a284ef9c3a99a65893cf4a68d02bed9f
           onProgress(percent);
         }
       },
     });
 
-<<<<<<< HEAD
-    if (response.status === 201 || response.status === 200) {
-      // ✅ Send blobUrl and originalFileName to Azure Function
-      // await axios.post(
-      //   "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=8QYoFUxEDeqtrIGoDppeFQQPHT2hVYL1fWbRGvk4egJKAzFudPd6AQ==",
-      //   {
-      //     blobUrl,
-      //     documentName: originalFileName, // ✅ send original name
-      //   }
-      // );
-
-      return {
-        fileName: originalFileName, // shown in UI
-        uniqueBlobName: uniqueFileName, // stored internally
-        folderName,
-        uploadedAt: new Date(),
-        status: "In Process",
-        url: blobUrl,
-      };
-    } else {
-      console.error("Upload failed:", response);
-      return null;
-    }
-=======
     const blobUrl = blockBlobClient.url;
     const uploadId = uuidv4();
 
@@ -302,7 +253,6 @@ const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
       uploadId,
       modelType,
     };
->>>>>>> ad894ee9a284ef9c3a99a65893cf4a68d02bed9f
   } catch (error) {
     console.error("Azure upload error:", error.response?.data || error.message);
     throw error;
