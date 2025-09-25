@@ -447,26 +447,25 @@ const Admin = () => {
 
   // Start editing a user
   const startEditUser = (userId, e) => {
-    e.stopPropagation();
-    const user = users.find(u => u.id === userId);
-    if (user) {
-      setEditingUserId(userId);
-      setEditEmail(user.email);
-      setEditRole(user.role);
-    }
-  };
+  e.stopPropagation();
+  const user = users.find(u => u.id === userId);
+  if (user) {
+    setEditingUserId(userId);
+    setEditRole(user.role);
+  }
+};
 
   // Save user edits
   const saveUserEdit = (userId, e) => {
-    e.stopPropagation();
-    if (editEmail && editRole) {
-      const updatedUsers = users.map(user => 
-        user.id === userId ? { ...user, email: editEmail, role: editRole } : user
-      );
-      setUsers(updatedUsers);
-      setEditingUserId(null);
-    }
-  };
+  e.stopPropagation();
+  if (editRole) { // Only check if role is selected
+    const updatedUsers = users.map(user => 
+      user.id === userId ? { ...user, role: editRole } : user
+    );
+    setUsers(updatedUsers);
+    setEditingUserId(null);
+  }
+};
 
   // Clear edit form
   const clearEditForm = (userId, e) => {
@@ -950,52 +949,36 @@ const Admin = () => {
                     )}
                     
                     {editingUserId === user.id && (
-                      <div className="edit-form">
-                        <div className="form-group">
-                          <label htmlFor={`edit-email-${user.id}`}>Email</label>
-                          <input
-                            type="email"
-                            id={`edit-email-${user.id}`}
-                            value={editEmail}
-                            onChange={(e) => setEditEmail(e.target.value)}
-                          />
-                        </div>
-                        
-                        <div className="form-group">
-                          <label htmlFor={`edit-role-${user.id}`}>Role</label>
-                          <select
-                            id={`edit-role-${user.id}`}
-                            value={editRole}
-                            onChange={(e) => setEditRole(e.target.value)}
-                          >
-                            <option value="Admin">Admin</option>
-                            <option value="Manual Review">Manual Review</option>
-                            <option value="Normal">Normal</option>
-                          </select>
-                        </div>
-                        
-                        <div className="form-buttons">
-                          <button
-                            className="submit-btn save-edit"
-                            onClick={(e) => saveUserEdit(user.id, e)}
-                          >
-                            Save
-                          </button>
-                          <button
-                            className="clear-btn"
-                            onClick={(e) => clearEditForm(user.id, e)}
-                          >
-                            Clear
-                          </button>
-                          <button
-                            className="cancel-btn"
-                            onClick={(e) => cancelEdit(user.id, e)}
-                          >
-                            Cancel
-                          </button>
-                        </div>
+                    <div className="edit-form">
+                      <div className="form-group">
+                        <label htmlFor={`edit-role-${user.id}`}>Role</label>
+                        <select
+                          id={`edit-role-${user.id}`}
+                          value={editRole}
+                          onChange={(e) => setEditRole(e.target.value)}
+                        >
+                          <option value="Admin">Admin</option>
+                          <option value="Contributor">Contributor</option>
+                          <option value="Member">Member</option>
+                        </select>
                       </div>
-                    )}
+                      
+                      <div className="form-buttons">
+                        <button
+                          className="submit-btn save-edit"
+                          onClick={(e) => saveUserEdit(user.id, e)}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="cancel-btn"
+                          onClick={(e) => cancelEdit(user.id, e)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   </div>
                 ))
               )}
