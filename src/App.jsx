@@ -15,6 +15,8 @@ import Dashboard from "./components/Dashboard";
 import ManualReview from "./components/ManualReview";
 import EditModal from "./components/EditModal";
 import Header from "./Layout/Header";
+import Admin from "./components/Admin";
+import SuperAdmin from "./components/SuperAdmin";
 import SelectDocumentType from "./components/SelectDocumentType";
 import { UserProvider, useUser } from "./context/UserContext";
  
