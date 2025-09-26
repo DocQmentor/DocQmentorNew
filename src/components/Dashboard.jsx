@@ -30,14 +30,15 @@ const Dashboard = () => {
   };
 
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [allDocuments, setAllDocuments] = useState([]);
+  const [allDocuments, setAllDocuments] = useState([]); // All documents from backend
+  const [globalDocuments, setGlobalDocuments] = useState([]); // For summary section (all users)
   const [isUploading, setIsUploading] = useState(false);
   const [vendors, setVendors] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [modelType, setModelType] = useState("");
 
-  const selectedmodelType = localStorage.getItem("selectedModelType") || "Invoice"; // ✅ keep only modelType
+  const selectedmodelType = localStorage.getItem("selectedModelType") || "Invoice";
   const documentsPerPage = 10;
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -54,25 +55,23 @@ const Dashboard = () => {
   }, []);
 
   // Fetch vendors list from blob
-useEffect(() => {
-  const fetchVendors = async () => {
-    if (!modelType) {
-      setVendors([]);
-      return;
-    }
-    try {
-      // getVendorFolders now accepts modelType and returns vendor folder names
-      const list = await getVendorFolders(modelType);
-      setVendors(list || []);
-    } catch (error) {
-      console.error("Error fetching vendors for modelType", modelType, error);
-      setVendors([]);
-    }
-  };
+  useEffect(() => {
+    const fetchVendors = async () => {
+      if (!modelType) {
+        setVendors([]);
+        return;
+      }
+      try {
+        const list = await getVendorFolders(modelType);
+        setVendors(list || []);
+      } catch (error) {
+        console.error("Error fetching vendors for modelType", modelType, error);
+        setVendors([]);
+      }
+    };
 
-  fetchVendors();
-}, [modelType]);
-
+    fetchVendors();
+  }, [modelType]);
 
   const hasAllMandatoryFields = (doc) => {
     if (!doc || !doc.extractedData) return false;
@@ -84,9 +83,6 @@ useEffect(() => {
       "SubTotal",
       "VAT",
       "InvoiceTotal",
-      //  "AccountHolder","AccountNumber","StatementPeriod","OpeningBalance","ClosingBalance"
-      // "Lendername", "Borrowername", "Loanamount", "Loantenure", "Interest",
-
     ];
     return requiredFields.every((field) => {
       const value = doc.extractedData[field];
@@ -117,99 +113,75 @@ useEffect(() => {
     return avg >= 0.85 ? "Completed" : "Manual Review";
   };
 
-  // ✅ fetch only from backend (no localStorage)
-//   useEffect(() => {
-//     const fetchDocumentsFromBackend = async () => {
-//       try {
-//         const response = await fetch(
-//           "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
-//         );
-//         if (!response.ok) throw new Error("Failed to fetch document data");
+  // Fetch all documents from backend (both for summary and user-specific)
+  useEffect(() => {
+    let isMounted = true;
 
-//         const documents = await response.json();
-//         const withStatus = documents.map((doc) => ({
-//           ...doc,
-//           status: determineStatus(doc),
-//         }));
-
-//         const userEmail = email || currentUser.id;
-
-//         // ✅ filter docs by modelType + user only
-//         // const filteredDocs = withStatus.filter(
-//         //   (doc) =>
-//         //     doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
-//         //     (doc.uploadedBy?.id?.toLowerCase() === userEmail.toLowerCase() ||
-//         //       doc.uploadedBy?.toLowerCase() === userEmail.toLowerCase())
-//         // );
-//         const filteredDocs = withStatus.filter((doc) => {
-//   const uploader =
-//     typeof doc.uploadedBy === "string"
-//       ? doc.uploadedBy
-//       : doc.uploadedBy?.id;
-
-//   return (
-//     doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
-//     uploader?.toLowerCase() === userEmail.toLowerCase()
-//   );
-// });
-
-
-//         setAllDocuments(filteredDocs);
-//       } catch (error) {
-//         console.error("Error loading backend documents:", error);
-//       }
-//     };
-
-//     fetchDocumentsFromBackend();
-//     const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
-//     return () => clearInterval(intervalId);
-//   }, [modelType, email, currentUser]);
-useEffect(() => {
-  let isMounted = true;
-
-  const fetchDocumentsFromBackend = async () => {
-    try {
-      const response = await fetch(
-        "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
-      );
-      if (!response.ok) throw new Error("Failed to fetch document data");
-
-      const documents = await response.json();
-      const withStatus = documents.map((doc) => ({
-        ...doc,
-        status: determineStatus(doc),
-      }));
-
-      const userEmail = email || currentUser.id;
-      const filteredDocs = withStatus.filter((doc) => {
-        const uploader =
-          typeof doc.uploadedBy === "string" ? doc.uploadedBy : doc.uploadedBy?.id;
-
-        return (
-          doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
-          uploader?.toLowerCase() === userEmail.toLowerCase()
+    const fetchDocumentsFromBackend = async () => {
+      try {
+        const response = await fetch(
+          "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
-      });
+        if (!response.ok) throw new Error("Failed to fetch document data");
 
-      if (isMounted) setAllDocuments(filteredDocs);
-    } catch (error) {
-      console.error("Error loading backend documents:", error);
+        const documents = await response.json();
+        const withStatus = documents.map((doc) => ({
+          ...doc,
+          status: determineStatus(doc),
+        }));
+
+        if (isMounted) {
+          // Set global documents for summary section (all users, filtered by modelType)
+          const globalFilteredDocs = withStatus.filter(
+            (doc) => doc.modelType?.toLowerCase() === modelType.toLowerCase()
+          );
+          setGlobalDocuments(globalFilteredDocs);
+
+          // Set user-specific documents for recent documents section
+          const userEmail = email || currentUser.id;
+          const userFilteredDocs = withStatus.filter((doc) => {
+            const uploader =
+              typeof doc.uploadedBy === "string" ? doc.uploadedBy : doc.uploadedBy?.id;
+
+            return (
+              doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
+              uploader?.toLowerCase() === userEmail.toLowerCase()
+            );
+          });
+          setAllDocuments(userFilteredDocs);
+        }
+      } catch (error) {
+        console.error("Error loading backend documents:", error);
+      }
+    };
+
+    if (modelType) {
+      fetchDocumentsFromBackend();
     }
+
+    // Interval for real-time updates
+    const intervalId = setInterval(() => {
+      if (modelType) {
+        fetchDocumentsFromBackend();
+      }
+    }, 10000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [modelType, email, currentUser.id]); // Add dependencies to refetch when user changes
+
+  // Get documents for summary section (all users)
+  const getGlobalDocuments = () => {
+    if (!selectedVendor) return globalDocuments;
+    return globalDocuments.filter((doc) =>
+      (doc.documentName || "").toLowerCase().includes(selectedVendor.toLowerCase())
+    );
   };
 
-  fetchDocumentsFromBackend();
-
-  // ✅ interval set only once
-  const intervalId = setInterval(fetchDocumentsFromBackend, 10000);
-
-  return () => {
-    isMounted = false;
-    clearInterval(intervalId);
-  };
-}, [modelType]); // 🔑 remove `email` & `currentUser` from deps
-
-
-  const getFilteredDocuments = () => {
+  // Get documents for recent documents section (current user only)
+  const getUserDocuments = () => {
     if (!selectedVendor) return allDocuments;
     return allDocuments.filter((doc) =>
       (doc.documentName || "").toLowerCase().includes(selectedVendor.toLowerCase())
@@ -217,13 +189,14 @@ useEffect(() => {
   };
 
   const getDocumentStats = () => {
-    const filteredDocs = getFilteredDocuments();
-    const total = filteredDocs.length;
+    // Use global documents for summary statistics (all users)
+    const globalDocs = getGlobalDocuments();
+    const total = globalDocs.length;
     let completed = 0;
     let manualReview = 0;
     let inProcess = 0;
 
-    filteredDocs.forEach((doc) => {
+    globalDocs.forEach((doc) => {
       const status = determineStatus(doc);
       if (status === "Completed" || status === "Reviewed") completed++;
       else if (status === "Manual Review") manualReview++;
@@ -260,7 +233,6 @@ useEffect(() => {
     fileInputRef.current.click();
   };
 
-  // ✅ upload but no localStorage save
   const handleProcessFiles = async () => {
     if (selectedFiles.length === 0) return;
     setIsUploading(true);
@@ -311,18 +283,19 @@ useEffect(() => {
     return date.toLocaleString();
   };
 
-  // ✅ directly use allDocuments (no myFiles/localStorage)
-  const filteredDocs = getFilteredDocuments()
+  // Use user documents for recent documents section
+  const userDocs = getUserDocuments()
     .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
 
   const indexOfLast = currentPage * documentsPerPage;
   const indexOfFirst = indexOfLast - documentsPerPage;
-  const currentDocs = filteredDocs.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredDocs.length / documentsPerPage);
+  const currentDocs = userDocs.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(userDocs.length / documentsPerPage);
   const stats = getDocumentStats();
 
   const handleManualReviewClick = () => {
     if (hasAccess === true) {
+      // Use user documents for manual review
       const manualReviewDocs = allDocuments.filter(
         (doc) => determineStatus(doc) === "Manual Review"
       );

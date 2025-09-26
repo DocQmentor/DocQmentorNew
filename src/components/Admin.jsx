@@ -8,384 +8,429 @@ import useSortableData from "../utils/useSortableData";
 
 const Admin = () => {
   // Client Admin Data States
-  const [dateWiseData, setDateWiseData] = useState([]);
-  const [vendorWiseData, setVendorWiseData] = useState([]);
-  const [allDocuments, setAllDocuments] = useState([]); // Store original data
-  const [dataLoading, setDataLoading] = useState(true);
-  const [dataError, setDataError] = useState(null);
-  const [selectedPeriod, setSelectedPeriod] = useState('7days');
-
-  // Filter states for date-wise table
-  const [dateFromFilter, setDateFromFilter] = useState('');
-  const [dateToFilter, setDateToFilter] = useState('');
-  const [dateCompletionRateFilter, setDateCompletionRateFilter] = useState('');
-
-  // Filter states for vendor-wise table
-  const [vendorSelectFilter, setVendorSelectFilter] = useState('');
-  const [vendorSearchFilter, setVendorSearchFilter] = useState('');
-  const [vendorCompletionRateFilter, setVendorCompletionRateFilter] = useState('');
-
-  // Pagination states for date-wise table
-  const [currentDatePage, setCurrentDatePage] = useState(1);
-  const [dateRowsPerPage] = useState(6);
-
-  // Pagination states for vendor-wise table
-  const [currentVendorPage, setCurrentVendorPage] = useState(1);
-  const [vendorRowsPerPage] = useState(6);
-
-  // User Management States
-  const [users, setUsers] = useState([
-    { id: 1, email: "admin@example.com", role: "Admin" },
-    { id: 2, email: "reviewer@example.com", role: "Contributor" },
-    { id: 3, email: "user1@example.com", role: "Member" },
-    { id: 4, email: "user2@example.com", role: "Member" }
-  ]);
-  
-  const [showUserPopup, setShowUserPopup] = useState(false);
-  const [showAddUserForm, setShowAddUserForm] = useState(false);
-  const [roleFilter, setRoleFilter] = useState('');
-  const [nameFilter, setNameFilter] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserRole, setNewUserRole] = useState('');
-  const [filteredUsers, setFilteredUsers] = useState(users);
-  const [activeUserId, setActiveUserId] = useState(null);
-  const [editingUserId, setEditingUserId] = useState(null);
-  const [deleteUserId, setDeleteUserId] = useState(null);
-  const [editEmail, setEditEmail] = useState('');
-  const [editRole, setEditRole] = useState('');
-
-  // Fetch data from API
-  const fetchData = async () => {
-    try {
-      setDataLoading(true);
-      const response = await fetch(
-        "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
-      );
-      
-      if (!response.ok) throw new Error('Failed to fetch data');
-      
-      const allDocumentsData = await response.json();
-      setAllDocuments(allDocumentsData);
-      
-      // Process data for date-wise statistics
-      const dateStats = processDateWiseData(allDocumentsData);
-      setDateWiseData(dateStats);
-      
-      // Process data for vendor-wise statistics
-      const vendorStats = processVendorWiseData(allDocumentsData);
-      setVendorWiseData(vendorStats);
-      
-    } catch (err) {
-      setDataError(err.message);
-      console.error('Error fetching data:', err);
-    } finally {
-      setDataLoading(false);
-    }
-  };
-
-  // Determine document status (same logic as other components)
-  const determineStatus = (doc) => {
-    if (doc.status === "Reviewed" || doc.reviewStatus === "Reviewed" || doc.reviewedBy) {
-      return "Reviewed";
-    }
-    if (!doc || !doc.extractedData || !doc.confidenceScores) {
-      return "Manual Review";
-    }
+    const [dateWiseData, setDateWiseData] = useState([]);
+    const [vendorWiseData, setVendorWiseData] = useState([]);
+    const [allDocuments, setAllDocuments] = useState([]); // Store original data
+    const [dataLoading, setDataLoading] = useState(true);
+    const [dataError, setDataError] = useState(null);
+    const [selectedPeriod, setSelectedPeriod] = useState('7days');
     
-    const hasAllMandatoryFields = (doc) => {
-      if (!doc || !doc.extractedData) return false;
-      const requiredFields = [
-        "VendorName",
-        "InvoiceId",
-        "InvoiceDate",
-        "LPO NO",
-        "SubTotal",
-        "VAT",
-        "InvoiceTotal",
-      ];
-      return requiredFields.every((field) => {
-        const value = doc.extractedData[field];
-        return value !== undefined && value !== null && String(value).trim() !== "";
+    // Add selected document type state
+    const [selectedDocumentType, setSelectedDocumentType] = useState('');
+  
+    // Filter states for date-wise table
+    const [dateFromFilter, setDateFromFilter] = useState('');
+    const [dateToFilter, setDateToFilter] = useState('');
+    const [dateCompletionRateFilter, setDateCompletionRateFilter] = useState('');
+  
+    // Filter states for vendor-wise table
+    const [vendorSelectFilter, setVendorSelectFilter] = useState('');
+    const [vendorSearchFilter, setVendorSearchFilter] = useState('');
+    const [vendorCompletionRateFilter, setVendorCompletionRateFilter] = useState('');
+  
+    // Pagination states for date-wise table
+    const [currentDatePage, setCurrentDatePage] = useState(1);
+    const [dateRowsPerPage] = useState(6);
+  
+    // Pagination states for vendor-wise table
+    const [currentVendorPage, setCurrentVendorPage] = useState(1);
+    const [vendorRowsPerPage] = useState(6);
+  
+    // User Management States
+    const [users, setUsers] = useState([
+      { id: 1, email: "admin@example.com", role: "Admin" },
+      { id: 2, email: "reviewer@example.com", role: "Contributor" },
+      { id: 3, email: "user1@example.com", role: "Member" },
+      { id: 4, email: "user2@example.com", role: "Member" }
+    ]);
+    
+    const [showUserPopup, setShowUserPopup] = useState(false);
+    const [showAddUserForm, setShowAddUserForm] = useState(false);
+    const [roleFilter, setRoleFilter] = useState('');
+    const [nameFilter, setNameFilter] = useState('');
+    const [newUserEmail, setNewUserEmail] = useState('');
+    const [newUserRole, setNewUserRole] = useState('');
+    const [filteredUsers, setFilteredUsers] = useState(users);
+    const [activeUserId, setActiveUserId] = useState(null);
+    const [editingUserId, setEditingUserId] = useState(null);
+    const [deleteUserId, setDeleteUserId] = useState(null);
+    const [editEmail, setEditEmail] = useState('');
+    const [editRole, setEditRole] = useState('');
+  
+    // Load selected document type from localStorage on component mount
+    useEffect(() => {
+      const storedDocumentType = localStorage.getItem('selectedModelType');
+      if (storedDocumentType) {
+        setSelectedDocumentType(storedDocumentType);
+      } else {
+        // Default to Invoice if no selection exists
+        setSelectedDocumentType('Invoice');
+      }
+    }, []);
+  
+    // Fetch data from API
+    const fetchData = async () => {
+      try {
+        setDataLoading(true);
+        const response = await fetch(
+          "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
+        );
+        
+        if (!response.ok) throw new Error('Failed to fetch data');
+        
+        const allDocumentsData = await response.json();
+        setAllDocuments(allDocumentsData);
+        
+        // Process data for date-wise statistics (filtered by document type)
+        const dateStats = processDateWiseData(allDocumentsData);
+        setDateWiseData(dateStats);
+        
+        // Process data for vendor-wise statistics (filtered by document type)
+        const vendorStats = processVendorWiseData(allDocumentsData);
+        setVendorWiseData(vendorStats);
+        
+      } catch (err) {
+        setDataError(err.message);
+        console.error('Error fetching data:', err);
+      } finally {
+        setDataLoading(false);
+      }
+    };
+  
+    // Filter documents by selected document type
+    const filterDocumentsByType = (documents) => {
+      if (!selectedDocumentType) return documents;
+      
+      return documents.filter(doc => {
+        const docModelType = doc.modelType || '';
+        return docModelType.toLowerCase() === selectedDocumentType.toLowerCase();
       });
     };
-
-    const scoreStr = String(doc.totalConfidenceScore || "").toLowerCase();
-    if (scoreStr.includes("reviewed")) return "Reviewed";
-    if (!hasAllMandatoryFields(doc)) return "Manual Review";
-    
-    const scores = Object.values(doc.confidenceScores || {});
-    if (scores.length === 0) return "Manual Review";
-    
-    const avg = scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
-    return avg >= 0.85 ? "Completed" : "Manual Review";
-  };
-
-  // Process data for date-wise statistics
-  const processDateWiseData = (documents) => {
-    const dateMap = {};
-    
-    documents.forEach(doc => {
-      const uploadDate = doc.timestamp ? new Date(doc.timestamp).toISOString().split('T')[0] : 
-                        new Date().toISOString().split('T')[0];
-      
-      if (!dateMap[uploadDate]) {
-        dateMap[uploadDate] = {
-          date: uploadDate,
-          total: 0,
-          completed: 0,
-          manualReview: 0,
-          rawDate: new Date(uploadDate),
-          completionRate: 0
-        };
-      }
-      
-      dateMap[uploadDate].total++;
-      const status = determineStatus(doc);
-      
-      if (status === "Completed" || status === "Reviewed") {
-        dateMap[uploadDate].completed++;
-      } else if (status === "Manual Review") {
-        dateMap[uploadDate].manualReview++;
-      }
-
-      // Calculate completion rate
-      dateMap[uploadDate].completionRate = dateMap[uploadDate].total > 0 ? 
-        (dateMap[uploadDate].completed / dateMap[uploadDate].total) * 100 : 0;
-    });
-    
-    // Convert to array and sort by date (newest first)
-    return Object.values(dateMap)
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, getPeriodLimit());
-  };
-
-  // Process data for vendor-wise statistics
-  const processVendorWiseData = (documents) => {
-    const vendorMap = {};
-    
-    documents.forEach(doc => {
-      const vendorName = doc.extractedData?.VendorName || doc.vendorName || 'Unknown Vendor';
-      
-      if (!vendorMap[vendorName]) {
-        vendorMap[vendorName] = {
-          vendor: vendorName,
-          total: 0,
-          completed: 0,
-          manualReview: 0,
-          completionRate: 0
-        };
-      }
-      
-      vendorMap[vendorName].total++;
-      const status = determineStatus(doc);
-      
-      if (status === "Completed" || status === "Reviewed") {
-        vendorMap[vendorName].completed++;
-      } else if (status === "Manual Review") {
-        vendorMap[vendorName].manualReview++;
-      }
-
-      // Calculate completion rate
-      vendorMap[vendorName].completionRate = vendorMap[vendorName].total > 0 ? 
-        (vendorMap[vendorName].completed / vendorMap[vendorName].total) * 100 : 0;
-    });
-    
-    // Convert to array and sort by total documents (descending)
-    return Object.values(vendorMap)
-      .sort((a, b) => b.total - a.total);
-  };
-
-  const getPeriodLimit = () => {
-    switch (selectedPeriod) {
-      case '7days': return 7;
-      case '30days': return 30;
-      default: return 100; // Show more records for "all"
-    }
-  };
-
-  // Filter date-wise data
-  const filterDateWiseData = () => {
-    let filtered = processDateWiseData(allDocuments);
-    
-    // Apply date range filter
-    if (dateFromFilter) {
-      const fromDate = new Date(dateFromFilter);
-      filtered = filtered.filter(item => new Date(item.date) >= fromDate);
-    }
-    
-    if (dateToFilter) {
-      const toDate = new Date(dateToFilter);
-      toDate.setHours(23, 59, 59, 999); // Include entire day
-      filtered = filtered.filter(item => new Date(item.date) <= toDate);
-    }
-    
-    // Apply completion rate filter
-    if (dateCompletionRateFilter) {
-      filtered = filtered.filter(item => {
-        const completionRate = item.completionRate;
-        
-        switch (dateCompletionRateFilter) {
-          case '0-10': return completionRate >= 0 && completionRate <= 10;
-          case '10-20': return completionRate > 10 && completionRate <= 20;
-          case '20-30': return completionRate > 20 && completionRate <= 30;
-          case '30-40': return completionRate > 30 && completionRate <= 40;
-          case '40-50': return completionRate > 40 && completionRate <= 50;
-          case '50-60': return completionRate > 50 && completionRate <= 60;
-          case '60-70': return completionRate > 60 && completionRate <= 70;
-          case '70-80': return completionRate > 70 && completionRate <= 80;
-          case '80-90': return completionRate > 80 && completionRate <= 90;
-          case '90-100': return completionRate > 90 && completionRate <= 100;
-          default: return true;
-        }
-      });
-    }
-    
-    return filtered;
-  };
-
-  // Filter vendor-wise data
-  const filterVendorWiseData = () => {
-    let filtered = processVendorWiseData(allDocuments);
-    
-    // Apply vendor select filter (dropdown)
-    if (vendorSelectFilter) {
-      filtered = filtered.filter(item => 
-        item.vendor === vendorSelectFilter
-      );
-    }
-
-    // Apply vendor search filter
-    if (vendorSearchFilter) {
-      filtered = filtered.filter(item => 
-        item.vendor.toLowerCase().includes(vendorSearchFilter.toLowerCase())
-      );
-    }
-    
-    // Apply completion rate filter
-    if (vendorCompletionRateFilter) {
-      filtered = filtered.filter(item => {
-        const completionRate = item.completionRate;
-        
-        switch (vendorCompletionRateFilter) {
-          case '0-10': return completionRate >= 0 && completionRate <= 10;
-          case '10-20': return completionRate > 10 && completionRate <= 20;
-          case '20-30': return completionRate > 20 && completionRate <= 30;
-          case '30-40': return completionRate > 30 && completionRate <= 40;
-          case '40-50': return completionRate > 40 && completionRate <= 50;
-          case '50-60': return completionRate > 50 && completionRate <= 60;
-          case '60-70': return completionRate > 60 && completionRate <= 70;
-          case '70-80': return completionRate > 70 && completionRate <= 80;
-          case '80-90': return completionRate > 80 && completionRate <= 90;
-          case '90-100': return completionRate > 90 && completionRate <= 100;
-          default: return true;
-        }
-      });
-    }
-    
-    return filtered;
-  };
-
-  // Get unique vendor names for the dropdown
-  const getUniqueVendors = () => {
-    const vendors = processVendorWiseData(allDocuments).map(item => item.vendor);
-    return [...new Set(vendors)].sort();
-  };
   
-  // Get filtered data
-  const filteredDateWiseData = filterDateWiseData();
-  const filteredVendorWiseData = filterVendorWiseData();
-
-  // Use sortable data hooks for both tables
-  const {
-    sortedData: sortedDateData,
-    toggleSort: toggleDateSort,
-    renderSortIcon: renderDateSortIcon,
-    sortColumn: dateSortColumn,
-    sortOrder: dateSortOrder
-  } = useSortableData(filteredDateWiseData);
-
-  const {
-    sortedData: sortedVendorData,
-    toggleSort: toggleVendorSort,
-    renderSortIcon: renderVendorSortIcon,
-    sortColumn: vendorSortColumn,
-    sortOrder: vendorSortOrder
-  } = useSortableData(filteredVendorWiseData);
-
-  // Paginate date-wise data
-  const dateTotalPages = Math.ceil(sortedDateData.length / dateRowsPerPage);
-  const dateStartIndex = (currentDatePage - 1) * dateRowsPerPage;
-  const currentDateRows = sortedDateData.slice(dateStartIndex, dateStartIndex + dateRowsPerPage);
-
-  // Paginate vendor-wise data
-  const vendorTotalPages = Math.ceil(sortedVendorData.length / vendorRowsPerPage);
-  const vendorStartIndex = (currentVendorPage - 1) * vendorRowsPerPage;
-  const currentVendorRows = sortedVendorData.slice(vendorStartIndex, vendorStartIndex + vendorRowsPerPage);
-
-  // Reset all filters
-  const resetDateFilters = () => {
-    setDateFromFilter('');
-    setDateToFilter('');
-    setDateCompletionRateFilter('');
-    setCurrentDatePage(1);
-  };
-
-  const resetVendorFilters = () => {
-    setVendorSelectFilter('');
-    setVendorSearchFilter('');
-    setVendorCompletionRateFilter('');
-    setCurrentVendorPage(1);
-  };
-
-  // Export to CSV function
-  const exportToCSV = (data, filename) => {
-    if (data.length === 0) return;
+    // Determine document status (same logic as other components)
+    const determineStatus = (doc) => {
+      if (doc.status === "Reviewed" || doc.reviewStatus === "Reviewed" || doc.reviewedBy) {
+        return "Reviewed";
+      }
+      if (!doc || !doc.extractedData || !doc.confidenceScores) {
+        return "Manual Review";
+      }
+      
+      const hasAllMandatoryFields = (doc) => {
+        if (!doc || !doc.extractedData) return false;
+        const requiredFields = [
+          "VendorName",
+          "InvoiceId",
+          "InvoiceDate",
+          "LPO NO",
+          "SubTotal",
+          "VAT",
+          "InvoiceTotal",
+        ];
+        return requiredFields.every((field) => {
+          const value = doc.extractedData[field];
+          return value !== undefined && value !== null && String(value).trim() !== "";
+        });
+      };
+  
+      const scoreStr = String(doc.totalConfidenceScore || "").toLowerCase();
+      if (scoreStr.includes("reviewed")) return "Reviewed";
+      if (!hasAllMandatoryFields(doc)) return "Manual Review";
+      
+      const scores = Object.values(doc.confidenceScores || {});
+      if (scores.length === 0) return "Manual Review";
+      
+      const avg = scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
+      return avg >= 0.85 ? "Completed" : "Manual Review";
+    };
+  
+    // Process data for date-wise statistics (filtered by document type)
+    const processDateWiseData = (documents) => {
+      // Filter documents by selected type first
+      const filteredDocs = filterDocumentsByType(documents);
+      
+      const dateMap = {};
+      
+      filteredDocs.forEach(doc => {
+        const uploadDate = doc.timestamp ? new Date(doc.timestamp).toISOString().split('T')[0] : 
+                          new Date().toISOString().split('T')[0];
+        
+        if (!dateMap[uploadDate]) {
+          dateMap[uploadDate] = {
+            date: uploadDate,
+            total: 0,
+            completed: 0,
+            manualReview: 0,
+            rawDate: new Date(uploadDate),
+            completionRate: 0
+          };
+        }
+        
+        dateMap[uploadDate].total++;
+        const status = determineStatus(doc);
+        
+        if (status === "Completed" || status === "Reviewed") {
+          dateMap[uploadDate].completed++;
+        } else if (status === "Manual Review") {
+          dateMap[uploadDate].manualReview++;
+        }
+  
+        // Calculate completion rate
+        dateMap[uploadDate].completionRate = dateMap[uploadDate].total > 0 ? 
+          (dateMap[uploadDate].completed / dateMap[uploadDate].total) * 100 : 0;
+      });
+      
+      // Convert to array and sort by date (newest first)
+      return Object.values(dateMap)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, getPeriodLimit());
+    };
+  
+    // Process data for vendor-wise statistics (filtered by document type)
+    const processVendorWiseData = (documents) => {
+      // Filter documents by selected type first
+      const filteredDocs = filterDocumentsByType(documents);
+      
+      const vendorMap = {};
+      
+      filteredDocs.forEach(doc => {
+        const vendorName = doc.extractedData?.VendorName || doc.vendorName || 'Unknown Vendor';
+        
+        if (!vendorMap[vendorName]) {
+          vendorMap[vendorName] = {
+            vendor: vendorName,
+            total: 0,
+            completed: 0,
+            manualReview: 0,
+            completionRate: 0
+          };
+        }
+        
+        vendorMap[vendorName].total++;
+        const status = determineStatus(doc);
+        
+        if (status === "Completed" || status === "Reviewed") {
+          vendorMap[vendorName].completed++;
+        } else if (status === "Manual Review") {
+          vendorMap[vendorName].manualReview++;
+        }
+  
+        // Calculate completion rate
+        vendorMap[vendorName].completionRate = vendorMap[vendorName].total > 0 ? 
+          (vendorMap[vendorName].completed / vendorMap[vendorName].total) * 100 : 0;
+      });
+      
+      // Convert to array and sort by total documents (descending)
+      return Object.values(vendorMap)
+        .sort((a, b) => b.total - a.total);
+    };
+  
+    const getPeriodLimit = () => {
+      switch (selectedPeriod) {
+        case '7days': return 7;
+        case '30days': return 30;
+        default: return 100; // Show more records for "all"
+      }
+    };
+  
+    // Filter date-wise data
+    const filterDateWiseData = () => {
+      let filtered = processDateWiseData(allDocuments);
+      
+      // Apply date range filter
+      if (dateFromFilter) {
+        const fromDate = new Date(dateFromFilter);
+        filtered = filtered.filter(item => new Date(item.date) >= fromDate);
+      }
+      
+      if (dateToFilter) {
+        const toDate = new Date(dateToFilter);
+        toDate.setHours(23, 59, 59, 999); // Include entire day
+        filtered = filtered.filter(item => new Date(item.date) <= toDate);
+      }
+      
+      // Apply completion rate filter
+      if (dateCompletionRateFilter) {
+        filtered = filtered.filter(item => {
+          const completionRate = item.completionRate;
+          
+          switch (dateCompletionRateFilter) {
+            case '0-10': return completionRate >= 0 && completionRate <= 10;
+            case '10-20': return completionRate > 10 && completionRate <= 20;
+            case '20-30': return completionRate > 20 && completionRate <= 30;
+            case '30-40': return completionRate > 30 && completionRate <= 40;
+            case '40-50': return completionRate > 40 && completionRate <= 50;
+            case '50-60': return completionRate > 50 && completionRate <= 60;
+            case '60-70': return completionRate > 60 && completionRate <= 70;
+            case '70-80': return completionRate > 70 && completionRate <= 80;
+            case '80-90': return completionRate > 80 && completionRate <= 90;
+            case '90-100': return completionRate > 90 && completionRate <= 100;
+            default: return true;
+          }
+        });
+      }
+      
+      return filtered;
+    };
+  
+    // Filter vendor-wise data
+    const filterVendorWiseData = () => {
+      let filtered = processVendorWiseData(allDocuments);
+      
+      // Apply vendor select filter (dropdown)
+      if (vendorSelectFilter) {
+        filtered = filtered.filter(item => 
+          item.vendor === vendorSelectFilter
+        );
+      }
+  
+      // Apply vendor search filter
+      if (vendorSearchFilter) {
+        filtered = filtered.filter(item => 
+          item.vendor.toLowerCase().includes(vendorSearchFilter.toLowerCase())
+        );
+      }
+      
+      // Apply completion rate filter
+      if (vendorCompletionRateFilter) {
+        filtered = filtered.filter(item => {
+          const completionRate = item.completionRate;
+          
+          switch (vendorCompletionRateFilter) {
+            case '0-10': return completionRate >= 0 && completionRate <= 10;
+            case '10-20': return completionRate > 10 && completionRate <= 20;
+            case '20-30': return completionRate > 20 && completionRate <= 30;
+            case '30-40': return completionRate > 30 && completionRate <= 40;
+            case '40-50': return completionRate > 40 && completionRate <= 50;
+            case '50-60': return completionRate > 50 && completionRate <= 60;
+            case '60-70': return completionRate > 60 && completionRate <= 70;
+            case '70-80': return completionRate > 70 && completionRate <= 80;
+            case '80-90': return completionRate > 80 && completionRate <= 90;
+            case '90-100': return completionRate > 90 && completionRate <= 100;
+            default: return true;
+          }
+        });
+      }
+      
+      return filtered;
+    };
+  
+    // Get unique vendor names for the dropdown (filtered by document type)
+    const getUniqueVendors = () => {
+      const vendors = processVendorWiseData(allDocuments).map(item => item.vendor);
+      return [...new Set(vendors)].sort();
+    };
     
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map(row => Object.values(row).join(','));
-    const csvContent = [headers, ...rows].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    window.URL.revokeObjectURL(url);
-  };
-
-  // Calculate average documents per day
-  const calculateAvgDocsPerDay = () => {
-    if (filteredDateWiseData.length === 0) return '0';
-    const totalDocs = filteredDateWiseData.reduce((sum, day) => sum + day.total, 0);
-    const avg = totalDocs / Math.min(filteredDateWiseData.length, 30);
-    return avg.toFixed(0);
-  };
-
-  // Filter users when filters change
-  useEffect(() => {
-    const filtered = users.filter(user => {
-      const roleMatch = !roleFilter || user.role === roleFilter;
-      const nameMatch = !nameFilter || user.email.toLowerCase().includes(nameFilter.toLowerCase());
-      return roleMatch && nameMatch;
-    });
-    setFilteredUsers(filtered);
-  }, [users, roleFilter, nameFilter]);
-
-  // Reset pagination when filters change
-  useEffect(() => {
-    setCurrentDatePage(1);
-  }, [dateFromFilter, dateToFilter, dateCompletionRateFilter]);
-
-  useEffect(() => {
-    setCurrentVendorPage(1);
-  }, [vendorSelectFilter, vendorSearchFilter, vendorCompletionRateFilter]);
-
-  // Open user popup
-  const openUserPopup = () => {
-    setShowUserPopup(true);
-    setFilteredUsers(users);
-  };
+    // Get filtered data
+    const filteredDateWiseData = filterDateWiseData();
+    const filteredVendorWiseData = filterVendorWiseData();
+  
+    // Calculate total documents for the selected type (for summary)
+    const getTotalDocumentsForSelectedType = () => {
+      const filteredDocs = filterDocumentsByType(allDocuments);
+      return filteredDocs.length;
+    };
+  
+    // Calculate average documents per day for selected type
+    const calculateAvgDocsPerDay = () => {
+      if (filteredDateWiseData.length === 0) return '0';
+      const totalDocs = filteredDateWiseData.reduce((sum, day) => sum + day.total, 0);
+      const avg = totalDocs / Math.min(filteredDateWiseData.length, 30);
+      return avg.toFixed(0);
+    };
+  
+    // Use sortable data hooks for both tables
+    const {
+      sortedData: sortedDateData,
+      toggleSort: toggleDateSort,
+      renderSortIcon: renderDateSortIcon,
+      sortColumn: dateSortColumn,
+      sortOrder: dateSortOrder
+    } = useSortableData(filteredDateWiseData);
+  
+    const {
+      sortedData: sortedVendorData,
+      toggleSort: toggleVendorSort,
+      renderSortIcon: renderVendorSortIcon,
+      sortColumn: vendorSortColumn,
+      sortOrder: vendorSortOrder
+    } = useSortableData(filteredVendorWiseData);
+  
+    // Paginate date-wise data
+    const dateTotalPages = Math.ceil(sortedDateData.length / dateRowsPerPage);
+    const dateStartIndex = (currentDatePage - 1) * dateRowsPerPage;
+    const currentDateRows = sortedDateData.slice(dateStartIndex, dateStartIndex + dateRowsPerPage);
+  
+    // Paginate vendor-wise data
+    const vendorTotalPages = Math.ceil(sortedVendorData.length / vendorRowsPerPage);
+    const vendorStartIndex = (currentVendorPage - 1) * vendorRowsPerPage;
+    const currentVendorRows = sortedVendorData.slice(vendorStartIndex, vendorStartIndex + vendorRowsPerPage);
+  
+    // Reset all filters
+    const resetDateFilters = () => {
+      setDateFromFilter('');
+      setDateToFilter('');
+      setDateCompletionRateFilter('');
+      setCurrentDatePage(1);
+    };
+  
+    const resetVendorFilters = () => {
+      setVendorSelectFilter('');
+      setVendorSearchFilter('');
+      setVendorCompletionRateFilter('');
+      setCurrentVendorPage(1);
+    };
+  
+    // Export to CSV function
+    const exportToCSV = (data, filename) => {
+      if (data.length === 0) return;
+      
+      const headers = Object.keys(data[0]).join(',');
+      const rows = data.map(row => Object.values(row).join(','));
+      const csvContent = [headers, ...rows].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${filename}_${selectedDocumentType}_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    };
+  
+    // Filter users when filters change
+    useEffect(() => {
+      const filtered = users.filter(user => {
+        const roleMatch = !roleFilter || user.role === roleFilter;
+        const nameMatch = !nameFilter || user.email.toLowerCase().includes(nameFilter.toLowerCase());
+        return roleMatch && nameMatch;
+      });
+      setFilteredUsers(filtered);
+    }, [users, roleFilter, nameFilter]);
+  
+    // Reset pagination when filters change
+    useEffect(() => {
+      setCurrentDatePage(1);
+    }, [dateFromFilter, dateToFilter, dateCompletionRateFilter, selectedDocumentType]);
+  
+    useEffect(() => {
+      setCurrentVendorPage(1);
+    }, [vendorSelectFilter, vendorSearchFilter, vendorCompletionRateFilter, selectedDocumentType]);
+  
+    // Fetch data when selected document type changes
+    useEffect(() => {
+      if (selectedDocumentType) {
+        fetchData();
+      }
+    }, [selectedDocumentType, selectedPeriod]);
+  
+    // ... (rest of the user management functions remain the same)
+  
+    // Open user popup
+    const openUserPopup = () => {
+      setShowUserPopup(true);
+      setFilteredUsers(users);
+    };
 
   // Close user popup and reset states
   const closeUserPopup = () => {
@@ -519,274 +564,222 @@ const Admin = () => {
       <main className="admin-main">
         <section className="admin-heading-section">
           <h1>Fruit Garden</h1>
+          {/* Display selected document type */}
+          <div className="document-type-indicator">
+            <span>Showing data for: <strong>{selectedDocumentType}</strong></span>
+          </div>
         </section>
         
         <section className="admin-section-1">
-          <div className="admin-stats-box">
-            <ul>
-              <li>
-                <FileText className="pp" size={24} />
-                <p>Total Docs</p>
-                <p>{dateWiseData.reduce((sum, day) => sum + day.total, 0).toLocaleString()}</p>
-              </li>
-              <li>
-                <BarChart2 className="pp" size={24} />
-                <p>Avg Docs / Day</p>
-                <p>{calculateAvgDocsPerDay()}</p>
-              </li>
-              <li>
-                <Users className="pp" size={24} />
-                <p>No. of Users</p>
-                <p>{users.length}</p>
-              </li>
-              <li onClick={openUserPopup} style={{cursor: 'pointer'}}>
-                <Users className="pp" size={24} />
-                <button style={{background: 'none', border: 'none', color: 'white', fontSize: '14px', cursor: 'pointer'}}><p>Users Details</p></button>
-              </li>
-            </ul>
-          </div>
-
-          <div className="admin-table-box">
-            {/* Date-wise Statistics Table */}
-            <div className="table-section-header">
-              <h3>Date-wise Statistics</h3>
-              <div className='date-from'>
-                <label className='date-from-label' htmlFor="date-from">From Date:</label>
-                <input 
-                  className='date-from-input'
-                  type="date"
-                  id="date-from"
-                  value={dateFromFilter} 
-                  onChange={(e) => setDateFromFilter(e.target.value)}
-                />
-              </div>
-              <div className='date-to'>
-                <label className='date-to-label' htmlFor="date-to">To Date:</label>
-                <input 
-                  className='date-to-input'
-                  type="date" 
-                  id="date-to"
-                  value={dateToFilter} 
-                  onChange={(e) => setDateToFilter(e.target.value)}
-                />
-              </div>
-              {/* <div className='date-completion'>
-                <label className='date-completion-label' htmlFor="date-completion">Completion Rate:</label>
-                <select 
-                  className='date-completion-input'
-                  value={dateCompletionRateFilter}
-                  onChange={(e) => setDateCompletionRateFilter(e.target.value)}
-                >
-                  <option value="">All</option>
-                  <option value="0-10">0%-10%</option>
-                  <option value="10-20">10%-20%</option>
-                  <option value="20-30">20%-30%</option>
-                  <option value="30-40">30%-40%</option>
-                  <option value="40-50">40%-50%</option>
-                  <option value="50-60">50%-60%</option>
-                  <option value="60-70">60%-70%</option>
-                  <option value="70-80">70%-80%</option>
-                  <option value="80-90">80%-90%</option>
-                  <option value="90-100">90%-100%</option>
-                </select>
-              </div> */}
-              <button 
-                onClick={() => exportToCSV(filteredDateWiseData, 'date_wise_stats')}
-                className="export-btn"
-                disabled={filteredDateWiseData.length === 0}
-              >
-                <Download className="export-btn-icon" size={16} />
-                Export CSV
-              </button>
-              <button onClick={resetDateFilters} className="reset-filters-btn">
-                Reset Filters
-              </button>
+            <div className="admin-stats-box">
+              <ul>
+                <li>
+                  <FileText className="pp" size={24} />
+                  <p>Total {selectedDocumentType} Docs</p>
+                  <p>{getTotalDocumentsForSelectedType().toLocaleString()}</p>
+                </li>
+                <li>
+                  <BarChart2 className="pp" size={24} />
+                  <p>Avg {selectedDocumentType} Docs / Day</p>
+                  <p>{calculateAvgDocsPerDay()}</p>
+                </li>
+                <li>
+                  <Users className="pp" size={24} />
+                  <p>No. of Users</p>
+                  <p>{users.length}</p>
+                </li>
+                <li onClick={openUserPopup} style={{cursor: 'pointer'}}>
+                  <Users className="pp" size={24} />
+                  <button style={{background: 'none', border: 'none', color: 'white', fontSize: '14px', cursor: 'pointer'}}><p>Users Details</p></button>
+                </li>
+              </ul>
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th onClick={() => toggleDateSort("date")}>
-                    <span className="sortable-header">
-                      Date {renderDateSortIcon("date")}
-                    </span>
-                  </th>
-                  <th onClick={() => toggleDateSort("total")}>
-                    <span className="sortable-header">
-                      Total Docs Uploaded {renderDateSortIcon("total")}
-                    </span>
-                  </th>
-                  <th onClick={() => toggleDateSort("completed")}>
-                    <span className="sortable-header">
-                      Completed {renderDateSortIcon("completed")}
-                    </span>
-                  </th>
-                  <th onClick={() => toggleDateSort("manualReview")}>
-                    <span className="sortable-header">
-                      Manual Review {renderDateSortIcon("manualReview")}
-                    </span>
-                  </th>
-                  {/* <th onClick={() => toggleDateSort("completionRate")}>
-                    <span className="sortable-header">
-                      Completion Rate {renderDateSortIcon("completionRate")}
-                    </span>
-                  </th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {currentDateRows.length > 0 ? (
-                  currentDateRows.map((day, index) => (
-                    <tr key={index}>
-                      <td>{new Date(day.date).toLocaleDateString()}</td>
-                      <td>{day.total}</td>
-                      <td>{day.completed}</td>
-                      <td>{day.manualReview}</td>
-                      {/* <td>
-                        {day.total > 0 ? `${day.completionRate.toFixed(1)}%` : '0%'}
-                      </td> */}
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" style={{textAlign: 'center', padding: '20px'}}>
-                      No data available for selected filters
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-            
-            {/* Date-wise Pagination */}
-            <FilePagination
-              currentPage={currentDatePage}
-              totalPages={dateTotalPages}
-              onPageChange={setCurrentDatePage}
-              rowsPerPage={dateRowsPerPage}
-              totalItems={sortedDateData.length}
-            />
 
-            {/* Vendor-wise Statistics Table */}
-            <div className="table-section-header">
-              <h3>Vendor-wise Statistics</h3>
-              <div className='vendor-select'>
-                <label className='vendor-select-label' htmlFor="vendor-select">Select by Vendor:</label>
-                <select 
-                  className='vendor-select-input' 
-                  id="vendor-select"
-                  value={vendorSelectFilter}
-                  onChange={(e) => setVendorSelectFilter(e.target.value)}
+            <div className="admin-table-box">
+              {/* Date-wise Statistics Table */}
+              <div className="table-section-header">
+                <h3>{selectedDocumentType} - Date-wise Statistics</h3>
+                <div className='date-from'>
+                  <label className='date-from-label' htmlFor="date-from">From Date:</label>
+                  <input 
+                    className='date-from-input'
+                    type="date"
+                    id="date-from"
+                    value={dateFromFilter} 
+                    onChange={(e) => setDateFromFilter(e.target.value)}
+                  />
+                </div>
+                <div className='date-to'>
+                  <label className='date-to-label' htmlFor="date-to">To Date:</label>
+                  <input 
+                    className='date-to-input'
+                    type="date" 
+                    id="date-to"
+                    value={dateToFilter} 
+                    onChange={(e) => setDateToFilter(e.target.value)}
+                  />
+                </div>
+                <button 
+                  onClick={() => exportToCSV(filteredDateWiseData, 'date_wise_stats')}
+                  className="export-btn"
+                  disabled={filteredDateWiseData.length === 0}
                 >
-                  <option value="">All Vendors</option>
-                  {getUniqueVendors().map(vendor => (
-                    <option key={vendor} value={vendor}>{vendor}</option>
-                  ))}
-                </select>
+                  <Download className="export-btn-icon" size={16} />
+                  Export CSV
+                </button>
+                <button onClick={resetDateFilters} className="reset-filters-btn">
+                  Reset Filters
+                </button>
               </div>
-              <div className='vendor-search'>
-                <label className='vendor-search-label' htmlFor="vendor-search">Search by Vendor:</label>
-                <input 
-                  className='vendor-search-input'
-                  type="text" 
-                  id="vendor-search"
-                  placeholder="Enter vendor name"
-                  value={vendorSearchFilter}
-                  onChange={(e) => setVendorSearchFilter(e.target.value)}
-                />
-              </div>
-              {/* <div className='vendor-completion'>
-                <label className='vendor-completion-label' htmlFor="vendor-completion">Completion Rate:</label>
-                <select 
-                  className='vendor-completion-input'
-                  value={vendorCompletionRateFilter}
-                  onChange={(e) => setVendorCompletionRateFilter(e.target.value)}
+              <table>
+                <thead>
+                  <tr>
+                    <th onClick={() => toggleDateSort("date")}>
+                      <span className="sortable-header">
+                        Date {renderDateSortIcon("date")}
+                      </span>
+                    </th>
+                    <th onClick={() => toggleDateSort("total")}>
+                      <span className="sortable-header">
+                        Total Docs Uploaded {renderDateSortIcon("total")}
+                      </span>
+                    </th>
+                    <th onClick={() => toggleDateSort("completed")}>
+                      <span className="sortable-header">
+                        Completed {renderDateSortIcon("completed")}
+                      </span>
+                    </th>
+                    <th onClick={() => toggleDateSort("manualReview")}>
+                      <span className="sortable-header">
+                        Manual Review {renderDateSortIcon("manualReview")}
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentDateRows.length > 0 ? (
+                    currentDateRows.map((day, index) => (
+                      <tr key={index}>
+                        <td>{new Date(day.date).toLocaleDateString()}</td>
+                        <td>{day.total}</td>
+                        <td>{day.completed}</td>
+                        <td>{day.manualReview}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" style={{textAlign: 'center', padding: '20px'}}>
+                        No {selectedDocumentType} data available for selected filters
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+              
+              {/* Date-wise Pagination */}
+              <FilePagination
+                currentPage={currentDatePage}
+                totalPages={dateTotalPages}
+                onPageChange={setCurrentDatePage}
+                rowsPerPage={dateRowsPerPage}
+                totalItems={sortedDateData.length}
+              />
+
+              {/* Vendor-wise Statistics Table */}
+              <div className="table-section-header">
+                <h3>{selectedDocumentType} - Vendor-wise Statistics</h3>
+                <div className='vendor-select'>
+                  <label className='vendor-select-label' htmlFor="vendor-select">Select by Vendor:</label>
+                  <select 
+                    className='vendor-select-input' 
+                    id="vendor-select"
+                    value={vendorSelectFilter}
+                    onChange={(e) => setVendorSelectFilter(e.target.value)}
+                  >
+                    <option value="">All Vendors</option>
+                    {getUniqueVendors().map(vendor => (
+                      <option key={vendor} value={vendor}>{vendor}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className='vendor-search'>
+                  <label className='vendor-search-label' htmlFor="vendor-search">Search by Vendor:</label>
+                  <input 
+                    className='vendor-search-input'
+                    type="text" 
+                    id="vendor-search"
+                    placeholder="Enter vendor name"
+                    value={vendorSearchFilter}
+                    onChange={(e) => setVendorSearchFilter(e.target.value)}
+                  />
+                </div>
+                <button 
+                  onClick={() => exportToCSV(filteredVendorWiseData, 'vendor_wise_stats')}
+                  className="export-btn"
+                  disabled={filteredVendorWiseData.length === 0}
                 >
-                  <option value="">All</option>
-                  <option value="0-10">0%-10%</option>
-                  <option value="10-20">10%-20%</option>
-                  <option value="20-30">20%-30%</option>
-                  <option value="30-40">30%-40%</option>
-                  <option value="40-50">40%-50%</option>
-                  <option value="50-60">50%-60%</option>
-                  <option value="60-70">60%-70%</option>
-                  <option value="70-80">70%-80%</option>
-                  <option value="80-90">80%-90%</option>
-                  <option value="90-100">90%-100%</option>
-                </select>
-              </div> */}
-              <button 
-                onClick={() => exportToCSV(filteredVendorWiseData, 'vendor_wise_stats')}
-                className="export-btn"
-                disabled={filteredVendorWiseData.length === 0}
-              >
-                <Download className="export-btn-icon" size={16} />
-                Export CSV
-              </button>
-              <button onClick={resetVendorFilters} className="reset-filters-btn">
-                Reset Filters
-              </button>
+                  <Download className="export-btn-icon" size={16} />
+                  Export CSV
+                </button>
+                <button onClick={resetVendorFilters} className="reset-filters-btn">
+                  Reset Filters
+                </button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th onClick={() => toggleVendorSort("vendor")}>
+                      <span className="sortable-header">
+                        Vendor Name {renderVendorSortIcon("vendor")}
+                      </span>
+                    </th>
+                    <th onClick={() => toggleVendorSort("total")}>
+                      <span className="sortable-header">
+                        Total Docs Uploaded {renderVendorSortIcon("total")}
+                      </span>
+                    </th>
+                    <th onClick={() => toggleVendorSort("completed")}>
+                      <span className="sortable-header">
+                        Completed {renderVendorSortIcon("completed")}
+                      </span>
+                    </th>
+                    <th onClick={() => toggleVendorSort("manualReview")}>
+                      <span className="sortable-header">
+                        Manual Review {renderVendorSortIcon("manualReview")}
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentVendorRows.length > 0 ? (
+                    currentVendorRows.map((vendor, index) => (
+                      <tr key={index}>
+                        <td>{vendor.vendor}</td>
+                        <td>{vendor.total}</td>
+                        <td>{vendor.completed}</td>
+                        <td>{vendor.manualReview}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" style={{textAlign: 'center', padding: '20px'}}>
+                        No {selectedDocumentType} data available for selected filters
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              {/* Vendor-wise Pagination */}
+              <FilePagination
+                currentPage={currentVendorPage}
+                totalPages={vendorTotalPages}
+                onPageChange={setCurrentVendorPage}
+                rowsPerPage={vendorRowsPerPage}
+                totalItems={sortedVendorData.length}
+              />
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th onClick={() => toggleVendorSort("vendor")}>
-                    <span className="sortable-header">
-                      Vendor Name {renderVendorSortIcon("vendor")}
-                    </span>
-                  </th>
-                  <th onClick={() => toggleVendorSort("total")}>
-                    <span className="sortable-header">
-                      Total Docs Uploaded {renderVendorSortIcon("total")}
-                    </span>
-                  </th>
-                  <th onClick={() => toggleVendorSort("completed")}>
-                    <span className="sortable-header">
-                      Completed {renderVendorSortIcon("completed")}
-                    </span>
-                  </th>
-                  <th onClick={() => toggleVendorSort("manualReview")}>
-                    <span className="sortable-header">
-                      Manual Review {renderVendorSortIcon("manualReview")}
-                    </span>
-                  </th>
-                  {/* <th onClick={() => toggleVendorSort("completionRate")}>
-                    <span className="sortable-header">
-                      Completion Rate {renderVendorSortIcon("completionRate")}
-                    </span>
-                  </th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {currentVendorRows.length > 0 ? (
-                  currentVendorRows.map((vendor, index) => (
-                    <tr key={index}>
-                      <td>{vendor.vendor}</td>
-                      <td>{vendor.total}</td>
-                      <td>{vendor.completed}</td>
-                      <td>{vendor.manualReview}</td>
-                      {/* <td>
-                        {vendor.total > 0 ? `${vendor.completionRate.toFixed(1)}%` : '0%'}
-                      </td> */}
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" style={{textAlign: 'center', padding: '20px'}}>
-                      No data available for selected filters
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-
-            {/* Vendor-wise Pagination */}
-            <FilePagination
-              currentPage={currentVendorPage}
-              totalPages={vendorTotalPages}
-              onPageChange={setCurrentVendorPage}
-              rowsPerPage={vendorRowsPerPage}
-              totalItems={sortedVendorData.length}
-            />
-          </div>
-        </section>
+          </section>
         
         {/* Rest of your component remains the same */}
         <section className="admin-section-2">
