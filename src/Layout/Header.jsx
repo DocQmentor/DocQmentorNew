@@ -97,6 +97,15 @@ const Header = ({ minimal }) => {
                   </NavLink>
                 </li>
               )}
+              {/* <li className={location.pathname === '/table' ? 'active' : ''}>
+                <NavLink
+                  to="/table"
+                  className="a"
+                  onClick={(e) => handleNavigationClick(e, '/table')}
+                >
+                  <FileText size={20} className="i" /> Data View
+                </NavLink>
+              </li> */}
               <li className={location.pathname === '/table' ? 'active' : ''}>
                 <NavLink
                   to="/table"

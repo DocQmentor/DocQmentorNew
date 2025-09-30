@@ -1,11 +1,11 @@
 // Admin.jsx
 import React, { useState, useEffect } from 'react';
-import { FileText, BarChart2, Users, X, Download, RefreshCw } from 'lucide-react';
+import { FileText, BarChart2, Users, Database, X, Shield, Download, RefreshCw } from 'lucide-react';
 import './Admin.css';
 import Footer from "../Layout/Footer";
 import FilePagination from '../Layout/Filepagination';
 import useSortableData from "../utils/useSortableData";
-
+ 
 const Admin = () => {
   // Client Admin Data States
     const [dateWiseData, setDateWiseData] = useState([]);
@@ -14,28 +14,28 @@ const Admin = () => {
     const [dataLoading, setDataLoading] = useState(true);
     const [dataError, setDataError] = useState(null);
     const [selectedPeriod, setSelectedPeriod] = useState('7days');
-    
+   
     // Add selected document type state
     const [selectedDocumentType, setSelectedDocumentType] = useState('');
-  
+ 
     // Filter states for date-wise table
     const [dateFromFilter, setDateFromFilter] = useState('');
     const [dateToFilter, setDateToFilter] = useState('');
     const [dateCompletionRateFilter, setDateCompletionRateFilter] = useState('');
-  
+ 
     // Filter states for vendor-wise table
     const [vendorSelectFilter, setVendorSelectFilter] = useState('');
     const [vendorSearchFilter, setVendorSearchFilter] = useState('');
     const [vendorCompletionRateFilter, setVendorCompletionRateFilter] = useState('');
-  
+ 
     // Pagination states for date-wise table
     const [currentDatePage, setCurrentDatePage] = useState(1);
     const [dateRowsPerPage] = useState(6);
-  
+ 
     // Pagination states for vendor-wise table
     const [currentVendorPage, setCurrentVendorPage] = useState(1);
     const [vendorRowsPerPage] = useState(6);
-  
+ 
     // User Management States
     const [users, setUsers] = useState([
       { id: 1, email: "admin@example.com", role: "Admin" },
@@ -43,7 +43,7 @@ const Admin = () => {
       { id: 3, email: "user1@example.com", role: "Member" },
       { id: 4, email: "user2@example.com", role: "Member" }
     ]);
-    
+   
     const [showUserPopup, setShowUserPopup] = useState(false);
     const [showAddUserForm, setShowAddUserForm] = useState(false);
     const [roleFilter, setRoleFilter] = useState('');
@@ -56,7 +56,7 @@ const Admin = () => {
     const [deleteUserId, setDeleteUserId] = useState(null);
     const [editEmail, setEditEmail] = useState('');
     const [editRole, setEditRole] = useState('');
-  
+ 
     // Load selected document type from localStorage on component mount
     useEffect(() => {
       const storedDocumentType = localStorage.getItem('selectedModelType');
@@ -67,7 +67,7 @@ const Admin = () => {
         setSelectedDocumentType('Invoice');
       }
     }, []);
-  
+ 
     // Fetch data from API
     const fetchData = async () => {
       try {
@@ -75,20 +75,20 @@ const Admin = () => {
         const response = await fetch(
           "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
-        
+       
         if (!response.ok) throw new Error('Failed to fetch data');
-        
+       
         const allDocumentsData = await response.json();
         setAllDocuments(allDocumentsData);
-        
+       
         // Process data for date-wise statistics (filtered by document type)
         const dateStats = processDateWiseData(allDocumentsData);
         setDateWiseData(dateStats);
-        
+       
         // Process data for vendor-wise statistics (filtered by document type)
         const vendorStats = processVendorWiseData(allDocumentsData);
         setVendorWiseData(vendorStats);
-        
+       
       } catch (err) {
         setDataError(err.message);
         console.error('Error fetching data:', err);
@@ -96,17 +96,17 @@ const Admin = () => {
         setDataLoading(false);
       }
     };
-  
+ 
     // Filter documents by selected document type
     const filterDocumentsByType = (documents) => {
       if (!selectedDocumentType) return documents;
-      
+     
       return documents.filter(doc => {
         const docModelType = doc.modelType || '';
         return docModelType.toLowerCase() === selectedDocumentType.toLowerCase();
       });
     };
-  
+ 
     // Determine document status (same logic as other components)
     const determineStatus = (doc) => {
       if (doc.status === "Reviewed" || doc.reviewStatus === "Reviewed" || doc.reviewedBy) {
@@ -115,7 +115,7 @@ const Admin = () => {
       if (!doc || !doc.extractedData || !doc.confidenceScores) {
         return "Manual Review";
       }
-      
+     
       const hasAllMandatoryFields = (doc) => {
         if (!doc || !doc.extractedData) return false;
         const requiredFields = [
@@ -132,29 +132,29 @@ const Admin = () => {
           return value !== undefined && value !== null && String(value).trim() !== "";
         });
       };
-  
+ 
       const scoreStr = String(doc.totalConfidenceScore || "").toLowerCase();
       if (scoreStr.includes("reviewed")) return "Reviewed";
       if (!hasAllMandatoryFields(doc)) return "Manual Review";
-      
+     
       const scores = Object.values(doc.confidenceScores || {});
       if (scores.length === 0) return "Manual Review";
-      
+     
       const avg = scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
       return avg >= 0.85 ? "Completed" : "Manual Review";
     };
-  
+ 
     // Process data for date-wise statistics (filtered by document type)
     const processDateWiseData = (documents) => {
       // Filter documents by selected type first
       const filteredDocs = filterDocumentsByType(documents);
-      
+     
       const dateMap = {};
-      
+     
       filteredDocs.forEach(doc => {
-        const uploadDate = doc.timestamp ? new Date(doc.timestamp).toISOString().split('T')[0] : 
+        const uploadDate = doc.timestamp ? new Date(doc.timestamp).toISOString().split('T')[0] :
                           new Date().toISOString().split('T')[0];
-        
+       
         if (!dateMap[uploadDate]) {
           dateMap[uploadDate] = {
             date: uploadDate,
@@ -165,37 +165,37 @@ const Admin = () => {
             completionRate: 0
           };
         }
-        
+       
         dateMap[uploadDate].total++;
         const status = determineStatus(doc);
-        
+       
         if (status === "Completed" || status === "Reviewed") {
           dateMap[uploadDate].completed++;
         } else if (status === "Manual Review") {
           dateMap[uploadDate].manualReview++;
         }
-  
+ 
         // Calculate completion rate
-        dateMap[uploadDate].completionRate = dateMap[uploadDate].total > 0 ? 
+        dateMap[uploadDate].completionRate = dateMap[uploadDate].total > 0 ?
           (dateMap[uploadDate].completed / dateMap[uploadDate].total) * 100 : 0;
       });
-      
+     
       // Convert to array and sort by date (newest first)
       return Object.values(dateMap)
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, getPeriodLimit());
     };
-  
+ 
     // Process data for vendor-wise statistics (filtered by document type)
     const processVendorWiseData = (documents) => {
       // Filter documents by selected type first
       const filteredDocs = filterDocumentsByType(documents);
-      
+     
       const vendorMap = {};
-      
+     
       filteredDocs.forEach(doc => {
         const vendorName = doc.extractedData?.VendorName || doc.vendorName || 'Unknown Vendor';
-        
+       
         if (!vendorMap[vendorName]) {
           vendorMap[vendorName] = {
             vendor: vendorName,
@@ -205,26 +205,26 @@ const Admin = () => {
             completionRate: 0
           };
         }
-        
+       
         vendorMap[vendorName].total++;
         const status = determineStatus(doc);
-        
+       
         if (status === "Completed" || status === "Reviewed") {
           vendorMap[vendorName].completed++;
         } else if (status === "Manual Review") {
           vendorMap[vendorName].manualReview++;
         }
-  
+ 
         // Calculate completion rate
-        vendorMap[vendorName].completionRate = vendorMap[vendorName].total > 0 ? 
+        vendorMap[vendorName].completionRate = vendorMap[vendorName].total > 0 ?
           (vendorMap[vendorName].completed / vendorMap[vendorName].total) * 100 : 0;
       });
-      
+     
       // Convert to array and sort by total documents (descending)
       return Object.values(vendorMap)
         .sort((a, b) => b.total - a.total);
     };
-  
+ 
     const getPeriodLimit = () => {
       switch (selectedPeriod) {
         case '7days': return 7;
@@ -232,28 +232,28 @@ const Admin = () => {
         default: return 100; // Show more records for "all"
       }
     };
-  
+ 
     // Filter date-wise data
     const filterDateWiseData = () => {
       let filtered = processDateWiseData(allDocuments);
-      
+     
       // Apply date range filter
       if (dateFromFilter) {
         const fromDate = new Date(dateFromFilter);
         filtered = filtered.filter(item => new Date(item.date) >= fromDate);
       }
-      
+     
       if (dateToFilter) {
         const toDate = new Date(dateToFilter);
         toDate.setHours(23, 59, 59, 999); // Include entire day
         filtered = filtered.filter(item => new Date(item.date) <= toDate);
       }
-      
+     
       // Apply completion rate filter
       if (dateCompletionRateFilter) {
         filtered = filtered.filter(item => {
           const completionRate = item.completionRate;
-          
+         
           switch (dateCompletionRateFilter) {
             case '0-10': return completionRate >= 0 && completionRate <= 10;
             case '10-20': return completionRate > 10 && completionRate <= 20;
@@ -269,33 +269,33 @@ const Admin = () => {
           }
         });
       }
-      
+     
       return filtered;
     };
-  
+ 
     // Filter vendor-wise data
     const filterVendorWiseData = () => {
       let filtered = processVendorWiseData(allDocuments);
-      
+     
       // Apply vendor select filter (dropdown)
       if (vendorSelectFilter) {
-        filtered = filtered.filter(item => 
+        filtered = filtered.filter(item =>
           item.vendor === vendorSelectFilter
         );
       }
-  
+ 
       // Apply vendor search filter
       if (vendorSearchFilter) {
-        filtered = filtered.filter(item => 
+        filtered = filtered.filter(item =>
           item.vendor.toLowerCase().includes(vendorSearchFilter.toLowerCase())
         );
       }
-      
+     
       // Apply completion rate filter
       if (vendorCompletionRateFilter) {
         filtered = filtered.filter(item => {
           const completionRate = item.completionRate;
-          
+         
           switch (vendorCompletionRateFilter) {
             case '0-10': return completionRate >= 0 && completionRate <= 10;
             case '10-20': return completionRate > 10 && completionRate <= 20;
@@ -311,26 +311,26 @@ const Admin = () => {
           }
         });
       }
-      
+     
       return filtered;
     };
-  
+ 
     // Get unique vendor names for the dropdown (filtered by document type)
     const getUniqueVendors = () => {
       const vendors = processVendorWiseData(allDocuments).map(item => item.vendor);
       return [...new Set(vendors)].sort();
     };
-    
+   
     // Get filtered data
     const filteredDateWiseData = filterDateWiseData();
     const filteredVendorWiseData = filterVendorWiseData();
-  
+ 
     // Calculate total documents for the selected type (for summary)
     const getTotalDocumentsForSelectedType = () => {
       const filteredDocs = filterDocumentsByType(allDocuments);
       return filteredDocs.length;
     };
-  
+ 
     // Calculate average documents per day for selected type
     const calculateAvgDocsPerDay = () => {
       if (filteredDateWiseData.length === 0) return '0';
@@ -338,7 +338,7 @@ const Admin = () => {
       const avg = totalDocs / Math.min(filteredDateWiseData.length, 30);
       return avg.toFixed(0);
     };
-  
+ 
     // Use sortable data hooks for both tables
     const {
       sortedData: sortedDateData,
@@ -347,7 +347,7 @@ const Admin = () => {
       sortColumn: dateSortColumn,
       sortOrder: dateSortOrder
     } = useSortableData(filteredDateWiseData);
-  
+ 
     const {
       sortedData: sortedVendorData,
       toggleSort: toggleVendorSort,
@@ -355,17 +355,17 @@ const Admin = () => {
       sortColumn: vendorSortColumn,
       sortOrder: vendorSortOrder
     } = useSortableData(filteredVendorWiseData);
-  
+ 
     // Paginate date-wise data
     const dateTotalPages = Math.ceil(sortedDateData.length / dateRowsPerPage);
     const dateStartIndex = (currentDatePage - 1) * dateRowsPerPage;
     const currentDateRows = sortedDateData.slice(dateStartIndex, dateStartIndex + dateRowsPerPage);
-  
+ 
     // Paginate vendor-wise data
     const vendorTotalPages = Math.ceil(sortedVendorData.length / vendorRowsPerPage);
     const vendorStartIndex = (currentVendorPage - 1) * vendorRowsPerPage;
     const currentVendorRows = sortedVendorData.slice(vendorStartIndex, vendorStartIndex + vendorRowsPerPage);
-  
+ 
     // Reset all filters
     const resetDateFilters = () => {
       setDateFromFilter('');
@@ -373,22 +373,22 @@ const Admin = () => {
       setDateCompletionRateFilter('');
       setCurrentDatePage(1);
     };
-  
+ 
     const resetVendorFilters = () => {
       setVendorSelectFilter('');
       setVendorSearchFilter('');
       setVendorCompletionRateFilter('');
       setCurrentVendorPage(1);
     };
-  
+ 
     // Export to CSV function
     const exportToCSV = (data, filename) => {
       if (data.length === 0) return;
-      
+     
       const headers = Object.keys(data[0]).join(',');
       const rows = data.map(row => Object.values(row).join(','));
       const csvContent = [headers, ...rows].join('\n');
-      
+     
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -397,7 +397,7 @@ const Admin = () => {
       link.click();
       window.URL.revokeObjectURL(url);
     };
-  
+ 
     // Filter users when filters change
     useEffect(() => {
       const filtered = users.filter(user => {
@@ -407,31 +407,31 @@ const Admin = () => {
       });
       setFilteredUsers(filtered);
     }, [users, roleFilter, nameFilter]);
-  
+ 
     // Reset pagination when filters change
     useEffect(() => {
       setCurrentDatePage(1);
     }, [dateFromFilter, dateToFilter, dateCompletionRateFilter, selectedDocumentType]);
-  
+ 
     useEffect(() => {
       setCurrentVendorPage(1);
     }, [vendorSelectFilter, vendorSearchFilter, vendorCompletionRateFilter, selectedDocumentType]);
-  
+ 
     // Fetch data when selected document type changes
     useEffect(() => {
       if (selectedDocumentType) {
         fetchData();
       }
     }, [selectedDocumentType, selectedPeriod]);
-  
+ 
     // ... (rest of the user management functions remain the same)
-  
+ 
     // Open user popup
     const openUserPopup = () => {
       setShowUserPopup(true);
       setFilteredUsers(users);
     };
-
+ 
   // Close user popup and reset states
   const closeUserPopup = () => {
     setShowUserPopup(false);
@@ -443,20 +443,20 @@ const Admin = () => {
     setActiveUserId(null);
     setEditingUserId(null);
   };
-
+ 
   // Reset filters
   const resetFilters = () => {
     setRoleFilter('');
     setNameFilter('');
   };
-
+ 
   // Toggle add user form
   const toggleAddUserForm = () => {
     setShowAddUserForm(!showAddUserForm);
     setNewUserEmail('');
     setNewUserRole('');
   };
-
+ 
   // Add new user
   const addNewUser = () => {
     if (newUserEmail && newUserRole) {
@@ -465,20 +465,20 @@ const Admin = () => {
         email: newUserEmail,
         role: newUserRole
       };
-      
+     
       setUsers([...users, newUser]);
       setNewUserEmail('');
       setNewUserRole('');
       setShowAddUserForm(false);
     }
   };
-
+ 
   // Clear add user form
   const clearAddUserForm = () => {
     setNewUserEmail('');
     setNewUserRole('');
   };
-
+ 
   // Toggle user actions (edit/delete)
   const toggleUserActions = (userId) => {
     if (activeUserId === userId) {
@@ -489,7 +489,7 @@ const Admin = () => {
       setEditingUserId(null);
     }
   };
-
+ 
   // Start editing a user
   const startEditUser = (userId, e) => {
   e.stopPropagation();
@@ -499,19 +499,19 @@ const Admin = () => {
     setEditRole(user.role);
   }
 };
-
+ 
   // Save user edits
   const saveUserEdit = (userId, e) => {
   e.stopPropagation();
   if (editRole) { // Only check if role is selected
-    const updatedUsers = users.map(user => 
+    const updatedUsers = users.map(user =>
       user.id === userId ? { ...user, role: editRole } : user
     );
     setUsers(updatedUsers);
     setEditingUserId(null);
   }
 };
-
+ 
   // Clear edit form
   const clearEditForm = (userId, e) => {
     e.stopPropagation();
@@ -521,24 +521,24 @@ const Admin = () => {
       setEditRole(user.role);
     }
   };
-
+ 
   // Cancel editing
   const cancelEdit = (userId, e) => {
     e.stopPropagation();
     setEditingUserId(null);
   };
-
+ 
   // Open delete confirmation
   const openDeleteConfirmation = (userId, e) => {
     e.stopPropagation();
     setDeleteUserId(userId);
   };
-
+ 
   // Close delete confirmation
   const closeDeleteConfirmation = () => {
     setDeleteUserId(null);
   };
-
+ 
   // Delete user
   const deleteUser = () => {
     if (deleteUserId) {
@@ -548,28 +548,34 @@ const Admin = () => {
       setActiveUserId(null);
     }
   };
-
+ 
   // Check if add user form is valid
   const isAddUserFormValid = newUserEmail && newUserRole;
-
+ 
   useEffect(() => {
     fetchData();
   }, [selectedPeriod]);
-
+ 
   if (dataLoading) return <div className="loading">Loading admin data...</div>;
   if (dataError) return <div className="error">Error: {dataError}</div>;
-
+ 
   return (
     <div className="admin-container">
       <main className="admin-main">
         <section className="admin-heading-section">
+          <Shield className="header-icon" size={32} />
+          <h1>Admin Dashboard</h1>
           <h1>Fruit Garden</h1>
-          {/* Display selected document type */}
-          <div className="document-type-indicator">
-            <span>Showing data for: <strong>{selectedDocumentType}</strong></span>
+          <div className="document-type-badge">
+            <Database size={16} />
+            <span>Document Type: <strong>{selectedDocumentType}</strong></span>
           </div>
+          <button onClick={fetchData} className="refresh-data-btn">
+            <RefreshCw size={16} className='refresh-data-btn-icon' />
+            Refresh Data
+          </button>
         </section>
-        
+       
         <section className="admin-section-1">
             <div className="admin-stats-box">
               <ul>
@@ -590,36 +596,37 @@ const Admin = () => {
                 </li>
                 <li onClick={openUserPopup} style={{cursor: 'pointer'}}>
                   <Users className="pp" size={24} />
-                  <button style={{background: 'none', border: 'none', color: 'white', fontSize: '14px', cursor: 'pointer'}}><p>Users Details</p></button>
+                  <p>Users Details</p>
+                  <p>View</p>
                 </li>
               </ul>
             </div>
-
+ 
             <div className="admin-table-box">
               {/* Date-wise Statistics Table */}
               <div className="table-section-header">
                 <h3>{selectedDocumentType} - Date-wise Statistics</h3>
                 <div className='date-from'>
                   <label className='date-from-label' htmlFor="date-from">From Date:</label>
-                  <input 
+                  <input
                     className='date-from-input'
                     type="date"
                     id="date-from"
-                    value={dateFromFilter} 
+                    value={dateFromFilter}
                     onChange={(e) => setDateFromFilter(e.target.value)}
                   />
                 </div>
                 <div className='date-to'>
                   <label className='date-to-label' htmlFor="date-to">To Date:</label>
-                  <input 
+                  <input
                     className='date-to-input'
-                    type="date" 
+                    type="date"
                     id="date-to"
-                    value={dateToFilter} 
+                    value={dateToFilter}
                     onChange={(e) => setDateToFilter(e.target.value)}
                   />
                 </div>
-                <button 
+                <button
                   onClick={() => exportToCSV(filteredDateWiseData, 'date_wise_stats')}
                   className="export-btn"
                   disabled={filteredDateWiseData.length === 0}
@@ -675,7 +682,7 @@ const Admin = () => {
                   )}
                 </tbody>
               </table>
-              
+             
               {/* Date-wise Pagination */}
               <FilePagination
                 currentPage={currentDatePage}
@@ -684,14 +691,14 @@ const Admin = () => {
                 rowsPerPage={dateRowsPerPage}
                 totalItems={sortedDateData.length}
               />
-
+ 
               {/* Vendor-wise Statistics Table */}
               <div className="table-section-header">
                 <h3>{selectedDocumentType} - Vendor-wise Statistics</h3>
                 <div className='vendor-select'>
                   <label className='vendor-select-label' htmlFor="vendor-select">Select by Vendor:</label>
-                  <select 
-                    className='vendor-select-input' 
+                  <select
+                    className='vendor-select-input'
                     id="vendor-select"
                     value={vendorSelectFilter}
                     onChange={(e) => setVendorSelectFilter(e.target.value)}
@@ -704,16 +711,16 @@ const Admin = () => {
                 </div>
                 <div className='vendor-search'>
                   <label className='vendor-search-label' htmlFor="vendor-search">Search by Vendor:</label>
-                  <input 
+                  <input
                     className='vendor-search-input'
-                    type="text" 
+                    type="text"
                     id="vendor-search"
                     placeholder="Enter vendor name"
                     value={vendorSearchFilter}
                     onChange={(e) => setVendorSearchFilter(e.target.value)}
                   />
                 </div>
-                <button 
+                <button
                   onClick={() => exportToCSV(filteredVendorWiseData, 'vendor_wise_stats')}
                   className="export-btn"
                   disabled={filteredVendorWiseData.length === 0}
@@ -769,7 +776,7 @@ const Admin = () => {
                   )}
                 </tbody>
               </table>
-
+ 
               {/* Vendor-wise Pagination */}
               <FilePagination
                 currentPage={currentVendorPage}
@@ -780,12 +787,12 @@ const Admin = () => {
               />
             </div>
           </section>
-        
+       
         {/* Rest of your component remains the same */}
         <section className="admin-section-2">
-          {/* <div className="admin-section-2->
+          <div className="admin-section-2-header">
             <h3>Plan Details</h3>
-          </div> */}
+          </div>
           <div className="admin-section-2-pack">
             <ul>
               <li>
@@ -799,11 +806,11 @@ const Admin = () => {
               </li>
             </ul>
           </div>
-
+ 
           <div className="admin-section-2-usage">
             <ul>
               <li>
-                <span>Per Day :</span><span>Up to 1,000 PDFs</span>
+                <span>Per Day :</span><span>1,000 PDFs</span>
               </li>
               <li>
                 <span>Available PDFs :</span><span>700</span>
@@ -815,7 +822,7 @@ const Admin = () => {
           </div>
         </section>
       </main>
-
+ 
       {/* User Management Popup - Remains the same */}
       {showUserPopup && (
         <div className="popup-overlay">
@@ -826,7 +833,7 @@ const Admin = () => {
                 <X size={24} />
               </button>
             </div>
-            
+           
             <div className="filter-section">
               <div className="filter-group">
                 <label htmlFor="role-filter">Filter by Role</label>
@@ -841,7 +848,7 @@ const Admin = () => {
                   <option value="Member">Member</option>
                 </select>
               </div>
-              
+             
               <div className="filter-group">
                 <label htmlFor="name-filter">Filter by Name</label>
                 <input
@@ -853,7 +860,7 @@ const Admin = () => {
                 />
               </div>
             </div>
-            
+           
             <div className="button-group">
               <button className="reset-btn" onClick={resetFilters}>
                 Reset Filters
@@ -862,7 +869,7 @@ const Admin = () => {
                 + Add User
               </button>
             </div>
-            
+           
             {showAddUserForm && (
               <div className="add-user-form">
                 <div className="form-group">
@@ -875,7 +882,7 @@ const Admin = () => {
                     onChange={(e) => setNewUserEmail(e.target.value)}
                   />
                 </div>
-                
+               
                 <div className="form-group">
                   <label htmlFor="user-role">Role</label>
                   <select
@@ -889,7 +896,7 @@ const Admin = () => {
                     <option value="Member">Member</option>
                   </select>
                 </div>
-                
+               
                 <div className="form-buttons">
                   <button
                     className="submit-btn"
@@ -908,7 +915,7 @@ const Admin = () => {
                 </div>
               </div>
             )}
-            
+           
             <div className="user-list">
               {filteredUsers.length === 0 ? (
                 <p>No users found.</p>
@@ -922,7 +929,7 @@ const Admin = () => {
                       <span>Email: {user.email}</span>
                       <span>Role: {user.role}</span>
                     </div>
-                    
+                   
                     {activeUserId === user.id && (
                       <div className="user-actions">
                         <button
@@ -939,7 +946,7 @@ const Admin = () => {
                         </button>
                       </div>
                     )}
-                    
+                   
                     {editingUserId === user.id && (
                     <div className="edit-form">
                       <div className="form-group">
@@ -954,7 +961,7 @@ const Admin = () => {
                           <option value="Member">Member</option>
                         </select>
                       </div>
-                      
+                     
                       <div className="form-buttons">
                         <button
                           className="submit-btn save-edit"
@@ -978,7 +985,7 @@ const Admin = () => {
           </div>
         </div>
       )}
-
+ 
       {/* Delete Confirmation Popup */}
       {deleteUserId && (
         <div className="delete-confirmation">
@@ -993,13 +1000,13 @@ const Admin = () => {
           </div>
         </div>
       )}
-
+ 
       {/* Footer */}
-      <footer className="footer">
+      <footer>
         <Footer/>
       </footer>
     </div>
   );
 };
-
+ 
 export default Admin;

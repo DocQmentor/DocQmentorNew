@@ -328,12 +328,12 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-total-container">
-      <header className="header">
+      {/* <header className="header">
         <Header />
-      </header>
+      </header> */}
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
-          <div>
+          <div className="vendor-select-details">
             <h2>{modelType} Dashboard</h2>
             <p>Showing documents for {modelType}</p>
             <p>View your document processing activity and insights</p>
@@ -373,7 +373,7 @@ const Dashboard = () => {
           </div>
           <div
             className="stat-box manual-review"
-            onClick={handleManualReviewClick}
+            // onClick={handleManualReviewClick}
           >
             <AlertTriangle className="i" size={24} />
             <p>Manual Review</p>

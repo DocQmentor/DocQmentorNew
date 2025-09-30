@@ -119,7 +119,20 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  /* border: #004080 1px solid; */
   padding: 0 20px;
+}
+.vendor-select-details{
+    display: flex;
+    flex-direction: column;
+    row-gap: 4px;
+}
+.vendor-select-details h2{
+    color:#246797
+}
+.vendor-select-details p{
+    font-size: small;
+    color: #47556e;
 }
 .select-vendor-dropdown{
     display: flex;
@@ -190,7 +203,7 @@
 }
 .stats-container .manual-review{
     grid-area: manual-review;
-    cursor: pointer;
+    /* cursor: pointer; */
 }
 .stat-box {
     width: 100%;
@@ -298,6 +311,9 @@
     font-size: small;
     color: #47556e;
 }
+.upload-section-header-contants h3{
+     color:#246797
+}
 .upload-section-header-contants p,
 .upload-section-header-contants h3{
     background-color: white;
@@ -318,7 +334,13 @@
 .upload-section .Upload,.upload-section .upload-section-h3, .mb-4, button{
     background-color: white;
 }
-
+.upload-section-h3{
+    color: #246797;
+}
+.upload-section .mb-4{
+    font-size: small;
+    color: #47556e;
+}
 #file-upload {
     cursor: pointer;
     display: none;
@@ -479,7 +501,7 @@
 .status-header h3 {
     background-color: white;
     margin-bottom: 4px;
-    /* color: #1a5276; */
+    color: #246797;
 }
 
 .status-header p {

@@ -60,7 +60,7 @@ const SelectDocumentType = () => {
             <h2>Mortgage Forms</h2>
             <p>Upload mortgage-related documents for automated processing.</p>
             <button
-              className="blue"
+              className="orange"
               onClick={() => handleSelectmodelType("MortgageForms")}
             >
               Select

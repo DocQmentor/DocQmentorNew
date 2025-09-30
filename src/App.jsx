@@ -65,9 +65,9 @@ const AppRoutes = () => {
   const { accounts, inProgress } = useMsal();
   const location = useLocation();
  
-  if (inProgress !== InteractionStatus.None) {
-    return <div>Loading authentication...</div>;
-  }
+  // if (inProgress !== InteractionStatus.None) {
+  //   return <div>Loading authentication...</div>;
+  // }
  
   return (
     <Routes>

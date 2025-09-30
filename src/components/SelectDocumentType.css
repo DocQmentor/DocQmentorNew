@@ -72,7 +72,7 @@ body {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 12px;
-  color: #0d1b2a;
+  color: #246797;
   background-color: white;
 }
 
@@ -174,7 +174,10 @@ button.green:hover {
 .mortgage {
   border: 2px solid #ff9800;
 }
-
+button.orange{
+  background: #ff9800;
+  color: white;
+}
 /* Footer */
 .footer {
   text-align: center;

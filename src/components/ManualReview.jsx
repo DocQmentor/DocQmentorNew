@@ -40,6 +40,16 @@ const ManualReview = () => {
     MortgageForms: ["LenderName", "BorrowerName", "LoanAmount", "Interest", "LoanTenure", "uploadDate", "confidenceScore", "_rawDocument"],
   };
 
+  // Reset all filters function
+  const handleResetFilters = () => {
+    setVendorFilter("");
+    setFromDate("");
+    setToDate("");
+    setUploadDateFilter("all");
+    setSearchQuery("");
+    setCurrentPage(1);
+  };
+
   const getString = (val) => {
     if (!val) return "";
     if (typeof val === "string" || typeof val === "number") return val;
@@ -203,9 +213,6 @@ const ManualReview = () => {
   const totalPages = Math.ceil(filteredDocs.length / rowsPerPage);
   const paginatedData = sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
-  const handlePrevious = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNext = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-
   return (
     <div className="ManualReview-full-container">
       {show ? (
@@ -239,7 +246,12 @@ const ManualReview = () => {
                 <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
               </label>
               <label>
-                <button className="export-button" style={{ marginLeft: "10px" }} onClick={handleExportCSV}>
+                <button className="reset-button" onClick={handleResetFilters}>
+                  Reset
+                </button>
+              </label>
+              <label>
+                <button className="export-button" onClick={handleExportCSV}>
                   Export CSV
                 </button>
               </label>
@@ -284,15 +296,16 @@ const ManualReview = () => {
           </table>
 
           {filteredDocs.length > rowsPerPage && (
-            <div style={{ marginTop: "15px", textAlign: "center" }}>
-              <button onClick={handlePrevious} disabled={currentPage === 1} style={{ padding: "6px 10px", marginRight: "10px" }}>
-                Previous
-              </button>
-              Page {currentPage} of {totalPages}
-              <button onClick={handleNext} disabled={currentPage === totalPages} style={{ padding: "6px 10px", marginLeft: "10px" }}>
-                Next
-              </button>
-            </div>
+            <FilePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              rowsPerPage={rowsPerPage}
+              totalItems={filteredDocs.length}
+              previousLabel="Previous"
+              nextLabel="Next"
+              className="manual-review-pagination"
+            />
           )}
         </div>
       ) : (
