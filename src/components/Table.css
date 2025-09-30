@@ -1,17 +1,21 @@
 /* ===== Base Styles ===== */
-html, body {
-  margin: 0;
+/* html, body { */
+  /* margin: 0; */
   /* padding-top: 20px; */
-  height: 100%;
-  font-family: "Nunito", sans-serif;
-  background-color: #f9f9f9;
-}
+  /* height: 100%; */
+  /* font-family: "Nunito", sans-serif; */
+  /* background-color: #f9f9f9; */
+/* } */
 
 /* ===== Layout Container ===== */
 .table-component-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+}
+.dataview-container h2{
+  color: #246797;
+  margin-bottom: 20px;
 }
 /* ===== Fixed Column Widths ===== */
 .dataview-container th:nth-child(1),

@@ -43,6 +43,8 @@ const ManualReview = () => {
   // Reset all filters function
   const handleResetFilters = () => {
     setVendorFilter("");
+    setAccountHolderFilter("");
+    setLenderNameFilter("");
     setFromDate("");
     setToDate("");
     setUploadDateFilter("all");
@@ -137,6 +139,7 @@ const ManualReview = () => {
 
         // Map fields dynamically based on modelType
         let mapped = { confidenceScore: getScore(), _rawDocument: doc, uploadDate: doc.timestamp ? new Date(doc.timestamp).toLocaleDateString("en-CA") : "", rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null };
+        
         if (doc.modelType === "Invoice") {
           mapped = {
             ...mapped,
@@ -171,8 +174,17 @@ const ManualReview = () => {
       })
       .filter((item) => item._rawDocument?.modelType === selectedModelType)
       .filter((item) => {
-        // Filtering logic remains the same
-        const matchesVendor = item.vendorName?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
+        // Dynamic filter based on document type
+        let matchesPrimaryFilter = true;
+        
+        if (selectedModelType === "Invoice") {
+          matchesPrimaryFilter = item.vendorName?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
+        } else if (selectedModelType === "BankStatement") {
+          matchesPrimaryFilter = item.AccountHolder?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
+        } else if (selectedModelType === "MortgageForms") {
+          matchesPrimaryFilter = item.LenderName?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
+        }
+
         const matchesSearch = Object.values(item).some((val) =>
           String(val).toLowerCase().includes(searchQuery.toLowerCase())
         );
@@ -195,7 +207,7 @@ const ManualReview = () => {
           matchesUploadFilter = uploadDate >= thirtyDaysAgo && uploadDate <= now;
         }
 
-        return matchesVendor && matchesSearch && matchesDate && matchesUploadFilter;
+        return matchesPrimaryFilter && matchesSearch && matchesDate && matchesUploadFilter;
       });
 
     setFilteredDocs(filtered);
@@ -206,7 +218,11 @@ const ManualReview = () => {
 
   const handleToggle = (doc) => {
     navigate("/editmodal", {
-      state: { selectedDocument: doc, editedData: doc },
+      state: { 
+        selectedDocument: doc, 
+        editedData: doc,
+        documentType: doc.modelType || selectedModelType // Pass document type
+      },
     });
   };
 
@@ -220,10 +236,43 @@ const ManualReview = () => {
           <div className="ManualReview-Table-header">
             <h1>Manual Review</h1>
             <div className="filters">
-              <label>
-                <strong>Vendor:</strong>
-                <input type="text" value={vendorFilter} onChange={(e) => setVendorFilter(e.target.value)} placeholder="Enter vendor name" />
-              </label>
+              {/* Dynamic Filter based on Document Type */}
+              {selectedModelType === "Invoice" && (
+                <label>
+                  <strong>Vendor:</strong>
+                  <input 
+                    type="text" 
+                    value={vendorFilter} 
+                    onChange={(e) => setVendorFilter(e.target.value)} 
+                    placeholder="Enter vendor name" 
+                  />
+                </label>
+              )}
+              
+              {selectedModelType === "BankStatement" && (
+                <label>
+                  <strong>Account Holder:</strong>
+                  <input 
+                    type="text" 
+                    value={vendorFilter} 
+                    onChange={(e) => setVendorFilter(e.target.value)} 
+                    placeholder="Enter account holder name" 
+                  />
+                </label>
+              )}
+              
+              {selectedModelType === "MortgageForms" && (
+                <label>
+                  <strong>Lender Name:</strong>
+                  <input 
+                    type="text" 
+                    value={vendorFilter} 
+                    onChange={(e) => setVendorFilter(e.target.value)} 
+                    placeholder="Enter lender name" 
+                  />
+                </label>
+              )}
+
               <label>
                 <strong>From Date:</strong>
                 <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
@@ -233,6 +282,7 @@ const ManualReview = () => {
                 <strong>To Date:</strong>
                 <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
               </label>
+              
               <label>
                 <strong>Upload Date:</strong>
                 <select value={uploadDateFilter} onChange={(e) => setUploadDateFilter(e.target.value)}>
@@ -241,15 +291,18 @@ const ManualReview = () => {
                   <option value="30days">Last 30 Days</option>
                 </select>
               </label>
+              
               <label>
                 <strong>Search All:</strong>
                 <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
               </label>
+              
               <label>
                 <button className="reset-button" onClick={handleResetFilters}>
                   Reset
                 </button>
               </label>
+              
               <label>
                 <button className="export-button" onClick={handleExportCSV}>
                   Export CSV

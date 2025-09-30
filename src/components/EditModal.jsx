@@ -34,6 +34,69 @@ const getFileFormat = (fileName) => {
   return extension || "PDF";
 };
 
+// Field configurations for each document type
+const documentTypeFields = {
+  Invoice: [
+    { key: "VendorName", label: "Vendor Name:", type: "text"},
+    { key: "InvoiceId", label: "Invoice ID:", type: "text" },
+    { key: "InvoiceDate", label: "Invoice Date:", type: "date" },
+    { key: "LPO", label: "LPO Number:", type: "text", sanitize: true },
+    { key: "SubTotal", label: "Sub Total:", type: "text", sanitize: true },
+    { key: "VAT", label: "VAT", type: "text:", sanitize: true },
+    { key: "InvoiceTotal", label: "Invoice Total:", type: "text", sanitize: true }
+  ],
+  BankStatement: [
+    { key: "AccountHolder", label: "Account Holder:", type: "text" },
+    { key: "AccountNumber", label: "Account Number:", type: "text" },
+    { key: "StatementPeriod", label: "Statement Period:", type: "text" },
+    { key: "OpeningBalance", label: "Opening Balance:", type: "text", sanitize: true },
+    { key: "ClosingBalance", label: "Closing Balance:", type: "text", sanitize: true }
+  ],
+  MortgageForms: [
+    { key: "LenderName", label: "Lender Name:", type: "text" },
+    { key: "BorrowerName", label: "Borrower Name:", type: "text" },
+    { key: "LoanAmount", label: "Loan Amount:", type: "text", sanitize: true },
+    { key: "Interest", label: "Interest:", type: "text", sanitize: true },
+    { key: "LoanTenure", label: "Loan Tenure:", type: "text" }
+  ]
+};
+
+// Field mapping for extracted data keys
+const fieldMapping = {
+  Invoice: {
+    VendorName: "VendorName",
+    InvoiceId: "InvoiceId",
+    InvoiceDate: "InvoiceDate",
+    LPO: "LPO NO",
+    SubTotal: "SubTotal",
+    VAT: "VAT",
+    InvoiceTotal: "InvoiceTotal"
+  },
+  BankStatement: {
+    AccountHolder: "AccountHolder",
+    AccountNumber: "AccountNumber",
+    StatementPeriod: "StatementPeriod",
+    OpeningBalance: "OpeningBalance",
+    ClosingBalance: "ClosingBalance"
+  },
+  MortgageForms: {
+    LenderName: "LenderName",
+    BorrowerName: "BorrowerName",
+    LoanAmount: "LoanAmount",
+    Interest: "Interest",
+    LoanTenure: "LoanTenure"
+  }
+};
+
+const getString = (val) => {
+  if (!val) return "";
+  if (typeof val === "string" || typeof val === "number") return val;
+  if (typeof val === "object") {
+    return val?.valueString || val?.content || JSON.stringify(val);
+  }
+  return "";
+};
+
 const EditModal = () => {
   const { state } = useLocation();
   const { accounts } = useMsal();
@@ -46,6 +109,11 @@ const EditModal = () => {
 
   const selectedDocument = state?.selectedDocument;
   const initialEditedData = state?.editedData;
+  
+  // Get the selected model type from localStorage or document
+  const selectedModelType = selectedDocument?.modelType || 
+                           localStorage.getItem("selectedModelType") || 
+                           "Invoice";
 
   const refreshData = () => window.location.reload();
   const setShow = () => navigate(-1);
@@ -55,29 +123,26 @@ const EditModal = () => {
   const [pdfDetails, setPDFDetails] = useState(false);
   const [saveSuccessful, setSaveSuccessful] = useState(false);
 
-  const [edited, setEdited] = useState({
-    VendorName: "",
-    InvoiceId: "",
-    InvoiceDate: "",
-    LPO: "",
-    SubTotal: "",
-    VAT: "",
-    InvoiceTotal: "",
-  });
+  // Initialize edited state dynamically based on document type
+  const [edited, setEdited] = useState({});
 
   useEffect(() => {
-    if (initialEditedData) {
-      setEdited({
-        VendorName: initialEditedData.VendorName || "",
-        InvoiceId: initialEditedData.InvoiceId || "",
-        InvoiceDate: initialEditedData.InvoiceDate || "",
-        LPO: sanitizeNumeric(initialEditedData.LPO),
-        SubTotal: sanitizeNumeric(initialEditedData.SubTotal),
-        VAT: sanitizeNumeric(initialEditedData.VAT),
-        InvoiceTotal: sanitizeNumeric(initialEditedData.InvoiceTotal),
+    if (initialEditedData && selectedModelType) {
+      const fields = documentTypeFields[selectedModelType] || [];
+      const initialData = {};
+      
+      fields.forEach(field => {
+        const extractedKey = fieldMapping[selectedModelType]?.[field.key] || field.key;
+        const value = initialEditedData[field.key] || 
+                     initialEditedData.extractedData?.[extractedKey] || 
+                     "";
+        
+        initialData[field.key] = field.sanitize ? sanitizeNumeric(value) : getString(value);
       });
+
+      setEdited(initialData);
     }
-  }, [initialEditedData]);
+  }, [initialEditedData, selectedModelType]);
 
   useEffect(() => {
     if (saveSuccessful) {
@@ -96,69 +161,69 @@ const EditModal = () => {
   };
 
   const handleSave = async () => {
-  const isEmpty = Object.entries(edited).some(
-    ([key, value]) => !value || value.trim() === ""
-  );
+    const fields = documentTypeFields[selectedModelType] || [];
+    const isEmpty = fields.some(field => !edited[field.key] || edited[field.key].trim() === "");
 
-  if (isEmpty) {
-    alert("⚠️ Please fill all fields before saving.");
-    return;
-  }
+    if (isEmpty) {
+      alert("⚠️ Please fill all fields before saving.");
+      return;
+    }
 
-  try {
-    const score = selectedDocument.totalConfidenceScore;
-    let numericScore =
-      typeof score === "string"
-        ? parseFloat(score.replace(/[^\d.]/g, ""))
-        : Number(score);
+    try {
+      const score = selectedDocument.totalConfidenceScore;
+      let numericScore =
+        typeof score === "string"
+          ? parseFloat(score.replace(/[^\d.]/g, ""))
+          : Number(score);
 
-    const reviewedScore = isNaN(numericScore)
-      ? "Reviewed"
-      : `${numericScore.toFixed(2)}% Reviewed`;
+      const reviewedScore = isNaN(numericScore)
+        ? "Reviewed"
+        : `${numericScore.toFixed(2)}% Reviewed`;
 
-    const existingHistory = Array.isArray(selectedDocument.versionHistory)
-      ? [...selectedDocument.versionHistory]
-      : [];
+      const existingHistory = Array.isArray(selectedDocument.versionHistory)
+        ? [...selectedDocument.versionHistory]
+        : [];
 
-    const newVersion = {
-      version: existingHistory.length + 1,
-      action: "Reviewed",
-      timestamp: new Date().toISOString(),
-      user: {
-        id: currentUser.id || "unknown@domain.com",
-        name: currentUser.name || "Unknown User",
-      },
-    };
+      const newVersion = {
+        version: existingHistory.length + 1,
+        action: "Reviewed",
+        timestamp: new Date().toISOString(),
+        user: {
+          id: currentUser.id || "unknown@domain.com",
+          name: currentUser.name || "Unknown User",
+        },
+      };
 
-    const updatedDoc = {
-      ...selectedDocument,
-      id: selectedDocument.id, // ⬅️ ensure ID exists
-      extractedData: {
-        VendorName: edited.VendorName,
-        InvoiceId: edited.InvoiceId,
-        InvoiceDate: edited.InvoiceDate,
-        "LPO NO": edited.LPO,
-        SubTotal: edited.SubTotal,
-        VAT: edited.VAT,
-        InvoiceTotal: edited.InvoiceTotal,
-      },
-      wasReviewed: true,
-      reviewedBy: {
-        id: currentUser.id || "unknown@domain.com",
-        name: currentUser.name || "Unknown User",
-      },
-      reviewedAt: new Date().toISOString(),
-      totalConfidenceScore: reviewedScore,
-      status: "Reviewed",
-      versionHistory: [...existingHistory, newVersion],
-      fileUrl: selectedDocument.fileUrl || "",
-      blobUrl: selectedDocument.blobUrl || "",
-    };
+      // Build extracted data dynamically
+      const extractedData = {};
+      const fieldsConfig = documentTypeFields[selectedModelType] || [];
+      
+      fieldsConfig.forEach(field => {
+        const extractedKey = fieldMapping[selectedModelType]?.[field.key] || field.key;
+        extractedData[extractedKey] = edited[field.key];
+      });
 
-    console.log("📤 Sending to PUT:", updatedDoc); // ✅ Debug log
+      const updatedDoc = {
+        ...selectedDocument,
+        id: selectedDocument.id,
+        extractedData: extractedData,
+        wasReviewed: true,
+        reviewedBy: {
+          id: currentUser.id || "unknown@domain.com",
+          name: currentUser.name || "Unknown User",
+        },
+        reviewedAt: new Date().toISOString(),
+        totalConfidenceScore: reviewedScore,
+        status: "Reviewed",
+        versionHistory: [...existingHistory, newVersion],
+        fileUrl: selectedDocument.fileUrl || "",
+        blobUrl: selectedDocument.blobUrl || "",
+      };
+
+      console.log("📤 Sending to PUT:", updatedDoc);
 
       const response = await fetch(
-        " https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==",
+        "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==",
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -166,19 +231,41 @@ const EditModal = () => {
         }
       );
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error("Failed to update: " + errText);
-    }
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error("Failed to update: " + errText);
+      }
 
-    refreshData();     // Refresh ManualReview list
-    setShow(true);     // Navigate back
-    setSaveSuccessful(true); // Redirect to Table
-  } catch (err) {
-    console.error("❌ Save error:", err);
-    alert("❌ Failed to update document:\n" + err.message);
-  }
-};
+      refreshData();
+      setShow(true);
+      setSaveSuccessful(true);
+    } catch (err) {
+      console.error("❌ Save error:", err);
+      alert("❌ Failed to update document:\n" + err.message);
+    }
+  };
+
+  const handleFieldChange = (fieldKey, value, shouldSanitize = false) => {
+    setEdited(prev => ({
+      ...prev,
+      [fieldKey]: shouldSanitize ? sanitizeNumeric(value) : value
+    }));
+  };
+
+  const renderEditFields = () => {
+    const fields = documentTypeFields[selectedModelType] || [];
+    
+    return fields.map(field => (
+      <div key={field.key} className="ManualReview-Edit-editDetails-form">
+        <label>{field.label}</label>
+        <input
+          type={field.type}
+          value={edited[field.key] || ""}
+          onChange={(e) => handleFieldChange(field.key, e.target.value, field.sanitize)}
+        />
+      </div>
+    ));
+  };
 
   return (
     <div className="ManualReview-Edit-main-container">
@@ -236,82 +323,9 @@ const EditModal = () => {
           {editDetails && (
             <div className="ManualReview-Edit-editDetails">
               <form className="ManualReview-Edit-editDetails-form">
-                <h3>Edit Details</h3>
-                <label>Vendor Name</label>
-                <input
-                  type="text"
-                  value={edited.VendorName}
-                  onChange={(e) =>
-                    setEdited({ ...edited, VendorName: e.target.value })
-                  }
-                />
-
-                <label>Invoice ID</label>
-                <input
-                  type="text"
-                  value={edited.InvoiceId}
-                  onChange={(e) =>
-                    setEdited({ ...edited, InvoiceId: e.target.value })
-                  }
-                />
-
-                <label>Invoice Date</label>
-                <input
-                  type="date"
-                  value={edited.InvoiceDate}
-                  onChange={(e) =>
-                    setEdited({ ...edited, InvoiceDate: e.target.value })
-                  }
-                />
-
-                <label>LPO Number</label>
-                <input
-                  type="text"
-                  value={edited.LPO}
-                  onChange={(e) =>
-                    setEdited({
-                      ...edited,
-                      LPO: sanitizeNumeric(e.target.value),
-                    })
-                  }
-                />
-
-                <label>Sub Total</label>
-                <input
-                  type="text"
-                  value={edited.SubTotal}
-                  onChange={(e) =>
-                    setEdited({
-                      ...edited,
-                      SubTotal: sanitizeNumeric(e.target.value),
-                    })
-                  }
-                />
-
-                <label>VAT</label>
-                <input
-                  type="text"
-                  value={edited.VAT}
-                  onChange={(e) =>
-                    setEdited({
-                      ...edited,
-                      VAT: sanitizeNumeric(e.target.value),
-                    })
-                  }
-                />
-
-                <label>Invoice Total</label>
-                <input
-                  type="text"
-                  value={edited.InvoiceTotal}
-                  onChange={(e) =>
-                    setEdited({
-                      ...edited,
-                      InvoiceTotal: sanitizeNumeric(e.target.value),
-                    })
-                  }
-                />
-
+                <h3>Edit Details - {selectedModelType}</h3>
+                {renderEditFields()}
+                
                 <ul className="ManualReview-Edit-editDetails-form-ul">
                   <li
                     className="ManualReview-Edit-editDetails-form-ul-Cancel"
@@ -378,6 +392,12 @@ const EditModal = () => {
                   <b className="detail-label">File Format:</b>
                   <span className="detail-value">
                     {selectedDocument?.metadata?.FileFormat || getFileFormat(selectedDocument?.documentName)}
+                  </span>
+                </li>
+                <li>
+                  <b className="detail-label">Document Type:</b>
+                  <span className="detail-value">
+                    {selectedModelType}
                   </span>
                 </li>
                 <li>

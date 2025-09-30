@@ -1,13 +1,43 @@
 import React, { useState, useEffect } from "react";
 import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
-import FilePagination from "../Layout/Filepagination";
 import "./Table.css";
 import { saveAs } from "file-saver";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useSortableData from "../utils/useSortableData";
 import { Info } from "lucide-react";
+import FilePagination from "../Layout/Filepagination";
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, errorMessage: "" };
+  }
+
+  static getDerivedStateFromError(error) {
+    return {
+      hasError: true,
+      errorMessage: error.message || "An error occurred.",
+    };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Error Boundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: "20px", color: "red", textAlign: "center" }}>
+          <h2>Something went wrong.</h2>
+          <p>{this.state.errorMessage}</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function getString(val) {
   if (val === null || val === undefined) return "";
@@ -90,39 +120,60 @@ const modelTypeKeys = {
   ],
 };
 
+// Model-specific search fields
+const modelTypeSearchFields = {
+  Invoice: ["vendorName", "invoiceId", "invoiceDate", "lpoNo", "subTotal", "vat", "invoicetotal"],
+  BankStatement: ["AccountHolder", "AccountNumber", "StatementPeriod", "OpeningBalance", "ClosingBalance"],
+  MortgageForms: ["LenderName", "BorrowerName", "LoanAmount", "Interest", "LoanTenure"],
+};
+
 function Table() {
   const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedModelType, setSelectedModelType] = useState(localStorage.getItem("selectedModelType") || "Invoice");
   
-  // Filter states
-  const [vendorFilter, setVendorFilter] = useState("");
+  // Filters state
+  const [searchQuery, setSearchQuery] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [uploadDateFilter, setUploadDateFilter] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [vendorFilter, setVendorFilter] = useState(""); // For Invoice model only
+  const [accountHolderFilter, setAccountHolderFilter] = useState(""); // For BankStatement model only
+  const [lenderNameFilter, setLenderNameFilter] = useState(""); // For MortgageForms model only
+
+  // Version History Modal
+  const [versionModal, setVersionModal] = useState({
+    visible: false,
+    history: [],
+    docName: "",
+  });
 
   const rowsPerPage = 10;
+  const today = new Date().toISOString().split("T")[0];
 
   const handleModelTypeChange = (type) => {
     setSelectedModelType(type);
     localStorage.setItem("selectedModelType", type);
+    // Reset filters when model type changes
+    handleResetFilters();
   };
 
-  // Reset all filters function
+  // Reset all filters
   const handleResetFilters = () => {
-    setVendorFilter("");
+    setSearchQuery("");
     setFromDate("");
     setToDate("");
     setUploadDateFilter("all");
-    setSearchQuery("");
+    setVendorFilter("");
+    setAccountHolderFilter("");
+    setLenderNameFilter("");
     setCurrentPage(1);
   };
 
-  const { sortedData, toggleSort, renderSortIcon } = useSortableData(filteredData);
+  const { sortedData, toggleSort, renderSortIcon, sortColumn, sortOrder } =
+    useSortableData(data);
 
   useEffect(() => {
     async function fetchData() {
@@ -193,46 +244,71 @@ function Table() {
     fetchData();
   }, [selectedModelType]);
 
-  // Apply filters whenever filter states or data changes
-  useEffect(() => {
-    const filtered = data.filter((item) => {
-      // Vendor filter (for Invoice model type)
-      const matchesVendor = selectedModelType === "Invoice" 
-        ? (item.vendorName?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true)
-        : true;
+  // Apply filters to data
+  const filteredData = sortedData.filter((item) => {
+    // Search query filter
+    const matchesSearch = searchQuery ? 
+      modelTypeSearchFields[selectedModelType].some(field => 
+        (item[field] || "").toString().toLowerCase().includes(searchQuery.toLowerCase())
+      ) : true;
 
-      // Search all fields
-      const matchesSearch = Object.values(item).some((val) =>
-        String(val).toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-      // Date range filter (for Invoice Date)
-      const itemDate = item.invoiceDate ? new Date(item.invoiceDate) : null;
+    // Date range filter (applies to date fields based on model type)
+    let matchesDateRange = true;
+    if (fromDate || toDate) {
+      const dateField = selectedModelType === "Invoice" ? "invoiceDate" : 
+                       selectedModelType === "BankStatement" ? "StatementPeriod" : "uploadDate";
+      
+      const itemDate = item[dateField] ? new Date(item[dateField]) : null;
       const from = fromDate ? new Date(fromDate) : null;
       const to = toDate ? new Date(toDate) : null;
-      const matchesDate = (!from || (itemDate && itemDate >= from)) && 
-                         (!to || (itemDate && itemDate <= to));
 
-      // Upload date filter
-      const now = new Date();
-      const uploadDate = item.rawUploadDate;
-      let matchesUploadFilter = true;
-      if (uploadDateFilter === "7days") {
-        const sevenDaysAgo = new Date(now);
-        sevenDaysAgo.setDate(now.getDate() - 7);
-        matchesUploadFilter = uploadDate >= sevenDaysAgo && uploadDate <= now;
-      } else if (uploadDateFilter === "30days") {
-        const thirtyDaysAgo = new Date(now);
-        thirtyDaysAgo.setDate(now.getDate() - 30);
-        matchesUploadFilter = uploadDate >= thirtyDaysAgo && uploadDate <= now;
+      if (itemDate) {
+        matchesDateRange = (!from || itemDate >= from) && (!to || itemDate <= to);
       }
+    }
 
-      return matchesVendor && matchesSearch && matchesDate && matchesUploadFilter;
-    });
+    // Vendor filter (Invoice only)
+    const matchesVendor = selectedModelType !== "Invoice" || !vendorFilter || 
+      (item.vendorName || "").toLowerCase().includes(vendorFilter.toLowerCase());
 
-    setFilteredData(filtered);
-    setCurrentPage(1);
-  }, [data, vendorFilter, fromDate, toDate, uploadDateFilter, searchQuery, selectedModelType]);
+    // Account Holder filter (BankStatement only)
+    const matchesAccountHolder = selectedModelType !== "BankStatement" || !accountHolderFilter || 
+      (item.AccountHolder || "").toLowerCase().includes(accountHolderFilter.toLowerCase());
+
+    // Lender Name filter (MortgageForms only)
+    const matchesLenderName = selectedModelType !== "MortgageForms" || !lenderNameFilter || 
+      (item.LenderName || "").toLowerCase().includes(lenderNameFilter.toLowerCase());
+
+    // Upload date filter
+    const now = new Date();
+    const uploadDate = item.rawUploadDate;
+    let matchesUploadFilter = true;
+    if (uploadDateFilter === "7days") {
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(now.getDate() - 7);
+      matchesUploadFilter = uploadDate >= sevenDaysAgo && uploadDate <= now;
+    } else if (uploadDateFilter === "30days") {
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+      matchesUploadFilter = uploadDate >= thirtyDaysAgo && uploadDate <= now;
+    }
+
+    return matchesSearch && matchesDateRange && matchesVendor && 
+           matchesAccountHolder && matchesLenderName && matchesUploadFilter;
+  });
+
+  // Version History handler
+  const handleInfoClick = (file) => {
+    if (file.versionHistory && Array.isArray(file.versionHistory)) {
+      setVersionModal({
+        visible: true,
+        history: file.versionHistory,
+        docName: file.documentName || file.blobUrl || "Document",
+      });
+    } else {
+      toast.info("No version history available.");
+    }
+  };
 
   const handleExportCSV = () => {
     const headers = modelTypeHeaders[selectedModelType];
@@ -255,11 +331,31 @@ function Table() {
     else toast.error("File URL not available");
   };
 
+  // Format date for display
+  function formatDate(dateString) {
+    if (!dateString) return "";
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}-${month}-${year}`;
+  }
+
+  // Pagination
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-  const currentRows = sortedData.slice(
+  const currentRows = filteredData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
+
+  // Reset current page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, fromDate, toDate, uploadDateFilter, vendorFilter, accountHolderFilter, lenderNameFilter, selectedModelType]);
 
   return (
     <div className="table-component-container">
@@ -267,9 +363,24 @@ function Table() {
       <div className="dataview-container">
         <h2>{selectedModelType} Data View</h2>
 
-        {/* Filters Section - Same as ManualReview */}
+        {/* Model Type Selector */}
+        {/* <div className="model-type-selector">
+          <label>
+            <strong>Document Type:</strong>
+            <select 
+              value={selectedModelType} 
+              onChange={(e) => handleModelTypeChange(e.target.value)}
+            >
+              <option value="Invoice">Invoice</option>
+              <option value="BankStatement">Bank Statement</option>
+              <option value="MortgageForms">Mortgage Forms</option>
+            </select>
+          </label>
+        </div> */}
+
+        {/* Filters */}
         <div className="filters">
-          {/* Vendor Filter (only show for Invoice) */}
+          {/* Vendor Filter (Invoice only) */}
           {selectedModelType === "Invoice" && (
             <label>
               <strong>Vendor:</strong>
@@ -281,25 +392,54 @@ function Table() {
               />
             </label>
           )}
-          
+
+          {/* Account Holder Filter (BankStatement only) */}
+          {selectedModelType === "BankStatement" && (
+            <label>
+              <strong>Account Holder:</strong>
+              <input
+                type="text"
+                value={accountHolderFilter}
+                onChange={(e) => setAccountHolderFilter(e.target.value)}
+                placeholder="Enter account holder name"
+              />
+            </label>
+          )}
+
+          {/* Lender Name Filter (MortgageForms only) */}
+          {selectedModelType === "MortgageForms" && (
+            <label>
+              <strong>Lender Name:</strong>
+              <input
+                type="text"
+                value={lenderNameFilter}
+                onChange={(e) => setLenderNameFilter(e.target.value)}
+                placeholder="Enter lender name"
+              />
+            </label>
+          )}
+
+          {/* Date Range Filter */}
           <label>
             <strong>From Date:</strong>
             <input
               type="date"
               value={fromDate}
+              max={today}
               onChange={(e) => setFromDate(e.target.value)}
             />
           </label>
-
           <label>
             <strong>To Date:</strong>
             <input
               type="date"
               value={toDate}
+              max={today}
               onChange={(e) => setToDate(e.target.value)}
             />
           </label>
 
+          {/* Upload Date Filter */}
           <label>
             <strong>Upload Date:</strong>
             <select
@@ -312,88 +452,146 @@ function Table() {
             </select>
           </label>
 
+          {/* Search Filter */}
           <label>
             <strong>Search All:</strong>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={`Search ${selectedModelType.toLowerCase()}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </label>
 
-          <label>
-            <button className="reset-button" onClick={handleResetFilters}>
-              Reset
-            </button>
-          </label>
-
-          <label>
-            <button className="export-button" onClick={handleExportCSV}>
-              Export CSV
-            </button>
-          </label>
+          {/* Action Buttons */}
+          <div className="reset-export-bar">
+            <button onClick={handleResetFilters}>Reset</button>
+          </div>
+          <div className="search-export-bar">
+            <button onClick={handleExportCSV}>Export CSV</button>
+          </div>
         </div>
 
-        {loading && <p>Loading...</p>}
+        {loading && <p>Loading data...</p>}
         {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
-        <table>
-          <thead>
-            <tr>
-              {modelTypeHeaders[selectedModelType].map((header, idx) => (
-                <th
-                  key={idx}
-                  onClick={() => toggleSort(modelTypeKeys[selectedModelType][idx])}
-                >
-                  {header} {renderSortIcon(modelTypeKeys[selectedModelType][idx])}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentRows.length > 0 ? (
-              currentRows.map((item, index) => (
-                <tr key={index}>
-                  {modelTypeKeys[selectedModelType].map((key, idx) =>
-                    key === "_rawDocument" ? (
-                      <td key={idx}>
-                        <button onClick={() => handleViewDocument(item._rawDocument)}>
-                          View
-                        </button>
+        <ErrorBoundary>
+          {!loading && !error && (
+            <>
+              <table>
+                <thead>
+                  <tr>
+                    {modelTypeHeaders[selectedModelType].map((header, idx) => (
+                      <th
+                        key={idx}
+                        onClick={() => toggleSort(modelTypeKeys[selectedModelType][idx])}
+                      >
+                        <span className="sortable-header">
+                          {header} {renderSortIcon(modelTypeKeys[selectedModelType][idx])}
+                        </span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentRows.length > 0 ? (
+                    currentRows.map((item, index) => (
+                      <tr key={index}>
+                        {modelTypeKeys[selectedModelType].map((key, idx) =>
+                          key === "_rawDocument" ? (
+                            <td key={idx}>
+                              <button 
+                                className="action-btn"
+                                onClick={() => handleViewDocument(item._rawDocument)}
+                              >
+                                View
+                              </button>
+                            </td>
+                          ) : key === "confidenceScore" ? (
+                            <td key={idx}>
+                              {item.confidenceScore !== "N/A" ? 
+                                `${parseFloat(item.confidenceScore).toFixed(2)}%` : "N/A"}
+                              {item._rawDocument?.status === "Reviewed" && (
+                                <Info
+                                  size={16}
+                                  color="#007bff"
+                                  style={{ cursor: "pointer", marginLeft: "5px" }}
+                                  onClick={() => handleInfoClick(item._rawDocument)}
+                                />
+                              )}
+                            </td>
+                          ) : key === "invoiceDate" || key === "uploadDate" || key === "StatementPeriod" ? (
+                            <td key={idx}>{formatDate(item[key])}</td>
+                          ) : (
+                            <td key={idx}>{item[key]}</td>
+                          )
+                        )}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={modelTypeHeaders[selectedModelType].length} style={{ textAlign: "center" }}>
+                        No records found.
                       </td>
-                    ) : (
-                      <td key={idx}>{item[key]}</td>
-                    )
+                    </tr>
                   )}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={modelTypeHeaders[selectedModelType].length} style={{ textAlign: "center" }}>
-                  {loading ? "Loading..." : "No records found"}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                </tbody>
+              </table>
 
-        {/* FilePagination Component */}
-        {filteredData.length > rowsPerPage && (
-          <FilePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            rowsPerPage={rowsPerPage}
-            totalItems={filteredData.length}
-            previousLabel="Previous"
-            nextLabel="Next"
-            className="table-pagination"
-          />
-        )}
+              {/* Version History Modal */}
+              {versionModal.visible && (
+                <div className="modal-backdrop">
+                  <div className="modal">
+                    <h3>Version History - {versionModal.docName}</h3>
+                    <table className="version-table">
+                      <thead>
+                        <tr>
+                          <th>Version</th>
+                          <th>Action</th>
+                          <th>User</th>
+                          <th>Timestamp</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {versionModal.history.map((v, i) => (
+                          <tr key={i}>
+                            <td>{v.version}</td>
+                            <td>{v.action}</td>
+                            <td>{v.user?.name || v.user?.id || "N/A"}</td>
+                            <td>{new Date(v.timestamp).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <button
+                      onClick={() =>
+                        setVersionModal({
+                          visible: false,
+                          history: [],
+                          docName: "",
+                        })
+                      }
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* File Pagination */}
+              <FilePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                rowsPerPage={rowsPerPage}
+                totalItems={filteredData.length}
+              />
+            </>
+          )}
+        </ErrorBoundary>
       </div>
-      <Footer />
       <ToastContainer />
+      <Footer />
     </div>
   );
 }
