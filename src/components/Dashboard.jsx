@@ -83,6 +83,7 @@ const Dashboard = () => {
       "SubTotal",
       "VAT",
       "InvoiceTotal",
+      
     ];
     return requiredFields.every((field) => {
       const value = doc.extractedData[field];
