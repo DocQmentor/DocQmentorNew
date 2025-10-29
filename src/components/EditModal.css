@@ -2,6 +2,7 @@
   width: 100%;
   height: 100vh;
   display: flex;
+  border: #004080 solid;
   flex-direction: column;
 }
 /* ===== Edit Modal Container ===== */
@@ -9,6 +10,7 @@
   margin-top: 60px;
   display: flex;
   width: 100%;
+  height: 100vh;
   padding: 0 30px;
   gap: 10px;
   align-items: center;
@@ -19,6 +21,7 @@
 .ManualReview-Edit-show-file {
   width: 100%;
   padding: 10px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   border: 1px solid #ccc;
@@ -29,7 +32,8 @@
 }
 .ManualReview-Edit-show-file-pdf-preview {
   width: 100%;
-  height: 446px;
+  max-height: 446px;
+  min-height: 100%;
   border: none;
   border-radius: 10px;
 }
@@ -37,6 +41,7 @@
 /* ===== Right Panel (Options + Forms) ===== */
 .ManualReview-Edit-options {
   width: 70%;
+  min-height: 100%;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 10px;
@@ -44,7 +49,7 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  justify-content: space-around;
+  justify-content: flex-start;
 }
 
 /* ===== Navigation Tabs ===== */

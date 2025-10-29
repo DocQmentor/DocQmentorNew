@@ -1,8 +1,3 @@
-/*
- * Admin.css - Comprehensive Power BI Inspired Dashboard Theme (Refined & Optimized)
- * Focus: High-quality, maintainable code with duplicates and spacers removed.
- */
-
 /* ========================================================================= */
 /* COLOR PALETTE & BASE                          */
 /* ========================================================================= */
@@ -30,6 +25,11 @@
     --border-radius-sm: 4px;
     --border-radius-md: 8px;
     --border-radius-lg: 12px;
+
+    /* Animation */
+    --transition-fast: 0.2s ease;
+    --transition-medium: 0.3s ease;
+    --transition-slow: 0.5s ease;
 }
 
 /* --- Base Styling and Reset --- */
@@ -56,7 +56,7 @@ body {
 a {
     color: var(--accent-blue);
     text-decoration: none;
-    transition: color 0.2s;
+    transition: color var(--transition-fast);
 }
 
 a:hover {
@@ -96,9 +96,15 @@ a:hover {
     grid-template-columns: 3fr 1fr;
     grid-template-rows: auto 1fr;
     gap: var(--spacing-md);
-    margin-top: 65px;
+    margin-top: 60px;
     flex: 1;
     padding: var(--spacing-lg);
+    animation: fadeIn var(--transition-slow);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- 1. Header Section (Title & Controls Bar) --- */
@@ -110,7 +116,13 @@ a:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 25px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    transition: all var(--transition-medium);
+}
+
+.admin-heading-section:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
 }
 
 .admin-heading-section h1 {
@@ -129,13 +141,28 @@ a:hover {
     border-radius: var(--border-radius-md);
     font-size: 14px;
     color: var(--text-dark);
+    transition: all var(--transition-fast);
+}
+.document-type-badge .databaseIcon-admin,
+.document-type-badge span,
+.document-type-badge strong{
+    transition: all var(--transition-fast);
+    background-color: var(--page-bg);
+    color: var(--text-dark);
+
+}
+.admin-heading-section .document-type-badge:hover,
+.admin-heading-section .document-type-badge:hover .databaseIcon-admin,
+.admin-heading-section .document-type-badge:hover span,
+.admin-heading-section .document-type-badge:hover strong{
+    background-color: #e8eff5;
 }
 
 .admin-heading-section .document-type-badge strong {
     color: var(--navy);
 }
 
-/* --- 2. Section 1 (Main Content Area) --- */
+/* --- 2. Section 1 (Main Content Area) - CORRECTED --- */
 .admin-section-1 {
     grid-area: sectionOne;
     padding: 0;
@@ -144,6 +171,8 @@ a:hover {
     flex-direction: column;
     gap: var(--spacing-md);
     background-color: transparent;
+    height: auto;
+    min-height: 600px;
 }
 
 /* --- 3. Section 2 (Sidebar/Details) --- */
@@ -157,7 +186,18 @@ a:hover {
     gap: 25px;
     background: var(--background-light);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    transition: all var(--transition-medium);
+    height: fit-content; /* Adjust height to content */
+    position: sticky;
+    top: 80px; /* Distance from top when sticky */
+    max-height: calc(100vh - 100px); /* Maximum height */
+    overflow-y: auto; /* Enable scrolling if content is too long */
 }
+
+.admin-section-2:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
 
 .admin-section-2-header h3 {
     margin: 0;
@@ -174,7 +214,8 @@ a:hover {
 /* ========================================================================= */
 
 .admin-stats-box {
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 0;
+    flex-shrink: 0;
 }
 
 .admin-stats-box ul {
@@ -187,21 +228,21 @@ a:hover {
 }
 
 .admin-stats-box li {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    flex: 1;
-    min-width: 180px;
-    height: 100px;
-    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    display: grid;
+    grid-template-areas:
+        "icon text"
+        "icon number";
+    grid-template-columns: 50px 1fr;
+    align-items: center;
     background-color: var(--background-light);
-    padding: var(--spacing-md) var(--spacing-lg);
-    gap: 2px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-left: 5px solid var(--accent-blue);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all var(--transition-medium);
+    cursor: default;
+    flex: 1;
+    min-height: 100px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .admin-stats-box li:hover {
@@ -209,62 +250,46 @@ a:hover {
     transform: translateY(-2px);
 }
 
-.admin-stats-box li .pp {
-    order: 0;
-    align-self: flex-end;
-    color: var(--accent-blue);
-    font-size: 24px;
-    opacity: 0.7;
-    margin-bottom: 5px;
-    /* Removed redundant background: none; */
+.iconForCount {
+    grid-area: icon;
+    color: var(--navy);
+    margin-right: 8px;
+    transition: transform var(--transition-medium);
 }
 
-.admin-stats-box li p {
-    color: var(--text-dark);
-    margin: 0;
-    /* Removed redundant background: none; */
+.admin-stats-box li:hover .iconForCount {
+    transform: scale(1.1);
 }
 
-.admin-stats-box li p:first-of-type {
-    order: 2;
+.textForCout {
+    grid-area: text;
     font-size: 14px;
     color: var(--text-muted);
-    justify-self: flex-start;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    margin: 0;
+    font-weight: 500;
 }
 
-.admin-stats-box li p:last-of-type {
-    order: 1;
-    font-size: 28px;
+.numberForCout {
+    grid-area: number;
+    font-size: 24px;
     font-weight: 700;
     color: var(--navy);
-    justify-self: flex-start;
+    margin: 0;
 }
 
-/* Specific KPI coloring for distinction (IMPROVED CONSOLIDATION) */
-.admin-stats-box li:nth-child(2) {
-    border-left-color: var(--success);
-}
-.admin-stats-box li:nth-child(2) .pp {
-    color: var(--success);
-}
-.admin-stats-box li:nth-child(3) {
-    border-left-color: var(--warning);
-}
-.admin-stats-box li:nth-child(3) .pp {
-    color: var(--warning);
-}
-.admin-stats-box li:last-child {
-    border-left-color: var(--text-dark);
-}
-.admin-stats-box li:last-child p:last-of-type,
-.admin-stats-box li:last-child .pp {
-     color: var(--text-dark);
-}
+/* Specific KPI coloring for distinction */
+.admin-stats-box li:nth-child(1) .iconForCount { color: var(--navy); }
+.admin-stats-box li:nth-child(2) .iconForCount { color: var(--success); }
+.admin-stats-box li:nth-child(3) .iconForCount { color: var(--warning); }
+.admin-stats-box li:nth-child(4) .iconForCount { color: var(--accent-blue); }
+
+.admin-stats-box li:nth-child(1):hover { border-left: 4px solid var(--navy); }
+.admin-stats-box li:nth-child(2):hover { border-left: 4px solid var(--success); }
+.admin-stats-box li:nth-child(3):hover { border-left: 4px solid var(--warning); }
+.admin-stats-box li:nth-child(4):hover { border-left: 4px solid var(--accent-blue); }
 
 /* ========================================================================= */
-/* DATA TABLE STYLES                              */
+/* DATA TABLE STYLES - IMPROVED                          */
 /* ========================================================================= */
 
 .admin-table-box {
@@ -273,10 +298,15 @@ a:hover {
     gap: var(--spacing-md);
     background-color: var(--background-light);
     border-radius: var(--border-radius-lg);
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    height: 100%;
-    overflow: hidden;
+    height: auto;
+    min-height: 400px;
+    transition: all var(--transition-medium);
+}
+
+.admin-table-box:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* Table Wrapper for Scroll */
@@ -285,6 +315,8 @@ a:hover {
     overflow-y: auto;
     border: 1px solid var(--border-light);
     border-radius: var(--border-radius-md);
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
 }
 
 .admin-table-box table {
@@ -292,6 +324,7 @@ a:hover {
     width: 100%;
     text-align: left;
     margin: 0;
+    table-layout: fixed;
 }
 
 .admin-table-box th,
@@ -301,6 +334,9 @@ a:hover {
     border: none;
     font-size: 14px;
     vertical-align: middle;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    transition: background-color var(--transition-fast);
 }
 
 .admin-table-box th {
@@ -311,12 +347,12 @@ a:hover {
     top: 0;
     z-index: 10;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color var(--transition-fast);
 }
 
-.admin-table-box th:hover {
+/* .admin-table-box th:hover {
     background: #0a2e4a;
-}
+} */
 
 .admin-table-box td {
     color: var(--text-dark);
@@ -330,7 +366,6 @@ a:hover {
 
 .admin-table-box tbody tr:hover td {
     background-color: #eaf1f7;
-    transition: background-color 0.2s;
 }
 
 /* Sorting Indicators */
@@ -342,42 +377,137 @@ a:hover {
 .sort-icon {
     font-size: 12px;
     opacity: 0.7;
+    transition: transform var(--transition-fast);
 }
 
 /* Table Header Controls */
 .table-section-header {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-items: flex-end;
-    gap: var(--spacing-sm);
+    flex-direction: column;
+    gap: var(--spacing-md);
     padding: 0;
     background-color: var(--background-light);
     border-bottom: 2px solid var(--page-bg);
-    padding-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-md);
 }
 
-.table-section-header h3 {
-    flex-basis: 100%;
-    margin-bottom: var(--spacing-sm);
+/* Div 1: Document Type Header */
+.table-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+}
+
+.table-header-title {
+    margin: 0;
     color: var(--navy);
+    font-size: 20px;
+    font-weight: 700;
 }
 
-.table-section-header > div {
+/* Div 2: Filters and Controls */
+.table-header-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--spacing-sm);
+    width: 100%;
+}
+
+.table-filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--spacing-sm);
+    flex: 1;
+}
+
+.table-actions-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+}
+
+/* Individual filter groups */
+.table-filter-group {
     display: flex;
     flex-direction: column;
     font-weight: 500;
-    width: 160px;
-    /* Removed redundant background-color */
+    min-width: 160px;
+    flex: 1;
 }
 
-.table-section-header label {
+.table-filter-group label {
     font-size: 12px;
     margin-bottom: 3px;
     color: var(--text-muted);
-    /* Removed redundant background-color */
+    font-weight: 500;
 }
 
+/* Consolidated Input/Select Styles for filters */
+.table-filter-group input,
+.table-filter-group select {
+    border: 1px solid var(--border-light);
+    height: 35px;
+    padding: 0 8px;
+    border-radius: var(--border-radius-sm);
+    width: 100%;
+    font-size: 13px;
+    background-color: var(--page-bg);
+    color: var(--text-dark);
+    transition: all var(--transition-fast);
+}
+
+.table-filter-group input:focus,
+.table-filter-group select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
+}
+
+/* Action buttons in header */
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background-color: var(--success);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all var(--transition-medium);
+    white-space: nowrap;
+}
+
+.export-btn:hover:not(:disabled) {
+    background-color: #0b5e0b;
+    transform: translateY(-1px);
+}
+
+.reset-filters-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    background-color: var(--text-muted);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    white-space: nowrap;
+}
+
+.reset-filters-btn:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+}
 /* Consolidated Input/Select Styles */
 .table-section-header input,
 .table-section-header select,
@@ -393,7 +523,7 @@ a:hover {
     font-size: 13px;
     background-color: var(--page-bg);
     color: var(--text-dark);
-    transition: border-color 0.2s;
+    transition: all var(--transition-fast);
 }
 
 .table-section-header input:focus,
@@ -404,7 +534,7 @@ a:hover {
 .form-group select:focus {
     outline: none;
     border-color: var(--accent-blue);
-    box-shadow: 0 0 0 1px var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
 }
 
 /* Filter and Export Buttons */
@@ -429,14 +559,14 @@ a:hover {
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
-    transition: background-color 0.3s;
+    transition: all var(--transition-medium);
 }
 
 .export-btn:hover:not(:disabled) {
     background-color: #0b5e0b;
+    transform: translateY(-1px);
 }
 .export-btn-icon {
-    /* Kept this specific rule for icons */
     background: none !important;
 }
 
@@ -453,18 +583,109 @@ a:hover {
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all var(--transition-medium);
 }
-.reset-filters-btn {
-    padding: 8px 12px;
-} /* Restore specific padding for filter bar */
-
 
 .reset-filters-btn:hover,
 .reset-btn:hover,
 .clear-btn:hover,
 .cancel-delete:hover {
     background-color: #5a6268;
+    transform: translateY(-1px);
+}
+
+/* ========================================================================= */
+/* TABLE NAVIGATION CONTROLS                        */
+/* ========================================================================= */
+
+.table-navigation-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background-color: var(--background-light);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-light);
+    transition: all var(--transition-medium);
+}
+
+.table-navigation-controls:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.table-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.table-selector label {
+    font-weight: 600;
+    color: var(--navy);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.table-dropdown {
+    border: 1px solid var(--border-light);
+    height: 35px;
+    padding: 0 var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--page-bg);
+    color: var(--text-dark);
+    font-size: 14px;
+    min-width: 200px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.table-dropdown:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
+}
+
+.navigation-buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border-light);
+    background-color: var(--background-light);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    color: var(--navy);
+}
+
+.nav-button:hover:not(:disabled) {
+    background-color: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+    transform: scale(1.05);
+}
+
+.nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.table-counter {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    min-width: 50px;
+    text-align: center;
+    transition: color var(--transition-fast);
 }
 
 /* ========================================================================= */
@@ -488,8 +709,14 @@ a:hover {
     padding: var(--spacing-sm);
     margin: 0;
     border-radius: var(--border-radius-md);
-    border: 1px solid var(--navy);
+    border: 1px solid var(--border-light);
     background: var(--background-light);
+    transition: all var(--transition-fast);
+}
+
+.admin-section-2-pack ul:hover,
+.admin-section-2-usage ul:hover {
+    border-color: var(--navy);
 }
 
 /* Consolidated List/LI styles */
@@ -502,8 +729,7 @@ a:hover {
     font-weight: 500;
     padding: 8px 6px;
     border-bottom: 1px solid var(--page-bg);
-    transition: background-color 0.2s;
-    /* Removed redundant background: none; */
+    transition: all var(--transition-fast);
 }
 
 .admin-section-2-pack ul li:last-child,
@@ -511,26 +737,23 @@ a:hover {
     border-bottom: none;
 }
 
-/* Removed redundant .admin-section-2-pack ul li span, .admin-section-2-usage ul li span */
-
 .admin-section-2-pack ul li span:first-child,
 .admin-section-2-usage ul li span:first-child {
     color: var(--text-dark);
     font-weight: 600;
-    /* Removed redundant background: none; */
 }
 
 .admin-section-2-pack ul li span:last-child,
 .admin-section-2-usage ul li span:last-child {
     font-weight: 700;
     color: var(--accent-blue);
-    /* Removed redundant background: none; */
 }
 
 .admin-section-2-pack ul li:hover,
 .admin-section-2-usage ul li:hover {
     background: #f0f3f6;
     border-radius: 4px;
+    transform: translateX(2px);
 }
 
 /* ========================================================================= */
@@ -548,6 +771,7 @@ a:hover {
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    animation: fadeIn var(--transition-medium);
 }
 
 .popup-content {
@@ -559,6 +783,12 @@ a:hover {
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    animation: slideUp var(--transition-medium);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .popup-header {
@@ -584,9 +814,15 @@ a:hover {
     font-size: 24px;
     padding: 5px;
     line-height: 1;
+    transition: all var(--transition-fast);
 }
 
-/* Filter and Form Sections (Consolidated styles applied to child elements via .table-section-header selector group above) */
+.close-popup:hover {
+    color: var(--accent-blue);
+    transform: scale(1.1);
+}
+
+/* Filter and Form Sections */
 .filter-section,
 .add-user-form {
     padding: var(--spacing-md);
@@ -597,11 +833,11 @@ a:hover {
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-md);
+    transition: all var(--transition-fast);
 }
 
 .filter-group,
 .form-group {
-    /* Removed redundant background-color: var(--page-bg); */
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -615,10 +851,7 @@ a:hover {
     font-weight: 600;
     color: var(--navy);
     font-size: 14px;
-    /* Removed redundant background-color: var(--page-bg); */
 }
-
-/* Removed redundant .filter-group select, .filter-group input, .form-group input, .form-group select styles (Consolidated above) */
 
 /* User List/Table in Popup */
 .user-list {
@@ -628,18 +861,20 @@ a:hover {
     overflow: hidden;
     max-height: 35vh;
     overflow-y: auto;
+    transition: all var(--transition-fast);
 }
 
 .user-item {
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--border-light);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all var(--transition-medium);
     background-color: var(--background-light);
 }
 
 .user-item:hover {
     background-color: var(--page-bg);
+    transform: translateX(2px);
 }
 
 .user-info {
@@ -679,7 +914,7 @@ a:hover {
     border-radius: var(--border-radius-sm);
     cursor: pointer;
     font-weight: 600;
-    transition: background-color 0.2s;
+    transition: all var(--transition-medium);
     font-size: 14px;
 }
 
@@ -692,10 +927,8 @@ a:hover {
 .add-user-btn:hover,
 .submit-btn:not(:disabled):hover {
     background-color: #0a2e4a;
+    transform: translateY(-1px);
 }
-
-/* Removed individual .reset-btn, .clear-btn, .cancel-delete styles - Consolidated above */
-/* .reset-btn:hover, .clear-btn:hover, .cancel-delete:hover - Consolidated above */
 
 .edit-btn {
     background-color: var(--warning);
@@ -703,6 +936,7 @@ a:hover {
 }
 .edit-btn:hover {
     background-color: #e0a800;
+    transform: translateY(-1px);
 }
 
 .delete-btn,
@@ -713,23 +947,29 @@ a:hover {
 .delete-btn:hover,
 .confirm-delete:hover {
     background-color: #c82333;
+    transform: translateY(-1px);
 }
 
 .submit-btn:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+    transform: none;
 }
 
 /* Delete Confirmation Modal */
-/* Removed position styles, keeping only layout */
 .delete-confirmation {
-    /* Kept for if an internal component uses this */
     background-color: var(--background-light);
     padding: var(--spacing-lg);
     border-radius: var(--border-radius-md);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     z-index: 1001;
     text-align: center;
+    animation: popIn var(--transition-fast);
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .delete-confirmation p {
@@ -744,16 +984,13 @@ a:hover {
 
 /* Specific button styles for clarity */
 .confirm-delete {
-    /* Inherits from combined button styles */
-    font-size: 14px; /* Ensured size is correct */
+    font-size: 14px;
     padding: 10px 15px;
 }
 .cancel-delete {
-    /* Inherits from combined button styles */
-    font-size: 14px; /* Ensured size is correct */
+    font-size: 14px;
     padding: 10px 15px;
 }
-
 
 .edit-form {
     margin-top: var(--spacing-sm);
@@ -763,31 +1000,29 @@ a:hover {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    animation: slideDown var(--transition-fast);
 }
-/* Consolidated .save-edit, .cancel-edit with button styles */
+
+@keyframes slideDown {
+    from { opacity: 0; max-height: 0; }
+    to { opacity: 1; max-height: 200px; }
+}
+
 .save-edit, .cancel-edit {
     font-size: 12px;
-    padding: 8px 10px; /* Adjusted smaller padding for inline form */
+    padding: 8px 10px;
 }
 .save-edit {
     background-color: var(--success);
 }
 .save-edit:hover {
     background-color: #0b5e0b;
+    transform: translateY(-1px);
 }
 
 /* ========================================================================= */
 /* FOOTER & UTILITY                              */
 /* ========================================================================= */
-
-/* .footer - Uncomment and style if you use a footer component */
-/* .footer {
-    padding: var(--spacing-md);
-    background-color: var(--navy);
-    color: white;
-    text-align: center;
-    font-size: 14px;
-} */
 
 /* Loading and Error States */
 .loading, .error {
@@ -802,6 +1037,13 @@ a:hover {
     background-color: var(--background-light);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     margin-bottom: var(--spacing-md);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
 }
 
 .loading {
@@ -814,26 +1056,74 @@ a:hover {
     background-color: #ffeaea;
 }
 
+/* Refresh button styling */
+.refresh-data-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all var(--transition-medium);
+}
+
+.refresh-data-btn:hover {
+    background-color: #106ebe;
+    transform: translateY(-1px);
+}
+
+.refresh-data-btn-icon {
+    background: none !important;
+    transition: transform var(--transition-medium);
+}
+
+.refresh-data-btn:hover .refresh-data-btn-icon {
+    transform: rotate(180deg);
+}
+
+/* Pagination container */
+.admin-table-box > .pagination-container {
+    flex-shrink: 0;
+    margin-top: auto;
+}
 
 /* ========================================================================= */
-/* MEDIA QUERIES (RESPONSIVENESS)                */
+/* MEDIA QUERIES (RESPONSIVENESS) - UPDATED                */
 /* ========================================================================= */
 
 /* Desktop to Tablet (Max 1200px) */
 @media (max-width: 1200px) {
     .admin-main {
         grid-template-columns: 2fr 1fr;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
     }
+    
+    .admin-section-1 {
+        max-height: calc(100vh - 130px);
+    }
+    
     .admin-stats-box li {
         min-width: 150px;
         height: 90px;
         padding: 12px 15px;
     }
-    .admin-stats-box li p:last-of-type {
-        font-size: 24px;
+    
+    .admin-stats-box li .numberForCout {
+        font-size: 20px;
     }
+    
     .admin-table-box {
-        padding: var(--spacing-sm);
+        padding: var(--spacing-md);
+    }
+    
+    .table-scroll-wrapper {
+        height: 300px;
     }
 }
 
@@ -850,6 +1140,12 @@ a:hover {
         padding: var(--spacing-md);
     }
 
+    .admin-section-1 {
+        max-height: none;
+        height: auto;
+        overflow-y: visible;
+    }
+
     .admin-stats-box ul {
         flex-wrap: wrap;
         justify-content: space-around;
@@ -862,11 +1158,15 @@ a:hover {
     }
 
     .table-scroll-wrapper {
-        height: 400px;
+        height: 350px;
     }
 
     .admin-heading-section {
         padding: 15px 20px;
+    }
+    
+    .admin-table-box {
+        min-height: auto;
     }
 }
 
@@ -875,6 +1175,10 @@ a:hover {
     .admin-main {
         gap: var(--spacing-md);
         padding: var(--spacing-sm);
+    }
+
+    .admin-section-1 {
+        gap: var(--spacing-sm);
     }
 
     .admin-heading-section {
@@ -932,6 +1236,29 @@ a:hover {
         padding: var(--spacing-md);
         max-width: 95%;
     }
+    
+    .table-scroll-wrapper {
+        height: 300px;
+    }
+
+    /* Table Navigation Responsive */
+    .table-navigation-controls {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        align-items: stretch;
+    }
+    
+    .table-selector {
+        justify-content: space-between;
+    }
+    
+    .table-dropdown {
+        min-width: 150px;
+    }
+    
+    .navigation-buttons {
+        justify-content: center;
+    }
 }
 
 /* Small Mobile (Max 480px) */
@@ -939,20 +1266,44 @@ a:hover {
     .admin-main {
         padding: var(--spacing-xs);
     }
+    
     .admin-heading-section .document-type-badge {
         font-size: 13px;
     }
-    .admin-stats-box li p:last-of-type {
-        font-size: 22px;
+    
+    .admin-stats-box li .numberForCout {
+        font-size: 18px;
     }
+    
     .admin-table-box th,
     .admin-table-box td {
         padding: 8px;
     }
+    
     .confirmation-buttons {
         flex-direction: column;
     }
+    
     .confirmation-buttons button {
         width: 100%;
+    }
+    
+    .table-scroll-wrapper {
+        height: 250px;
+    }
+    
+    .admin-table-box {
+        padding: var(--spacing-sm);
+    }
+
+    /* Table Navigation Small Mobile */
+    .table-selector {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-xs);
+    }
+    
+    .table-dropdown {
+        min-width: 100%;
     }
 }
