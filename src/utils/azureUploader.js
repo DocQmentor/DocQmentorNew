@@ -207,21 +207,19 @@ const extractFolderName = (filename) => {
 };
 
 // Upload function
+// ✅ FIXED uploadToAzure
 export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
 
-  // Folder
+  // Folder and filename
   const folderName = extractFolderName(file.name);
-
-  // Unique blob name (keep original for now, but you can prepend timestamp if needed)
- const uniqueFileName = `${uuidv4()}-${file.name}`;
-const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
-
+  const uniqueFileName = `${uuidv4()}-${file.name}`;
+  const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
 
   try {
-    // Upload file
+    // 1️⃣ Upload file to Azure Blob
     await blockBlobClient.uploadData(file, {
       blobHTTPHeaders: { blobContentType: file.type },
       onProgress: (ev) => {
@@ -232,24 +230,28 @@ const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
       },
     });
 
-    const blobUrl = blockBlobClient.url;
+    // 2️⃣ Append SAS token to make the blob URL public for Azure Form Recognizer
+    const blobUrlWithSAS = `${blockBlobClient.url}${BLOB_SERVICE_URL_WITH_SAS.split("?")[1] ? "?" + BLOB_SERVICE_URL_WITH_SAS.split("?")[1] : ""}`;
+
+    // 3️⃣ Generate unique upload ID
     const uploadId = uuidv4();
 
-    // ✅ Post metadata to Azure Function
+    // 4️⃣ Send metadata + full SAS URL to backend function
     await axios.post(AZURE_FUNCTION_URL, {
       uploadId,
-      blobUrl,
+      blobUrl: blobUrlWithSAS, // ✅ SAS-protected URL
       documentName: file.name,
       modelType,
       uploadedBy: { id: userId, name: userName },
     });
 
+    // 5️⃣ Return upload info
     return {
       fileName: file.name,
       folderName,
       uploadedAt: new Date(),
       status: "In Process",
-      url: blobUrl,
+      url: blobUrlWithSAS, // ✅ SAS URL for UI/debug
       uploadId,
       modelType,
     };
@@ -258,4 +260,5 @@ const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
     throw error;
   }
 };
+
 

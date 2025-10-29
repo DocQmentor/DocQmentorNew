@@ -38,7 +38,8 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [modelType, setModelType] = useState("");
 
-  const selectedmodelType = localStorage.getItem("selectedModelType") || "Invoice";
+  const selectedmodelType =
+    localStorage.getItem("selectedModelType") || "Invoice";
   const documentsPerPage = 10;
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const Dashboard = () => {
     if (storedmodelType) {
       setModelType(storedmodelType);
     } else {
-      navigate("/select-document-type");
+      navigate("/select"); // <-- correct path now
     }
   }, []);
 
@@ -75,16 +76,37 @@ const Dashboard = () => {
 
   const hasAllMandatoryFields = (doc) => {
     if (!doc || !doc.extractedData) return false;
-    const requiredFields = [
-      "VendorName",
-      "InvoiceId",
-      "InvoiceDate",
-      "LPO NO",
-      "SubTotal",
-      "VAT",
-      "InvoiceTotal",
-      
-    ];
+
+    // Define required fields per model type
+    const modelFields = {
+      Invoice: [
+        "VendorName",
+        "InvoiceId",
+        "InvoiceDate",
+        "LPO NO",
+        "SubTotal",
+        "VAT",
+        "InvoiceTotal",
+      ],
+      BankStatement: [
+        "AccountHolder",
+        "AccountNumber",
+        "StatementPeriod",
+        "OpeningBalance",
+        "ClosingBalance",
+      ],
+      MortgageForms: [
+        "Lendername",
+        "Borrowername",
+        "Loanamount",
+        "Loantenure",
+        "Interest",
+      ],
+    };
+
+    // Select the correct fields based on current modelType
+    const requiredFields = modelFields[modelType] || modelFields["Invoice"]; // default to Invoice if unknown
+
     return requiredFields.every((field) => {
       const value = doc.extractedData[field];
       return (
@@ -121,7 +143,7 @@ const Dashboard = () => {
     const fetchDocumentsFromBackend = async () => {
       try {
         const response = await fetch(
-          "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
+          `https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?modelType=${modelType}&code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==`
         );
         if (!response.ok) throw new Error("Failed to fetch document data");
 
@@ -142,7 +164,9 @@ const Dashboard = () => {
           const userEmail = email || currentUser.id;
           const userFilteredDocs = withStatus.filter((doc) => {
             const uploader =
-              typeof doc.uploadedBy === "string" ? doc.uploadedBy : doc.uploadedBy?.id;
+              typeof doc.uploadedBy === "string"
+                ? doc.uploadedBy
+                : doc.uploadedBy?.id;
 
             return (
               doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
@@ -177,7 +201,9 @@ const Dashboard = () => {
   const getGlobalDocuments = () => {
     if (!selectedVendor) return globalDocuments;
     return globalDocuments.filter((doc) =>
-      (doc.documentName || "").toLowerCase().includes(selectedVendor.toLowerCase())
+      (doc.documentName || "")
+        .toLowerCase()
+        .includes(selectedVendor.toLowerCase())
     );
   };
 
@@ -185,7 +211,9 @@ const Dashboard = () => {
   const getUserDocuments = () => {
     if (!selectedVendor) return allDocuments;
     return allDocuments.filter((doc) =>
-      (doc.documentName || "").toLowerCase().includes(selectedVendor.toLowerCase())
+      (doc.documentName || "")
+        .toLowerCase()
+        .includes(selectedVendor.toLowerCase())
     );
   };
 
@@ -255,8 +283,8 @@ const Dashboard = () => {
               isLoading: percent < 100,
               autoClose: percent >= 100 ? 2000 : false,
             });
-          },
-          selectedmodelType
+          }
+          // selectedmodelType
         );
 
         toast.success(`${fileObj.fileName} uploaded successfully!`);
@@ -285,8 +313,9 @@ const Dashboard = () => {
   };
 
   // Use user documents for recent documents section
-  const userDocs = getUserDocuments()
-    .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+  const userDocs = getUserDocuments().sort(
+    (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)
+  );
 
   const indexOfLast = currentPage * documentsPerPage;
   const indexOfFirst = indexOfLast - documentsPerPage;
@@ -311,7 +340,9 @@ const Dashboard = () => {
         },
       });
     } else {
-      toast.error("You do not have permission to view this Manual Review page.");
+      toast.error(
+        "You do not have permission to view this Manual Review page."
+      );
     }
   };
 
@@ -500,7 +531,9 @@ const Dashboard = () => {
               {Array.from({ length: totalPages }, (_, i) => (
                 <button
                   key={i}
-                  className={`page-btn ${currentPage === i + 1 ? "active" : ""}`}
+                  className={`page-btn ${
+                    currentPage === i + 1 ? "active" : ""
+                  }`}
                   onClick={() => setCurrentPage(i + 1)}
                 >
                   {i + 1}

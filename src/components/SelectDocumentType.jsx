@@ -7,10 +7,17 @@ import Header from "../Layout/Header";
 const SelectDocumentType = () => {
   const navigate = useNavigate();
 
-  const handleSelectmodelType = (modelType) => {
+ const handleSelectmodelType = (modelType) => {
+  console.log("Selected modelType:", modelType); // ✅ Debug: shows in browser console
   localStorage.setItem("selectedModelType", modelType);
+
+  // Optional: double-check what's in localStorage
+  console.log("localStorage modelType:", localStorage.getItem("selectedModelType"));
+
   navigate("/dashboard"); // Go to dashboard page
 };
+
+
 
   return (
     <div className="container">
@@ -74,6 +81,6 @@ const SelectDocumentType = () => {
       </footer>
     </div>
   );
-};
 
+};
 export default SelectDocumentType;
