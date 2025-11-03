@@ -49,7 +49,7 @@ const Dashboard = () => {
   useEffect(() => {
     const storedmodelType = localStorage.getItem("selectedModelType");
     if (storedmodelType) {
-      setModelType(storedmodelType);
+      setModelType(storedmodelType.toLowerCase());
     } else {
       navigate("/select"); // <-- correct path now
     }
