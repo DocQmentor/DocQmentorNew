@@ -184,15 +184,16 @@
 
 
 // new **********************************************
-
 import { BlobServiceClient } from "@azure/storage-blob";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 
 // Azure info
-const BLOB_SERVICE_URL_WITH_SAS = "https://docqmentor2blob.blob.core.windows.net/?sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-05-31T18:29:59Z&st=2025-05-21T09:45:27Z&spr=https&sig=UO0XVGFTlz3IpM6Q5LIkrTkCDQcr3Rx%2FeXn3FEvsQJM%3D";
+const BLOB_SERVICE_URL_WITH_SAS =
+  "https://docqmentor2blob.blob.core.windows.net/?sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-05-31T18:29:59Z&st=2025-05-21T09:45:27Z&spr=https&sig=UO0XVGFTlz3IpM6Q5LIkrTkCDQcr3Rx%2FeXn3FEvsQJM%3D";
 const CONTAINER_NAME = "docqmentor2";
-const AZURE_FUNCTION_URL = "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==";
+const AZURE_FUNCTION_URL =
+  "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==";
 
 // Helpers
 const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -200,14 +201,15 @@ const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
 const extractFolderName = (filename) => {
   const baseName = filename.substring(0, filename.lastIndexOf(".")) || filename;
   let parts = baseName.split(/[\s\-_]+/);
-  const filteredParts = parts.filter(part => !/^\d+$/.test(part) && !/^copy$/i.test(part) && !/^-/.test(part));
+  const filteredParts = parts.filter(
+    (part) => !/^\d+$/.test(part) && !/^copy$/i.test(part) && !/^-/.test(part)
+  );
   let cleaned = filteredParts.join(" ");
   cleaned = splitCamelCase(cleaned);
   return cleaned.trim().toUpperCase();
 };
 
-// Upload function
-// ✅ FIXED uploadToAzure
+// ✅ Fixed upload function
 export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
@@ -230,8 +232,11 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
       },
     });
 
-    // 2️⃣ Append SAS token to make the blob URL public for Azure Form Recognizer
-    const blobUrlWithSAS = `${blockBlobClient.url}${BLOB_SERVICE_URL_WITH_SAS.split("?")[1] ? "?" + BLOB_SERVICE_URL_WITH_SAS.split("?")[1] : ""}`;
+    // 2️⃣ Append SAS token safely (✅ prevents double ?sv)
+    const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
+    const blobUrlWithSAS = blockBlobClient.url.includes("?")
+      ? blockBlobClient.url
+      : `${blockBlobClient.url}?${sasToken}`;
 
     // 3️⃣ Generate unique upload ID
     const uploadId = uuidv4();
@@ -239,7 +244,7 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
     // 4️⃣ Send metadata + full SAS URL to backend function
     await axios.post(AZURE_FUNCTION_URL, {
       uploadId,
-      blobUrl: blobUrlWithSAS, // ✅ SAS-protected URL
+      blobUrl: blobUrlWithSAS, // ✅ SAS-protected URL (now valid)
       documentName: file.name,
       modelType,
       uploadedBy: { id: userId, name: userName },
@@ -260,5 +265,3 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
     throw error;
   }
 };
-
-

@@ -87,13 +87,7 @@ const modelTypeHeaders = {
 
 const modelTypeKeys = {
   Invoice: [
-    "vendorName",
-    "invoiceId",
-    "invoiceDate",
-    "lpoNo",
-    "subTotal",
-    "vat",
-    "invoicetotal",
+   "VendorName", "InvoiceId", "InvoiceDate", "LPO NO", "SubTotal", "VAT", "InvoiceTotal",
     "uploadDate",
     "confidenceScore",
     "_rawDocument",
@@ -109,11 +103,7 @@ const modelTypeKeys = {
     "_rawDocument",
   ],
   MortgageForms: [
-    "LenderName",
-    "BorrowerName",
-    "LoanAmount",
-    "Interest",
-    "LoanTenure",
+    "Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure",
     "uploadDate",
     "confidenceScore",
     "_rawDocument",
@@ -122,9 +112,9 @@ const modelTypeKeys = {
 
 // Model-specific search fields
 const modelTypeSearchFields = {
-  Invoice: ["vendorName", "invoiceId", "invoiceDate", "lpoNo", "subTotal", "vat", "invoicetotal"],
+  Invoice: ["VendorName", "InvoiceId", "InvoiceDate", "LPO NO", "SubTotal", "VAT", "InvoiceTotal"],
   BankStatement: ["AccountHolder", "AccountNumber", "StatementPeriod", "OpeningBalance", "ClosingBalance"],
-  MortgageForms: ["LenderName", "BorrowerName", "LoanAmount", "Interest", "LoanTenure"],
+  MortgageForms: ["Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure"],
 };
 
 function Table() {

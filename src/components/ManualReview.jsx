@@ -31,20 +31,37 @@ const ManualReview = () => {
   const modelHeaders = {
     Invoice: ["Vendor Name", "Invoice ID", "Invoice Date", "LPO No", "Sub Total", "VAT", "Invoice Total", "Upload Date", "Confidence Score", "Action"],
     BankStatement: ["AccountHolder", "AccountNumber", "StatementPeriod", "OpeningBalance", "ClosingBalance", "Upload Date", "Confidence Score", "Action"],
-    MortgageForms: ["LenderName", "BorrowerName", "LoanAmount", "Interest", "LoanTenure", "Upload Date", "Confidence Score", "Action"],
+    MortgageForms: ["Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure", "Upload Date", "Confidence Score", "Action"],
   };
 
   const modelKeys = {
-    Invoice: ["vendorName", "invoiceId", "invoiceDate", "lpoNo", "subTotal", "vat", "invoicetotal", "uploadDate", "confidenceScore", "_rawDocument"],
-    BankStatement: ["AccountHolder", "AccountNumber", "StatementPeriod", "OpeningBalance", "ClosingBalance", "uploadDate", "confidenceScore", "_rawDocument"],
-    MortgageForms: ["LenderName", "BorrowerName", "LoanAmount", "Interest", "LoanTenure", "uploadDate", "confidenceScore", "_rawDocument"],
-  };
+  Invoice: [
+   "VendorName", "InvoiceId", "InvoiceDate", "LPO NO", "SubTotal", "VAT", "InvoiceTotal",
+    "uploadDate",
+    "confidenceScore",
+    "_rawDocument",
+  ],
+  BankStatement: [
+    "AccountHolder",
+    "AccountNumber",
+    "StatementPeriod",
+    "OpeningBalance",
+    "ClosingBalance",
+    "uploadDate",
+    "confidenceScore",
+    "_rawDocument",
+  ],
+  MortgageForms: [
+    "Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure",
+    "uploadDate",
+    "confidenceScore",
+    "_rawDocument",
+  ],
+};
 
   // Reset all filters function
   const handleResetFilters = () => {
     setVendorFilter("");
-    setAccountHolderFilter("");
-    setLenderNameFilter("");
     setFromDate("");
     setToDate("");
     setUploadDateFilter("all");
@@ -103,7 +120,7 @@ const ManualReview = () => {
           const requiredFieldsByModel = {
             Invoice: ["VendorName", "InvoiceId", "InvoiceDate", "LPO NO", "SubTotal", "VAT", "InvoiceTotal"],
             BankStatement: ["AccountHolder", "AccountNumber", "StatementPeriod", "OpeningBalance", "ClosingBalance"],
-            MortgageForms: ["LenderName", "BorrowerName", "LoanAmount", "Interest", "LoanTenure"],
+            MortgageForms: ["Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure"],
           };
 
           const requiredFields = requiredFieldsByModel[doc.modelType] || [];
@@ -143,13 +160,13 @@ const ManualReview = () => {
         if (doc.modelType === "Invoice") {
           mapped = {
             ...mapped,
-            vendorName: getString(extracted.VendorName || doc.vendorName),
-            invoiceId: getString(extracted.InvoiceId || doc.invoiceId),
-            invoiceDate: getString(extracted.InvoiceDate || doc.invoiceDate),
-            lpoNo: getString(extracted["LPO NO"] || extracted.lpoNo || doc.lpoNo),
-            subTotal: getString(extracted.SubTotal || doc.subTotal),
-            vat: getString(extracted.VAT || doc.vat),
-            invoicetotal: getString(extracted.InvoiceTotal || doc.invoicetotal || doc.invoiceTotal),
+            VendorName: getString(extracted.VendorName || doc.vendorName),
+            InvoiceId: getString(extracted.InvoiceId || doc.invoiceId),
+            InvoiceDate: getString(extracted.InvoiceDate || doc.invoiceDate),
+            LPONO: getString(extracted["LPO NO"] || extracted.lpoNo || doc.lpoNo),
+            SubTotal: getString(extracted.SubTotal || doc.subTotal),
+            VAT: getString(extracted.VAT || doc.vat),
+            InvoiceTotal: getString(extracted.InvoiceTotal || doc.invoicetotal || doc.invoiceTotal),
           };
         } else if (doc.modelType === "BankStatement") {
           mapped = {
@@ -163,26 +180,26 @@ const ManualReview = () => {
         } else if (doc.modelType === "MortgageForms") {
           mapped = {
             ...mapped,
-            LenderName: getString(extracted.LenderName || doc.LenderName),
-            BorrowerName: getString(extracted.BorrowerName || doc.BorrowerName),
-            LoanAmount: getString(extracted.LoanAmount || doc.LoanAmount),
+            Lendername: getString(extracted.Lendername || doc.Lendername),
+            Borrowername: getString(extracted.Borrowername || doc.Borrowername),
+            Loanamount: getString(extracted.Loanamount || doc.Loanamount),
             Interest: getString(extracted.Interest || doc.Interest),
-            LoanTenure: getString(extracted.LoanTenure || doc.LoanTenure),
+            Loantenure: getString(extracted.Loantenure || doc.Loantenure),
           };
         }
         return mapped;
       })
-      .filter((item) => item._rawDocument?.modelType === selectedModelType)
+      .filter((item) => item._rawDocument?.modelType?.toLowerCase()  === selectedModelType)
       .filter((item) => {
         // Dynamic filter based on document type
         let matchesPrimaryFilter = true;
         
         if (selectedModelType === "Invoice") {
-          matchesPrimaryFilter = item.vendorName?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
+          matchesPrimaryFilter = item.VendorName?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
         } else if (selectedModelType === "BankStatement") {
           matchesPrimaryFilter = item.AccountHolder?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
         } else if (selectedModelType === "MortgageForms") {
-          matchesPrimaryFilter = item.LenderName?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
+          matchesPrimaryFilter = item.Lendername?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
         }
 
         const matchesSearch = Object.values(item).some((val) =>
