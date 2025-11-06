@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import "./ManualReview.css";
 import Footer from "../Layout/Footer";
-import FilePagination from "../Layout/Filepagination";
+import FilePagination from "../Layout/FilePagination";
 import EditModal from "./EditModal";
 import { useNavigate } from "react-router-dom";
 import useSortableData from "../utils/useSortableData";
 import { saveAs } from "file-saver";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ManualReview = () => {
   const [show, setShow] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const today = new Date().toISOString().split("T")[0]; // e.g., "2025-07-11"
+  const today = new Date().toISOString().split("T")[0];
   const [manualReviewDocs, setManualReviewDocs] = useState([]);
   const [filteredDocs, setFilteredDocs] = useState([]);
   const [editedData, setEditedData] = useState({});
@@ -24,42 +26,107 @@ const ManualReview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const selectedModelType = localStorage.getItem("selectedModelType") || "Invoice";
-
   const rowsPerPage = 10;
   const navigate = useNavigate();
 
+  // Table Headers & Keys
   const modelHeaders = {
-    Invoice: ["Vendor Name", "Invoice ID", "Invoice Date", "LPO No", "Sub Total", "VAT", "Invoice Total", "Upload Date", "Confidence Score", "Action"],
-    BankStatement: ["AccountHolder", "AccountNumber", "StatementPeriod", "OpeningBalance", "ClosingBalance", "Upload Date", "Confidence Score", "Action"],
-    MortgageForms: ["Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure", "Upload Date", "Confidence Score", "Action"],
+    Invoice: [
+      "Vendor Name",
+      "Invoice ID",
+      "Invoice Date",
+      "LPO No",
+      "Sub Total",
+      "VAT",
+      "Invoice Total",
+      "Upload Date",
+      "Confidence Score",
+      "Action",
+    ],
+    BankStatement: [
+      "Account Holder",
+      "Account Number",
+      "Statement Period",
+      "Opening Balance",
+      "Closing Balance",
+      "Upload Date",
+      "Confidence Score",
+      "Action",
+    ],
+    MortgageForms: [
+      "Lender Name",
+      "Borrower Name",
+      "Loan Amount",
+      "Interest",
+      "Loan Tenure",
+      "Upload Date",
+      "Confidence Score",
+      "Action",
+    ],
   };
 
   const modelKeys = {
-  Invoice: [
-   "VendorName", "InvoiceId", "InvoiceDate", "LPO NO", "SubTotal", "VAT", "InvoiceTotal",
-    "uploadDate",
-    "confidenceScore",
-    "_rawDocument",
-  ],
-  BankStatement: [
-    "AccountHolder",
-    "AccountNumber",
-    "StatementPeriod",
-    "OpeningBalance",
-    "ClosingBalance",
-    "uploadDate",
-    "confidenceScore",
-    "_rawDocument",
-  ],
-  MortgageForms: [
-    "Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure",
-    "uploadDate",
-    "confidenceScore",
-    "_rawDocument",
-  ],
-};
+    Invoice: [
+      "VendorName",
+      "InvoiceId",
+      "InvoiceDate",
+      "LPONO",
+      "SubTotal",
+      "VAT",
+      "InvoiceTotal",
+      "uploadDate",
+      "confidenceScore",
+      "_rawDocument",
+    ],
+    BankStatement: [
+      "AccountHolder",
+      "AccountNumber",
+      "StatementPeriod",
+      "OpeningBalance",
+      "ClosingBalance",
+      "uploadDate",
+      "confidenceScore",
+      "_rawDocument",
+    ],
+    MortgageForms: [
+      "Lendername",
+      "Borrowername",
+      "Loanamount",
+      "Interest",
+      "Loantenure",
+      "uploadDate",
+      "confidenceScore",
+      "_rawDocument",
+    ],
+  };
 
-  // Reset all filters function
+  // Helpers
+  const getString = (val) => {
+    if (!val) return "";
+    if (typeof val === "string" || typeof val === "number") return val;
+    if (typeof val === "object") return val?.valueString || val?.content || "";
+    return "";
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const formatNumber = (value) => {
+    if (!value) return "";
+    const num = parseFloat(String(value).replace(/[^\d.-]/g, ""));
+    if (isNaN(num)) return "";
+    return num.toLocaleString("en-IN");
+  };
+
+  const refreshData = () => setRefreshTrigger((prev) => !prev);
+
   const handleResetFilters = () => {
     setVendorFilter("");
     setFromDate("");
@@ -69,40 +136,23 @@ const ManualReview = () => {
     setCurrentPage(1);
   };
 
-  const getString = (val) => {
-    if (!val) return "";
-    if (typeof val === "string" || typeof val === "number") return val;
-    if (typeof val === "object") {
-      return val?.valueString || val?.content || JSON.stringify(val);
-    }
-    return "";
-  };
-
-  const refreshData = () => setRefreshTrigger((prev) => !prev);
-
-  const formatNumber = (value) => {
-    if (!value) return "";
-    const num = parseFloat(String(value).replace(/[^\d.-]/g, ""));
-    if (isNaN(num)) return "";
-    return num.toLocaleString("en-IN");
-  };
-
   const handleExportCSV = () => {
     const keys = modelKeys[selectedModelType];
     const headers = modelHeaders[selectedModelType];
-
     const csvRows = filteredDocs.map((item) =>
-      keys.map((key) => {
-        const value = item[key] ?? "";
-        return `"${String(value).replace(/"/g, '""')}"`;
-      }).join(",")
+      keys
+        .map((key) => {
+          const value = item[key] ?? "";
+          return `"${String(value).replace(/"/g, '""')}"`;
+        })
+        .join(",")
     );
-
     const csvContent = [headers.join(","), ...csvRows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, `ManualReview_Report_${new Date().toISOString().slice(0, 10)}.csv`);
   };
 
+  // Fetch Cosmos DB docs that need review
   useEffect(() => {
     async function fetchDocsFromCosmos() {
       setLoading(true);
@@ -111,134 +161,128 @@ const ManualReview = () => {
           "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
         const data = await response.json();
-        const docsNeedingReview = data.filter((doc) => {
-          if (doc.wasReviewed) return false;
 
-          const extracted = doc.extractedData || {};
-          const totalScore = doc.totalConfidenceScore ?? 0;
+        const docsNeedingReview = data.filter((doc) => {
+          const model = doc.modelType?.toLowerCase()?.trim();
+          if (!model) return false;
+
+          // skip already reviewed
+          if (doc.wasReviewed === true || doc.wasReviewed === "true") return false;
+
+          // parse confidence safely
+          let totalScore = 0;
+          if (typeof doc.totalConfidenceScore === "string") {
+            totalScore = parseFloat(doc.totalConfidenceScore.replace("%", "").trim()) || 0;
+          } else {
+            totalScore = parseFloat(doc.totalConfidenceScore) || 0;
+          }
 
           const requiredFieldsByModel = {
-            Invoice: ["VendorName", "InvoiceId", "InvoiceDate", "LPO NO", "SubTotal", "VAT", "InvoiceTotal"],
-            BankStatement: ["AccountHolder", "AccountNumber", "StatementPeriod", "OpeningBalance", "ClosingBalance"],
-            MortgageForms: ["Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure"],
+            invoice: ["VendorName", "InvoiceId", "InvoiceDate", "LPO NO", "SubTotal", "VAT", "InvoiceTotal"],
+            bankstatement: ["AccountHolder", "AccountNumber", "StatementPeriod", "OpeningBalance", "ClosingBalance"],
+            mortgageforms: ["Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure"],
           };
 
-          const requiredFields = requiredFieldsByModel[doc.modelType] || [];
-          const hasMissing = requiredFields.some((field) => !extracted[field] || !getString(extracted[field]));
+          const extracted = doc.extractedData || {};
+          const requiredFields = requiredFieldsByModel[model] || [];
+          const hasMissing = requiredFields.some(
+            (field) => !extracted[field] || extracted[field].toString().trim() === ""
+          );
 
-          const lowTotalConfidence = (typeof totalScore === "number" ? totalScore : parseFloat(totalScore)) < 85;
-
-          return hasMissing || lowTotalConfidence;
+          // fail condition
+          const needsReview = totalScore < 85 || hasMissing;
+          return needsReview;
         });
 
+        console.log("📊 Docs needing review:", docsNeedingReview);
         setManualReviewDocs(docsNeedingReview);
-        setError(null);
       } catch (err) {
         setError(err.message || "Failed to fetch documents");
-        console.error("❌ Failed to fetch from Cosmos DB:", err);
+        console.error("❌ Fetch error:", err);
       } finally {
         setLoading(false);
       }
     }
-
     fetchDocsFromCosmos();
   }, [refreshTrigger]);
 
+  // Build & filter docs
   useEffect(() => {
-    const filtered = manualReviewDocs
-      .map((doc) => {
-        const extracted = doc.extractedData || {};
-        const getScore = () => {
-          const score = doc.totalConfidenceScore ?? 0;
-          const numScore = typeof score === "string" ? parseFloat(score.replace("%", "")) || 0 : score;
-          return `${numScore.toFixed(2)}%`;
+    const mapped = manualReviewDocs.map((doc) => {
+      const extracted = doc.extractedData || {};
+      const model = doc.modelType?.toLowerCase() || "";
+      const common = {
+        uploadDate: doc.timestamp ? formatDate(doc.timestamp) : "",
+        rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
+        confidenceScore: `${(parseFloat(doc.totalConfidenceScore?.replace("%", "")) || 0).toFixed(2)}%`,
+        _rawDocument: doc,
+      };
+
+      if (model === "invoice") {
+        return {
+          ...common,
+          VendorName: getString(extracted.VendorName),
+          InvoiceId: getString(extracted.InvoiceId),
+          InvoiceDate: formatDate(extracted.InvoiceDate),
+          LPONO: getString(extracted["LPO NO"]),
+          SubTotal: formatNumber(getString(extracted.SubTotal)),
+          VAT: formatNumber(getString(extracted.VAT)),
+          InvoiceTotal: formatNumber(getString(extracted.InvoiceTotal)),
         };
+      } else if (model === "bankstatement") {
+        return {
+          ...common,
+          AccountHolder: getString(extracted.AccountHolder),
+          AccountNumber: getString(extracted.AccountNumber),
+          StatementPeriod: getString(extracted.StatementPeriod),
+          OpeningBalance: formatNumber(getString(extracted.OpeningBalance)),
+          ClosingBalance: formatNumber(getString(extracted.ClosingBalance)),
+        };
+      } else if (model === "mortgageforms") {
+        return {
+          ...common,
+          Lendername: getString(extracted.Lendername),
+          Borrowername: getString(extracted.Borrowername),
+          Loanamount: formatNumber(getString(extracted.Loanamount)),
+          Interest: getString(extracted.Interest),
+          Loantenure: getString(extracted.Loantenure),
+        };
+      }
+      return common;
+    });
 
-        // Map fields dynamically based on modelType
-        let mapped = { confidenceScore: getScore(), _rawDocument: doc, uploadDate: doc.timestamp ? new Date(doc.timestamp).toLocaleDateString("en-CA") : "", rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null };
-        
-        if (doc.modelType === "Invoice") {
-          mapped = {
-            ...mapped,
-            VendorName: getString(extracted.VendorName || doc.vendorName),
-            InvoiceId: getString(extracted.InvoiceId || doc.invoiceId),
-            InvoiceDate: getString(extracted.InvoiceDate || doc.invoiceDate),
-            LPONO: getString(extracted["LPO NO"] || extracted.lpoNo || doc.lpoNo),
-            SubTotal: getString(extracted.SubTotal || doc.subTotal),
-            VAT: getString(extracted.VAT || doc.vat),
-            InvoiceTotal: getString(extracted.InvoiceTotal || doc.invoicetotal || doc.invoiceTotal),
-          };
-        } else if (doc.modelType === "BankStatement") {
-          mapped = {
-            ...mapped,
-            AccountHolder: getString(extracted.AccountHolder || doc.AccountHolder),
-            AccountNumber: getString(extracted.AccountNumber || doc.AccountNumber),
-            StatementPeriod: getString(extracted.StatementPeriod || doc.StatementPeriod),
-            OpeningBalance: getString(extracted.OpeningBalance || doc.OpeningBalance),
-            ClosingBalance: getString(extracted.ClosingBalance || doc.ClosingBalance),
-          };
-        } else if (doc.modelType === "MortgageForms") {
-          mapped = {
-            ...mapped,
-            Lendername: getString(extracted.Lendername || doc.Lendername),
-            Borrowername: getString(extracted.Borrowername || doc.Borrowername),
-            Loanamount: getString(extracted.Loanamount || doc.Loanamount),
-            Interest: getString(extracted.Interest || doc.Interest),
-            Loantenure: getString(extracted.Loantenure || doc.Loantenure),
-          };
-        }
-        return mapped;
-      })
-      .filter((item) => item._rawDocument?.modelType?.toLowerCase()  === selectedModelType)
-      .filter((item) => {
-        // Dynamic filter based on document type
-        let matchesPrimaryFilter = true;
-        
-        if (selectedModelType === "Invoice") {
-          matchesPrimaryFilter = item.VendorName?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
-        } else if (selectedModelType === "BankStatement") {
-          matchesPrimaryFilter = item.AccountHolder?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
-        } else if (selectedModelType === "MortgageForms") {
-          matchesPrimaryFilter = item.Lendername?.toLowerCase().includes(vendorFilter.toLowerCase()) ?? true;
-        }
+    const filtered = mapped.filter((item) => {
+      const matchSearch = Object.values(item)
+        .join(" ")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
 
-        const matchesSearch = Object.values(item).some((val) =>
-          String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        );
+      const matchVendor =
+        item.VendorName?.toLowerCase().includes(vendorFilter.toLowerCase()) ||
+        item.AccountHolder?.toLowerCase().includes(vendorFilter.toLowerCase()) ||
+        item.Lendername?.toLowerCase().includes(vendorFilter.toLowerCase());
 
-        const itemDate = item.uploadDate ? new Date(item.uploadDate) : null;
-        const from = fromDate ? new Date(fromDate) : null;
-        const to = toDate ? new Date(toDate) : null;
-        const matchesDate = (!from || (itemDate && itemDate >= from)) && (!to || (itemDate && itemDate <= to));
+      const itemDate = item.rawUploadDate;
+      const from = fromDate ? new Date(fromDate) : null;
+      const to = toDate ? new Date(toDate) : null;
+      const matchesDate =
+        (!from || (itemDate && itemDate >= from)) &&
+        (!to || (itemDate && itemDate <= to));
 
-        const now = new Date();
-        const uploadDate = item.rawUploadDate;
-        let matchesUploadFilter = true;
-        if (uploadDateFilter === "7days") {
-          const sevenDaysAgo = new Date(now);
-          sevenDaysAgo.setDate(now.getDate() - 7);
-          matchesUploadFilter = uploadDate >= sevenDaysAgo && uploadDate <= now;
-        } else if (uploadDateFilter === "30days") {
-          const thirtyDaysAgo = new Date(now);
-          thirtyDaysAgo.setDate(now.getDate() - 30);
-          matchesUploadFilter = uploadDate >= thirtyDaysAgo && uploadDate <= now;
-        }
-
-        return matchesPrimaryFilter && matchesSearch && matchesDate && matchesUploadFilter;
-      });
+      return matchSearch && matchVendor && matchesDate;
+    });
 
     setFilteredDocs(filtered);
-    setCurrentPage(1);
-  }, [manualReviewDocs, vendorFilter, fromDate, toDate, uploadDateFilter, searchQuery, selectedModelType]);
+  }, [manualReviewDocs, searchQuery, vendorFilter, fromDate, toDate]);
 
-  const { sortedData, toggleSort, renderSortIcon } = useSortableData(filteredDocs);
+  const { sortedData } = useSortableData(filteredDocs);
 
   const handleToggle = (doc) => {
     navigate("/editmodal", {
-      state: { 
-        selectedDocument: doc, 
-        editedData: doc,
-        documentType: doc.modelType || selectedModelType // Pass document type
+      state: {
+        selectedDocument: doc,
+        editedData: doc.extractedData,
+        documentType: doc.modelType,
       },
     });
   };
@@ -252,79 +296,35 @@ const ManualReview = () => {
         <div className="ManualReview-main-container">
           <div className="ManualReview-Table-header">
             <h1>Manual Review</h1>
-            <div className="filters">
-              {/* Dynamic Filter based on Document Type */}
-              {selectedModelType === "Invoice" && (
-                <label>
-                  <strong>Vendor:</strong>
-                  <input 
-                    type="text" 
-                    value={vendorFilter} 
-                    onChange={(e) => setVendorFilter(e.target.value)} 
-                    placeholder="Enter vendor name" 
-                  />
-                </label>
-              )}
-              
-              {selectedModelType === "BankStatement" && (
-                <label>
-                  <strong>Account Holder:</strong>
-                  <input 
-                    type="text" 
-                    value={vendorFilter} 
-                    onChange={(e) => setVendorFilter(e.target.value)} 
-                    placeholder="Enter account holder name" 
-                  />
-                </label>
-              )}
-              
-              {selectedModelType === "MortgageForms" && (
-                <label>
-                  <strong>Lender Name:</strong>
-                  <input 
-                    type="text" 
-                    value={vendorFilter} 
-                    onChange={(e) => setVendorFilter(e.target.value)} 
-                    placeholder="Enter lender name" 
-                  />
-                </label>
-              )}
 
+            <p style={{ color: "green" }}>
+              Showing {filteredDocs.length} / {manualReviewDocs.length} documents
+            </p>
+
+            <div className="filters">
               <label>
-                <strong>From Date:</strong>
+                <strong>Vendor / Holder / Lender:</strong>
+                <input
+                  type="text"
+                  value={vendorFilter}
+                  onChange={(e) => setVendorFilter(e.target.value)}
+                  placeholder="Enter name"
+                />
+              </label>
+              <label>
+                <strong>From:</strong>
                 <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
               </label>
-
               <label>
-                <strong>To Date:</strong>
+                <strong>To:</strong>
                 <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
               </label>
-              
               <label>
-                <strong>Upload Date:</strong>
-                <select value={uploadDateFilter} onChange={(e) => setUploadDateFilter(e.target.value)}>
-                  <option value="all">All</option>
-                  <option value="7days">Last 7 Days</option>
-                  <option value="30days">Last 30 Days</option>
-                </select>
-              </label>
-              
-              <label>
-                <strong>Search All:</strong>
+                <strong>Search:</strong>
                 <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
               </label>
-              
-              <label>
-                <button className="reset-button" onClick={handleResetFilters}>
-                  Reset
-                </button>
-              </label>
-              
-              <label>
-                <button className="export-button" onClick={handleExportCSV}>
-                  Export CSV
-                </button>
-              </label>
+              <button className="reset-button" onClick={handleResetFilters}>Reset</button>
+              <button className="export-button" onClick={handleExportCSV}>Export CSV</button>
             </div>
           </div>
 
@@ -339,7 +339,6 @@ const ManualReview = () => {
                 ))}
               </tr>
             </thead>
-
             <tbody>
               {paginatedData.length > 0 ? (
                 paginatedData.map((item, index) => (
@@ -350,7 +349,7 @@ const ManualReview = () => {
                           <button onClick={() => handleToggle(item._rawDocument)}>Edit</button>
                         </td>
                       ) : (
-                        <td key={idx}>{key.includes("subTotal") || key.includes("vat") || key.includes("total") ? formatNumber(item[key]) : item[key]}</td>
+                        <td key={idx}>{item[key]}</td>
                       )
                     )}
                   </tr>
@@ -372,18 +371,20 @@ const ManualReview = () => {
               onPageChange={setCurrentPage}
               rowsPerPage={rowsPerPage}
               totalItems={filteredDocs.length}
-              previousLabel="Previous"
-              nextLabel="Next"
-              className="manual-review-pagination"
             />
           )}
         </div>
       ) : (
-        <EditModal selectedDocument={selectedDocument} editedData={editedData} setEditedData={setEditedData} setShow={setShow} refreshData={refreshData} />
+        <EditModal
+          selectedDocument={selectedDocument}
+          editedData={editedData}
+          setEditedData={setEditedData}
+          setShow={setShow}
+          refreshData={refreshData}
+        />
       )}
-      <footer>
-        <Footer />
-      </footer>
+      <ToastContainer />
+      <Footer />
     </div>
   );
 };

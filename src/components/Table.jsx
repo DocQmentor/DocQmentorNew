@@ -7,7 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useSortableData from "../utils/useSortableData";
 import { Info } from "lucide-react";
-import FilePagination from "../Layout/Filepagination";
+import FilePagination from "../Layout/FilePagination";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -87,7 +87,13 @@ const modelTypeHeaders = {
 
 const modelTypeKeys = {
   Invoice: [
-   "VendorName", "InvoiceId", "InvoiceDate", "LPO NO", "SubTotal", "VAT", "InvoiceTotal",
+    "VendorName",
+    "InvoiceId",
+    "InvoiceDate",
+    "LPO NO",
+    "SubTotal",
+    "VAT",
+    "InvoiceTotal",
     "uploadDate",
     "confidenceScore",
     "_rawDocument",
@@ -103,18 +109,41 @@ const modelTypeKeys = {
     "_rawDocument",
   ],
   MortgageForms: [
-    "Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure",
+    "Lendername",
+    "Borrowername",
+    "Loanamount",
+    "Interest",
+    "Loantenure",
     "uploadDate",
     "confidenceScore",
     "_rawDocument",
   ],
 };
 
-// Model-specific search fields
 const modelTypeSearchFields = {
-  Invoice: ["VendorName", "InvoiceId", "InvoiceDate", "LPO NO", "SubTotal", "VAT", "InvoiceTotal"],
-  BankStatement: ["AccountHolder", "AccountNumber", "StatementPeriod", "OpeningBalance", "ClosingBalance"],
-  MortgageForms: ["Lendername", "Borrowername", "Loanamount", "Interest", "Loantenure"],
+  Invoice: [
+    "VendorName",
+    "InvoiceId",
+    "InvoiceDate",
+    "LPO NO",
+    "SubTotal",
+    "VAT",
+    "InvoiceTotal",
+  ],
+  BankStatement: [
+    "AccountHolder",
+    "AccountNumber",
+    "StatementPeriod",
+    "OpeningBalance",
+    "ClosingBalance",
+  ],
+  MortgageForms: [
+    "Lendername",
+    "Borrowername",
+    "Loanamount",
+    "Interest",
+    "Loantenure",
+  ],
 };
 
 function Table() {
@@ -122,18 +151,18 @@ function Table() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedModelType, setSelectedModelType] = useState(localStorage.getItem("selectedModelType") || "Invoice");
-  
-  // Filters state
+  const [selectedModelType, setSelectedModelType] = useState(
+    localStorage.getItem("selectedModelType") || "Invoice"
+  );
+
   const [searchQuery, setSearchQuery] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [uploadDateFilter, setUploadDateFilter] = useState("all");
-  const [vendorFilter, setVendorFilter] = useState(""); // For Invoice model only
-  const [accountHolderFilter, setAccountHolderFilter] = useState(""); // For BankStatement model only
-  const [lenderNameFilter, setLenderNameFilter] = useState(""); // For MortgageForms model only
+  const [vendorFilter, setVendorFilter] = useState("");
+  const [accountHolderFilter, setAccountHolderFilter] = useState("");
+  const [lenderNameFilter, setLenderNameFilter] = useState("");
 
-  // Version History Modal
   const [versionModal, setVersionModal] = useState({
     visible: false,
     history: [],
@@ -146,11 +175,9 @@ function Table() {
   const handleModelTypeChange = (type) => {
     setSelectedModelType(type);
     localStorage.setItem("selectedModelType", type);
-    // Reset filters when model type changes
     handleResetFilters();
   };
 
-  // Reset all filters
   const handleResetFilters = () => {
     setSearchQuery("");
     setFromDate("");
@@ -162,8 +189,7 @@ function Table() {
     setCurrentPage(1);
   };
 
-  const { sortedData, toggleSort, renderSortIcon, sortColumn, sortOrder } =
-    useSortableData(data);
+  const { sortedData, toggleSort, renderSortIcon } = useSortableData(data);
 
   useEffect(() => {
     async function fetchData() {
@@ -172,10 +198,51 @@ function Table() {
         const response = await fetch(
           "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
+
         const fetched = await response.json();
 
         const processed = fetched
-          .filter((doc) => doc.modelType === selectedModelType)
+          .filter((doc) => {
+            const model = doc.modelType?.toLowerCase();
+            if (model !== selectedModelType.toLowerCase()) return false;
+
+            const extracted = doc.extractedData || {};
+            const totalScore = parseFloat(doc.totalConfidenceScore) || 0;
+
+            const requiredFieldsByModel = {
+              invoice: [
+                "VendorName",
+                "InvoiceId",
+                "InvoiceDate",
+                "LPO NO",
+                "SubTotal",
+                "VAT",
+                "InvoiceTotal",
+              ],
+              bankstatement: [
+                "AccountHolder",
+                "AccountNumber",
+                "StatementPeriod",
+                "OpeningBalance",
+                "ClosingBalance",
+              ],
+              mortgageforms: [
+                "Lendername",
+                "Borrowername",
+                "Loanamount",
+                "Interest",
+                "Loantenure",
+              ],
+            };
+
+            const requiredFields = requiredFieldsByModel[model] || [];
+            const allFieldsFilled = requiredFields.every(
+              (f) => extracted[f] && extracted[f].toString().trim() !== ""
+            );
+
+            // ✅ Show only if: confidence ≥ 85 and fields complete OR already reviewed
+            return (totalScore >= 85 && allFieldsFilled) || doc.wasReviewed;
+          })
           .map((doc) => {
             const extracted = doc.extractedData || {};
             const commonFields = {
@@ -189,18 +256,19 @@ function Table() {
               _rawDocument: doc,
             };
 
-            if (selectedModelType === "Invoice") {
+            const model = selectedModelType.toLowerCase();
+            if (model === "invoice") {
               return {
-                vendorName: getString(extracted.VendorName),
-                invoiceId: getString(extracted.InvoiceId),
-                invoiceDate: getString(extracted.InvoiceDate),
-                lpoNo: getString(extracted["LPO NO"]),
-                subTotal: getString(extracted.SubTotal),
-                vat: getString(extracted.VAT),
-                invoicetotal: getString(extracted.InvoiceTotal),
+                VendorName: getString(extracted.VendorName),
+                InvoiceId: getString(extracted.InvoiceId),
+                InvoiceDate: getString(extracted.InvoiceDate),
+                "LPO NO": getString(extracted["LPO NO"]),
+                SubTotal: getString(extracted.SubTotal),
+                VAT: getString(extracted.VAT),
+                InvoiceTotal: getString(extracted.InvoiceTotal),
                 ...commonFields,
               };
-            } else if (selectedModelType === "BankStatement") {
+            } else if (model === "bankstatement") {
               return {
                 AccountHolder: getString(extracted.AccountHolder),
                 AccountNumber: getString(extracted.AccountNumber),
@@ -209,13 +277,13 @@ function Table() {
                 ClosingBalance: getString(extracted.ClosingBalance),
                 ...commonFields,
               };
-            } else if (selectedModelType === "MortgageForms") {
+            } else if (model === "mortgageforms") {
               return {
-                LenderName: getString(extracted.LenderName),
-                BorrowerName: getString(extracted.BorrowerName),
-                LoanAmount: getString(extracted.LoanAmount),
+                Lendername: getString(extracted.Lendername),
+                Borrowername: getString(extracted.Borrowername),
+                Loanamount: getString(extracted.Loanamount),
                 Interest: getString(extracted.Interest),
-                LoanTenure: getString(extracted.LoanTenure),
+                Loantenure: getString(extracted.Loantenure),
                 ...commonFields,
               };
             }
@@ -234,60 +302,40 @@ function Table() {
     fetchData();
   }, [selectedModelType]);
 
-  // Apply filters to data
   const filteredData = sortedData.filter((item) => {
-    // Search query filter
-    const matchesSearch = searchQuery ? 
-      modelTypeSearchFields[selectedModelType].some(field => 
-        (item[field] || "").toString().toLowerCase().includes(searchQuery.toLowerCase())
-      ) : true;
+    const matchesSearch = searchQuery
+      ? modelTypeSearchFields[selectedModelType].some((field) =>
+          (item[field] || "")
+            .toString()
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        )
+      : true;
 
-    // Date range filter (applies to date fields based on model type)
-    let matchesDateRange = true;
-    if (fromDate || toDate) {
-      const dateField = selectedModelType === "Invoice" ? "invoiceDate" : 
-                       selectedModelType === "BankStatement" ? "StatementPeriod" : "uploadDate";
-      
-      const itemDate = item[dateField] ? new Date(item[dateField]) : null;
-      const from = fromDate ? new Date(fromDate) : null;
-      const to = toDate ? new Date(toDate) : null;
+    const matchesVendor =
+      selectedModelType !== "Invoice" ||
+      !vendorFilter ||
+      (item.VendorName || "")
+        .toLowerCase()
+        .includes(vendorFilter.toLowerCase());
 
-      if (itemDate) {
-        matchesDateRange = (!from || itemDate >= from) && (!to || itemDate <= to);
-      }
-    }
+    const matchesAccountHolder =
+      selectedModelType !== "BankStatement" ||
+      !accountHolderFilter ||
+      (item.AccountHolder || "")
+        .toLowerCase()
+        .includes(accountHolderFilter.toLowerCase());
 
-    // Vendor filter (Invoice only)
-    const matchesVendor = selectedModelType !== "Invoice" || !vendorFilter || 
-      (item.vendorName || "").toLowerCase().includes(vendorFilter.toLowerCase());
+    const matchesLenderName =
+      selectedModelType !== "MortgageForms" ||
+      !lenderNameFilter ||
+      (item.Lendername || "")
+        .toLowerCase()
+        .includes(lenderNameFilter.toLowerCase());
 
-    // Account Holder filter (BankStatement only)
-    const matchesAccountHolder = selectedModelType !== "BankStatement" || !accountHolderFilter || 
-      (item.AccountHolder || "").toLowerCase().includes(accountHolderFilter.toLowerCase());
-
-    // Lender Name filter (MortgageForms only)
-    const matchesLenderName = selectedModelType !== "MortgageForms" || !lenderNameFilter || 
-      (item.LenderName || "").toLowerCase().includes(lenderNameFilter.toLowerCase());
-
-    // Upload date filter
-    const now = new Date();
-    const uploadDate = item.rawUploadDate;
-    let matchesUploadFilter = true;
-    if (uploadDateFilter === "7days") {
-      const sevenDaysAgo = new Date(now);
-      sevenDaysAgo.setDate(now.getDate() - 7);
-      matchesUploadFilter = uploadDate >= sevenDaysAgo && uploadDate <= now;
-    } else if (uploadDateFilter === "30days") {
-      const thirtyDaysAgo = new Date(now);
-      thirtyDaysAgo.setDate(now.getDate() - 30);
-      matchesUploadFilter = uploadDate >= thirtyDaysAgo && uploadDate <= now;
-    }
-
-    return matchesSearch && matchesDateRange && matchesVendor && 
-           matchesAccountHolder && matchesLenderName && matchesUploadFilter;
+    return matchesSearch && matchesVendor && matchesAccountHolder && matchesLenderName;
   });
 
-  // Version History handler
   const handleInfoClick = (file) => {
     if (file.versionHistory && Array.isArray(file.versionHistory)) {
       setVersionModal({
@@ -305,14 +353,25 @@ function Table() {
     const keys = modelTypeKeys[selectedModelType];
 
     const rows = filteredData.map((item) =>
-      keys.map((key) =>
-        key === "_rawDocument" ? "" : `"${item[key]?.toString().replace(/"/g, '""') || ""}"`
-      ).join(",")
+      keys
+        .map((key) =>
+          key === "_rawDocument"
+            ? ""
+            : `"${item[key]?.toString().replace(/"/g, '""') || ""}"`
+        )
+        .join(",")
     );
 
     const csvContent = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, `${selectedModelType}_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    saveAs(
+      blob,
+      `${selectedModelType}_Report_${new Date()
+        .toISOString()
+        .slice(0, 10)}.csv`
+    );
   };
 
   const handleViewDocument = (doc) => {
@@ -321,31 +380,33 @@ function Table() {
     else toast.error("File URL not available");
   };
 
-  // Format date for display
   function formatDate(dateString) {
     if (!dateString) return "";
-    
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
-    
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${day}-${month}-${year}`;
+    return `${String(date.getDate()).padStart(2, "0")}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${date.getFullYear()}`;
   }
 
-  // Pagination
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const currentRows = filteredData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
 
-  // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, fromDate, toDate, uploadDateFilter, vendorFilter, accountHolderFilter, lenderNameFilter, selectedModelType]);
+  }, [
+    searchQuery,
+    fromDate,
+    toDate,
+    uploadDateFilter,
+    vendorFilter,
+    accountHolderFilter,
+    lenderNameFilter,
+    selectedModelType,
+  ]);
 
   return (
     <div className="table-component-container">
