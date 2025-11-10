@@ -30,8 +30,8 @@ const Dashboard = () => {
   };
 
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [allDocuments, setAllDocuments] = useState([]); // All documents from backend
-  const [globalDocuments, setGlobalDocuments] = useState([]); // For summary section (all users)
+  const [allDocuments, setAllDocuments] = useState([]);
+  const [globalDocuments, setGlobalDocuments] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [vendors, setVendors] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState("");
@@ -45,201 +45,169 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { email, name } = useUser();
 
-  // Load modelType from localStorage
+  // 🧩 Load modelType from localStorage
   useEffect(() => {
     const storedmodelType = localStorage.getItem("selectedModelType");
     if (storedmodelType) {
       setModelType(storedmodelType.toLowerCase());
     } else {
-      navigate("/select"); // <-- correct path now
+      navigate("/select");
     }
   }, []);
 
-  // Fetch vendors list from blob
+  // 🧩 Fetch vendors
   useEffect(() => {
     const fetchVendors = async () => {
-      if (!modelType) {
-        setVendors([]);
-        return;
-      }
+      if (!modelType) return setVendors([]);
       try {
         const list = await getVendorFolders(modelType);
         setVendors(list || []);
       } catch (error) {
-        console.error("Error fetching vendors for modelType", modelType, error);
+        console.error("Error fetching vendors:", error);
         setVendors([]);
       }
     };
-
     fetchVendors();
   }, [modelType]);
 
-  const hasAllMandatoryFields = (doc) => {
-    if (!doc || !doc.extractedData) return false;
+const hasAllMandatoryFields = (doc) => {
+  if (!doc || !doc.extractedData) return false;
 
-    // Define required fields per model type
-    const modelFields = {
-      Invoice: [
-        "VendorName",
-        "InvoiceId",
-        "InvoiceDate",
-        "LPO NO",
-        "SubTotal",
-        "VAT",
-        "InvoiceTotal",
-      ],
-      BankStatement: [
-        "AccountHolder",
-        "AccountNumber",
-        "StatementPeriod",
-        "OpeningBalance",
-        "ClosingBalance",
-      ],
-      MortgageForms: [
-        "Lendername",
-        "Borrowername",
-        "Loanamount",
-        "Loantenure",
-        "Interest",
-      ],
-    };
+  const type = (doc.modelType || modelType || "invoice").toLowerCase();
 
-    // Select the correct fields based on current modelType
-    const requiredFields = modelFields[modelType] || modelFields["Invoice"]; // default to Invoice if unknown
+  const modelFields = {
+    invoice: [
+      "VendorName",
+      "InvoiceId",
+      "InvoiceDate",
+      "LPO NO",
+      "SubTotal",
+      "VAT",
+      "InvoiceTotal",
+    ],
+    bankstatement: [
+      "AccountHolder",
+      "AccountNumber",
+      "StatementPeriod",
+      "OpeningBalance",
+      "ClosingBalance",
+    ],
+    mortgageforms: [
+      "Lendername",
+      "Borrowername",
+      "Loanamount",
+      "Loantenure",
+      "Interest",
+    ],
+  };
 
-    return requiredFields.every((field) => {
-      const value = doc.extractedData[field];
-      return (
-        value !== undefined && value !== null && String(value).trim() !== ""
-      );
+  const required = modelFields[type] || modelFields.invoice;
+
+  return required.every((key) => {
+    const value = doc.extractedData[key];
+    return value !== undefined && value !== null && String(value).trim() !== "";
+  });
+};
+
+
+
+const determineStatus = (doc) => {
+  if (!doc) return "Manual Review";
+
+  // ✅ If reviewed manually
+  if (
+    doc.status?.toLowerCase() === "reviewed" ||
+    doc.reviewStatus?.toLowerCase() === "reviewed" ||
+    doc.wasReviewed === true ||
+    doc.reviewedBy
+  ) {
+    return "Reviewed";
+  }
+
+  // ✅ Extract total confidence score (handles both 83.24% or 0.83 formats)
+  let score = 0;
+  if (doc.totalConfidenceScore) {
+    const raw = String(doc.totalConfidenceScore).replace(/[^\d.]/g, "");
+    score = parseFloat(raw);
+    if (score <= 1) score *= 100; // handles normalized scores like 0.83
+  }
+
+  // ✅ If mandatory fields missing or score < 85 → Manual Review
+  const hasMissingFields = !hasAllMandatoryFields(doc);
+  if (score < 85 || hasMissingFields) return "Manual Review";
+
+  // ✅ Otherwise → Completed
+  return "Completed";
+};
+
+
+
+  const fetchDocumentsFromBackend = async () => {
+  try {
+    // ✅ Fetch data from Cosmos via Function API
+    const response = await fetch(
+      `https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==`
+    );
+    if (!response.ok) throw new Error("Failed to fetch document data");
+
+    const documents = await response.json();
+
+    // ✅ Normalize modelType (case-insensitive match)
+    const normalizedModelType = (modelType || "").toLowerCase();
+
+    // ✅ Only keep documents matching current dashboard’s modelType
+    const filteredDocs = documents.filter(
+      (doc) => doc.modelType?.toLowerCase() === normalizedModelType
+    );
+
+    // ✅ Apply status logic
+    const withStatus = filteredDocs.map((doc) => ({
+      ...doc,
+      status: determineStatus(doc),
+    }));
+
+    // ✅ Separate into all/global & user-specific sets
+    const userEmail = (email || currentUser.id || "").toLowerCase();
+
+    const userFilteredDocs = withStatus.filter((doc) => {
+      const uploader =
+        typeof doc.uploadedBy === "string"
+          ? doc.uploadedBy
+          : doc.uploadedBy?.id;
+      return uploader?.toLowerCase() === userEmail;
     });
-  };
 
-  const determineStatus = (doc) => {
-    if (
-      doc.status === "Reviewed" ||
-      doc.reviewStatus === "Reviewed" ||
-      doc.reviewedBy
-    ) {
-      return "Reviewed";
-    }
-    if (!doc || !doc.extractedData || !doc.confidenceScores) {
-      return "Manual Review";
-    }
-    const scoreStr = String(doc.totalConfidenceScore || "").toLowerCase();
-    if (scoreStr.includes("reviewed")) return "Reviewed";
-    if (!hasAllMandatoryFields(doc)) return "Manual Review";
-    const scores = Object.values(doc.confidenceScores || {});
-    if (scores.length === 0) return "Manual Review";
-    const avg =
-      scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
-    return avg >= 0.85 ? "Completed" : "Manual Review";
-  };
+    // ✅ Set state
+    setGlobalDocuments(withStatus);
+    setAllDocuments(userFilteredDocs);
 
-  // Fetch all documents from backend (both for summary and user-specific)
+    console.log(`📦 Loaded ${withStatus.length} ${modelType} documents from DB`);
+  } catch (error) {
+    console.error("❌ Error loading backend documents:", error);
+  }
+};
+
+
   useEffect(() => {
     let isMounted = true;
-
-    const fetchDocumentsFromBackend = async () => {
-      try {
-        const response = await fetch(
-          `https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?modelType=${modelType}&code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==`
-        );
-        if (!response.ok) throw new Error("Failed to fetch document data");
-
-        const documents = await response.json();
-        const withStatus = documents.map((doc) => ({
-          ...doc,
-          status: determineStatus(doc),
-        }));
-
-        if (isMounted) {
-          // Set global documents for summary section (all users, filtered by modelType)
-          const globalFilteredDocs = withStatus.filter(
-            (doc) => doc.modelType?.toLowerCase() === modelType.toLowerCase()
-          );
-          setGlobalDocuments(globalFilteredDocs);
-
-          // Set user-specific documents for recent documents section
-          const userEmail = email || currentUser.id;
-          const userFilteredDocs = withStatus.filter((doc) => {
-            const uploader =
-              typeof doc.uploadedBy === "string"
-                ? doc.uploadedBy
-                : doc.uploadedBy?.id;
-
-            return (
-              doc.modelType?.toLowerCase() === modelType.toLowerCase() &&
-              uploader?.toLowerCase() === userEmail.toLowerCase()
-            );
-          });
-          setAllDocuments(userFilteredDocs);
-        }
-      } catch (error) {
-        console.error("Error loading backend documents:", error);
-      }
-    };
-
-    if (modelType) {
-      fetchDocumentsFromBackend();
-    }
-
-    // Interval for real-time updates
+    if (modelType) fetchDocumentsFromBackend();
     const intervalId = setInterval(() => {
-      if (modelType) {
-        fetchDocumentsFromBackend();
-      }
+      if (modelType) fetchDocumentsFromBackend();
     }, 10000);
 
     return () => {
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, [modelType, email, currentUser.id]); // Add dependencies to refetch when user changes
+  }, [modelType, email, currentUser.id]);
 
-  // Get documents for summary section (all users)
-  const getGlobalDocuments = () => {
-    if (!selectedVendor) return globalDocuments;
-    return globalDocuments.filter((doc) =>
-      (doc.documentName || "")
-        .toLowerCase()
-        .includes(selectedVendor.toLowerCase())
-    );
-  };
-
-  // Get documents for recent documents section (current user only)
-  const getUserDocuments = () => {
-    if (!selectedVendor) return allDocuments;
-    return allDocuments.filter((doc) =>
-      (doc.documentName || "")
-        .toLowerCase()
-        .includes(selectedVendor.toLowerCase())
-    );
-  };
-
-  const getDocumentStats = () => {
-    // Use global documents for summary statistics (all users)
-    const globalDocs = getGlobalDocuments();
-    const total = globalDocs.length;
-    let completed = 0;
-    let manualReview = 0;
-    let inProcess = 0;
-
-    globalDocs.forEach((doc) => {
-      const status = determineStatus(doc);
-      if (status === "Completed" || status === "Reviewed") completed++;
-      else if (status === "Manual Review") manualReview++;
-      else inProcess++;
-    });
-
-    return { total, completed, inProcess, manualReview };
-  };
-
+  // 🧩 Vendor filter
   const handleVendorChange = (e) => {
     setSelectedVendor(e.target.value);
     setCurrentPage(1);
   };
 
+  // 🧩 File upload and processing
   const FileChange = (e) => {
     const newFiles = Array.from(e.target.files).map((file) => ({
       file,
@@ -258,9 +226,7 @@ const Dashboard = () => {
     setSelectedFiles(updated);
   };
 
-  const handleClick = () => {
-    fileInputRef.current.click();
-  };
+  const handleClick = () => fileInputRef.current.click();
 
   const handleProcessFiles = async () => {
     if (selectedFiles.length === 0) return;
@@ -284,9 +250,7 @@ const Dashboard = () => {
               autoClose: percent >= 100 ? 2000 : false,
             });
           }
-          // selectedmodelType
         );
-
         toast.success(`${fileObj.fileName} uploaded successfully!`);
       } catch (err) {
         console.error(err);
@@ -296,8 +260,12 @@ const Dashboard = () => {
 
     setSelectedFiles([]);
     setIsUploading(false);
+
+    // ✅ Re-fetch after upload to prevent duplicates
+    await fetchDocumentsFromBackend();
   };
 
+  // 🧩 Date formatter
   const formatDate = (dateString) => {
     if (!dateString) return "Unknown time";
     const date = new Date(dateString);
@@ -312,7 +280,16 @@ const Dashboard = () => {
     return date.toLocaleString();
   };
 
-  // Use user documents for recent documents section
+  // 🧩 Filtered user docs
+  const getUserDocuments = () => {
+    if (!selectedVendor) return allDocuments;
+    return allDocuments.filter((doc) =>
+      (doc.documentName || "")
+        .toLowerCase()
+        .includes(selectedVendor.toLowerCase())
+    );
+  };
+
   const userDocs = getUserDocuments().sort(
     (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)
   );
@@ -321,30 +298,23 @@ const Dashboard = () => {
   const indexOfFirst = indexOfLast - documentsPerPage;
   const currentDocs = userDocs.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(userDocs.length / documentsPerPage);
-  const stats = getDocumentStats();
 
-  const handleManualReviewClick = () => {
-    if (hasAccess === true) {
-      // Use user documents for manual review
-      const manualReviewDocs = allDocuments.filter(
-        (doc) => determineStatus(doc) === "Manual Review"
-      );
-      if (manualReviewDocs.length === 0) {
-        toast.info("No documents require manual review");
-        return;
-      }
-      navigate("/manualreview", {
-        state: {
-          manualReviewDocs,
-          selectedVendor,
-        },
-      });
-    } else {
-      toast.error(
-        "You do not have permission to view this Manual Review page."
-      );
-    }
-  };
+  const stats = (() => {
+    const globalDocs = globalDocuments;
+    const total = globalDocs.length;
+    let completed = 0,
+      manualReview = 0,
+      inProcess = 0;
+
+    globalDocs.forEach((doc) => {
+      const status = determineStatus(doc);
+      if (status === "Completed" || status === "Reviewed") completed++;
+      else if (status === "Manual Review") manualReview++;
+      else inProcess++;
+    });
+
+    return { total, completed, inProcess, manualReview };
+  })();
 
   const handleViewDocument = (file) => {
     let rawUrl = file.blobUrl || file.url;
@@ -360,9 +330,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-total-container">
-      {/* <header className="header">
-        <Header />
-      </header> */}
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
           <div className="vendor-select-details">
@@ -403,10 +370,7 @@ const Dashboard = () => {
             <p>In Process</p>
             <div className="total">{stats.inProcess}</div>
           </div>
-          <div
-            className="stat-box manual-review"
-            // onClick={handleManualReviewClick}
-          >
+          <div className="stat-box manual-review">
             <AlertTriangle className="i" size={24} />
             <p>Manual Review</p>
             <div className="total">{stats.manualReview}</div>
@@ -433,16 +397,8 @@ const Dashboard = () => {
                 onChange={FileChange}
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
               />
-              <label
-                className="btn btn-outline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fileInputRef.current.click();
-                }}
-              >
-                <Upload size={16} className="selecte-icon" /> Select Files
-              </label>
             </div>
+
             <div className="file-load-section">
               {selectedFiles.length > 0 && (
                 <>
@@ -480,6 +436,7 @@ const Dashboard = () => {
                   : "List of your uploaded documents"}
               </p>
             </div>
+
             <table>
               <thead>
                 <tr>
@@ -527,6 +484,7 @@ const Dashboard = () => {
                 )}
               </tbody>
             </table>
+
             <div className="pagination">
               {Array.from({ length: totalPages }, (_, i) => (
                 <button

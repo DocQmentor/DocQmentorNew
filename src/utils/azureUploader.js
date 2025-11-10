@@ -209,19 +209,18 @@ const extractFolderName = (filename) => {
   return cleaned.trim().toUpperCase();
 };
 
-// ✅ Fixed upload function
+// ✅ Enhanced upload with metadata
 export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
 
-  // Folder and filename
   const folderName = extractFolderName(file.name);
   const uniqueFileName = `${uuidv4()}-${file.name}`;
   const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
 
   try {
-    // 1️⃣ Upload file to Azure Blob
+    // 1️⃣ Upload to Azure Blob
     await blockBlobClient.uploadData(file, {
       blobHTTPHeaders: { blobContentType: file.type },
       onProgress: (ev) => {
@@ -232,31 +231,39 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
       },
     });
 
-    // 2️⃣ Append SAS token safely (✅ prevents double ?sv)
+    // 2️⃣ Generate SAS-protected URL
     const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
     const blobUrlWithSAS = blockBlobClient.url.includes("?")
       ? blockBlobClient.url
       : `${blockBlobClient.url}?${sasToken}`;
 
-    // 3️⃣ Generate unique upload ID
-    const uploadId = uuidv4();
+    // 3️⃣ Metadata for Cosmos DB
+    const metadata = {
+      FileName: file.name,
+      FileSize: file.size,
+      FileFormat: file.type || "application/pdf",
+      UploadDate: new Date().toISOString(),
+      PageCount: 0, // can be updated later
+    };
 
-    // 4️⃣ Send metadata + full SAS URL to backend function
+    // 4️⃣ Post to backend
+    const uploadId = uuidv4();
     await axios.post(AZURE_FUNCTION_URL, {
       uploadId,
-      blobUrl: blobUrlWithSAS, // ✅ SAS-protected URL (now valid)
+      blobUrl: blobUrlWithSAS,
       documentName: file.name,
       modelType,
       uploadedBy: { id: userId, name: userName },
+      metadata, // ✅ added metadata
     });
 
-    // 5️⃣ Return upload info
+    // 5️⃣ Return UI info
     return {
       fileName: file.name,
       folderName,
       uploadedAt: new Date(),
       status: "In Process",
-      url: blobUrlWithSAS, // ✅ SAS URL for UI/debug
+      url: blobUrlWithSAS,
       uploadId,
       modelType,
     };

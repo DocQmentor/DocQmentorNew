@@ -5,95 +5,71 @@ import { Edit, History, File, X, Save } from "lucide-react";
 import "./EditModal.css";
 import Footer from "../Layout/Footer";
 
-const sanitizeNumeric = (value) => {
-  if (!value) return "";
-  return value.toString().replace(/[^\d.]/g, "");
-};
+const sanitizeNumeric = (value) =>
+  value ? value.toString().replace(/[^\d.]/g, "") : "";
 
-const formatNumber = (value) => {
-  if (!value) return "";
-  return parseFloat(value).toLocaleString("en-IN");
-};
+const getFileFormat = (fileName) =>
+  fileName ? fileName.split(".").pop().toUpperCase() : "PDF";
 
-const formatDate = (timestamp) => {
-  if (!timestamp) return "N/A";
-  const date = new Date(timestamp);
-  return date.toLocaleDateString() + ", " + date.toLocaleTimeString();
-};
-
-const formatFileSize = (bytes) => {
-  if (bytes === undefined || bytes === null) return "N/A";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-};
-
-const getFileFormat = (fileName) => {
-  if (!fileName) return "PDF";
-  const extension = fileName.split('.').pop().toUpperCase();
-  return extension || "PDF";
-};
-
-// Field configurations for each document type
+// ✅ Define editable fields for each document type
 const documentTypeFields = {
   Invoice: [
-    { key: "VendorName", label: "Vendor Name:", type: "text"},
+    { key: "VendorName", label: "Vendor Name:", type: "text" },
     { key: "InvoiceId", label: "Invoice ID:", type: "text" },
     { key: "InvoiceDate", label: "Invoice Date:", type: "date" },
-    { key: "LPO", label: "LPO Number:", type: "text", sanitize: true },
+    { key: "LPO", label: "LPO Number:", type: "text" },
     { key: "SubTotal", label: "Sub Total:", type: "text", sanitize: true },
-    { key: "VAT", label: "VAT", type: "text:", sanitize: true },
-    { key: "InvoiceTotal", label: "Invoice Total:", type: "text", sanitize: true }
+    { key: "VAT", label: "VAT:", type: "text", sanitize: true },
+    { key: "InvoiceTotal", label: "Invoice Total:", type: "text", sanitize: true },
   ],
   BankStatement: [
     { key: "AccountHolder", label: "Account Holder:", type: "text" },
     { key: "AccountNumber", label: "Account Number:", type: "text" },
     { key: "StatementPeriod", label: "Statement Period:", type: "text" },
     { key: "OpeningBalance", label: "Opening Balance:", type: "text", sanitize: true },
-    { key: "ClosingBalance", label: "Closing Balance:", type: "text", sanitize: true }
+    { key: "ClosingBalance", label: "Closing Balance:", type: "text", sanitize: true },
   ],
   MortgageForms: [
     { key: "LenderName", label: "Lender Name:", type: "text" },
     { key: "BorrowerName", label: "Borrower Name:", type: "text" },
     { key: "LoanAmount", label: "Loan Amount:", type: "text", sanitize: true },
-    { key: "Interest", label: "Interest:", type: "text", sanitize: true },
-    { key: "LoanTenure", label: "Loan Tenure:", type: "text" }
-  ]
+    { key: "Interest", label: "Interest Rate:", type: "text", sanitize: true },
+    { key: "LoanTenure", label: "Loan Tenure:", type: "text" },
+  ],
 };
 
-// Field mapping for extracted data keys
+// ✅ Match your Cosmos DB extractedData field names exactly
 const fieldMapping = {
   Invoice: {
     VendorName: "VendorName",
     InvoiceId: "InvoiceId",
     InvoiceDate: "InvoiceDate",
-    LPO: "LPO NO",
+    LPO: "LPO NO", // DB key
     SubTotal: "SubTotal",
     VAT: "VAT",
-    InvoiceTotal: "InvoiceTotal"
+    InvoiceTotal: "InvoiceTotal",
   },
   BankStatement: {
     AccountHolder: "AccountHolder",
     AccountNumber: "AccountNumber",
     StatementPeriod: "StatementPeriod",
     OpeningBalance: "OpeningBalance",
-    ClosingBalance: "ClosingBalance"
+    ClosingBalance: "ClosingBalance",
   },
   MortgageForms: {
-    LenderName: "LenderName",
-    BorrowerName: "BorrowerName",
-    LoanAmount: "LoanAmount",
+    LenderName: "Lendername",      // match DB casing
+    BorrowerName: "Borrowername",  // match DB casing
+    LoanAmount: "Loanamount",
     Interest: "Interest",
-    LoanTenure: "LoanTenure"
-  }
+    LoanTenure: "Loantenure",
+  },
 };
 
 const getString = (val) => {
   if (!val) return "";
   if (typeof val === "string" || typeof val === "number") return val;
-  if (typeof val === "object") {
+  if (typeof val === "object")
     return val?.valueString || val?.content || JSON.stringify(val);
-  }
   return "";
 };
 
@@ -102,125 +78,80 @@ const EditModal = () => {
   const { accounts } = useMsal();
   const navigate = useNavigate();
 
-  const currentUser = {
-    id: accounts[0]?.username,
-    name: accounts[0]?.name,
-  };
-
   const selectedDocument = state?.selectedDocument;
   const initialEditedData = state?.editedData;
-  
-  // Get the selected model type from localStorage or document
-  const selectedModelType = selectedDocument?.modelType || 
-                           localStorage.getItem("selectedModelType") || 
-                           "Invoice";
+  const currentUser = { id: accounts[0]?.username, name: accounts[0]?.name };
 
-  const refreshData = () => window.location.reload();
-  const setShow = () => navigate(-1);
+  // ✅ Normalize modelType (case-insensitive)
+  const rawType =
+    (selectedDocument?.modelType ||
+      localStorage.getItem("selectedModelType") ||
+      "Invoice").toLowerCase();
 
+  const modelMap = {
+    invoice: "Invoice",
+    bankstatement: "BankStatement",
+    mortgageforms: "MortgageForms",
+  };
+
+  const selectedModelType = modelMap[rawType] || "Invoice";
+
+  const [edited, setEdited] = useState({});
   const [editDetails, setEditDetails] = useState(true);
   const [versionHistory, setVersionHistory] = useState(false);
   const [pdfDetails, setPDFDetails] = useState(false);
-  const [saveSuccessful, setSaveSuccessful] = useState(false);
 
-  // Initialize edited state dynamically based on document type
-  const [edited, setEdited] = useState({});
-
+  // ✅ Initialize field values
   useEffect(() => {
-    if (initialEditedData && selectedModelType) {
-      const fields = documentTypeFields[selectedModelType] || [];
-      const initialData = {};
-      
-      fields.forEach(field => {
-        const extractedKey = fieldMapping[selectedModelType]?.[field.key] || field.key;
-        const value = initialEditedData[field.key] || 
-                     initialEditedData.extractedData?.[extractedKey] || 
-                     "";
-        
-        initialData[field.key] = field.sanitize ? sanitizeNumeric(value) : getString(value);
-      });
+    if (!selectedDocument || !selectedModelType) return;
 
-      setEdited(initialData);
-    }
-  }, [initialEditedData, selectedModelType]);
+    const fields = documentTypeFields[selectedModelType];
+    const extracted = selectedDocument.extractedData || {};
+    const initialData = {};
 
-  useEffect(() => {
-    if (saveSuccessful) {
-      navigate("/table");
-    }
-  }, [saveSuccessful]);
+    fields.forEach((field) => {
+      const dbKey = fieldMapping[selectedModelType]?.[field.key] || field.key;
+      const value =
+        initialEditedData?.[field.key] ||
+        extracted?.[dbKey] ||
+        selectedDocument?.[dbKey] ||
+        "";
+      initialData[field.key] = field.sanitize
+        ? sanitizeNumeric(value)
+        : getString(value);
+    });
 
-  const showSection = (section) => {
-    setEditDetails(section === "editDetails");
-    setVersionHistory(section === "versionHistory");
-    setPDFDetails(section === "pdfDetails");
+    setEdited(initialData);
+  }, [selectedDocument, initialEditedData, selectedModelType]);
+
+  const handleCancel = () => navigate(-1);
+
+  const handleFieldChange = (key, value, sanitize) => {
+    setEdited((prev) => ({
+      ...prev,
+      [key]: sanitize ? sanitizeNumeric(value) : value,
+    }));
   };
 
-  const handleCancel = () => {
-    setShow(true);
-  };
-
+  // ✅ Save edited data to DB
   const handleSave = async () => {
-    const fields = documentTypeFields[selectedModelType] || [];
-    const isEmpty = fields.some(field => !edited[field.key] || edited[field.key].trim() === "");
-
-    if (isEmpty) {
-      alert("⚠️ Please fill all fields before saving.");
-      return;
-    }
-
     try {
-      const score = selectedDocument.totalConfidenceScore;
-      let numericScore =
-        typeof score === "string"
-          ? parseFloat(score.replace(/[^\d.]/g, ""))
-          : Number(score);
+      const fields = documentTypeFields[selectedModelType];
+      const updatedExtractedData = {};
 
-      const reviewedScore = isNaN(numericScore)
-        ? "Reviewed"
-        : `${numericScore.toFixed(2)}% Reviewed`;
-
-      const existingHistory = Array.isArray(selectedDocument.versionHistory)
-        ? [...selectedDocument.versionHistory]
-        : [];
-
-      const newVersion = {
-        version: existingHistory.length + 1,
-        action: "Reviewed",
-        timestamp: new Date().toISOString(),
-        user: {
-          id: currentUser.id || "unknown@domain.com",
-          name: currentUser.name || "Unknown User",
-        },
-      };
-
-      // Build extracted data dynamically
-      const extractedData = {};
-      const fieldsConfig = documentTypeFields[selectedModelType] || [];
-      
-      fieldsConfig.forEach(field => {
-        const extractedKey = fieldMapping[selectedModelType]?.[field.key] || field.key;
-        extractedData[extractedKey] = edited[field.key];
+      fields.forEach((f) => {
+        const dbKey = fieldMapping[selectedModelType]?.[f.key] || f.key;
+        updatedExtractedData[dbKey] = edited[f.key] || "";
       });
 
       const updatedDoc = {
         ...selectedDocument,
-        id: selectedDocument.id,
-        extractedData: extractedData,
+        extractedData: updatedExtractedData,
         wasReviewed: true,
-        reviewedBy: {
-          id: currentUser.id || "unknown@domain.com",
-          name: currentUser.name || "Unknown User",
-        },
+        reviewedBy: currentUser,
         reviewedAt: new Date().toISOString(),
-        totalConfidenceScore: reviewedScore,
         status: "Reviewed",
-        versionHistory: [...existingHistory, newVersion],
-        fileUrl: selectedDocument.fileUrl || "",
-        blobUrl: selectedDocument.blobUrl || "",
       };
-
-      console.log("📤 Sending to PUT:", updatedDoc);
 
       const response = await fetch(
         "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==",
@@ -231,37 +162,28 @@ const EditModal = () => {
         }
       );
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error("Failed to update: " + errText);
-      }
+      if (!response.ok) throw new Error(await response.text());
 
-      refreshData();
-      setShow(true);
-      setSaveSuccessful(true);
+      alert("✅ Document updated successfully!");
+      navigate(-1);
     } catch (err) {
-      console.error("❌ Save error:", err);
-      alert("❌ Failed to update document:\n" + err.message);
+      alert("❌ Save failed: " + err.message);
+      console.error(err);
     }
   };
 
-  const handleFieldChange = (fieldKey, value, shouldSanitize = false) => {
-    setEdited(prev => ({
-      ...prev,
-      [fieldKey]: shouldSanitize ? sanitizeNumeric(value) : value
-    }));
-  };
-
+  // ✅ Render edit fields per model type
   const renderEditFields = () => {
-    const fields = documentTypeFields[selectedModelType] || [];
-    
-    return fields.map(field => (
+    const fields = documentTypeFields[selectedModelType];
+    return fields.map((field) => (
       <div key={field.key} className="ManualReview-Edit-editDetails-form">
         <label>{field.label}</label>
         <input
           type={field.type}
           value={edited[field.key] || ""}
-          onChange={(e) => handleFieldChange(field.key, e.target.value, field.sanitize)}
+          onChange={(e) =>
+            handleFieldChange(field.key, e.target.value, field.sanitize)
+          }
         />
       </div>
     ));
@@ -270,6 +192,7 @@ const EditModal = () => {
   return (
     <div className="ManualReview-Edit-main-container">
       <div className="ManualReview-Edit-container">
+        {/* === PDF Preview Panel === */}
         <div className="ManualReview-Edit-show-file">
           <header className="ManualReview-Edit-show-file-name">
             {selectedDocument?.fileName ||
@@ -287,6 +210,7 @@ const EditModal = () => {
           )}
         </div>
 
+        {/* === Right Panel (Tabs + Edit) === */}
         <div className="ManualReview-Edit-options">
           <nav className="ManualReview-Edit-options-nav">
             <ul className="ManualReview-Edit-options-nav-ul">
@@ -294,7 +218,11 @@ const EditModal = () => {
                 className={`ManualReview-Edit-options-nav-li ${
                   editDetails ? "active" : ""
                 }`}
-                onClick={() => showSection("editDetails")}
+                onClick={() => {
+                  setEditDetails(true);
+                  setVersionHistory(false);
+                  setPDFDetails(false);
+                }}
               >
                 <Edit size={20} /> Edit Details
               </li>
@@ -302,7 +230,11 @@ const EditModal = () => {
                 className={`ManualReview-Edit-options-nav-li ${
                   versionHistory ? "active" : ""
                 }`}
-                onClick={() => showSection("versionHistory")}
+                onClick={() => {
+                  setEditDetails(false);
+                  setVersionHistory(true);
+                  setPDFDetails(false);
+                }}
               >
                 <History size={20} /> Version History
               </li>
@@ -310,101 +242,82 @@ const EditModal = () => {
                 className={`ManualReview-Edit-options-nav-li ${
                   pdfDetails ? "active" : ""
                 }`}
-                onClick={() => showSection("pdfDetails")}
+                onClick={() => {
+                  setEditDetails(false);
+                  setVersionHistory(false);
+                  setPDFDetails(true);
+                }}
               >
                 <File size={20} /> PDF Details
               </li>
-              <li className="ManualReview-Edit-options-nav-li" onClick={handleCancel}>
+              <li
+                className="ManualReview-Edit-options-nav-li"
+                onClick={handleCancel}
+              >
                 <X size={20} />
               </li>
             </ul>
           </nav>
 
+          {/* === Edit Details Tab === */}
           {editDetails && (
             <div className="ManualReview-Edit-editDetails">
               <form className="ManualReview-Edit-editDetails-form">
                 <h3>Edit Details - {selectedModelType}</h3>
                 {renderEditFields()}
-                
                 <ul className="ManualReview-Edit-editDetails-form-ul">
                   <li
                     className="ManualReview-Edit-editDetails-form-ul-Cancel"
                     onClick={handleCancel}
                   >
-                    <X size={20} className="ManualReview-Edit-editDetails-form-ul-Cancel-i" /> Cancel
+                    <X size={20} /> Cancel
                   </li>
                   <li
                     className="ManualReview-Edit-editDetails-form-ul-Save-Changes"
                     onClick={handleSave}
                   >
-                    <Save size={20} className="ManualReview-Edit-editDetails-form-ul-Save-Changes-i"/> Save Changes
+                    <Save size={20} /> Save Changes
                   </li>
                 </ul>
               </form>
             </div>
           )}
 
+          {/* === Version History Tab === */}
           {versionHistory && (
             <div className="ManualReview-Edit-versionHistory">
               <h3>Version History</h3>
-              {selectedDocument?.versionHistory?.length > 0 ? (
+              {selectedDocument?.versionHistory?.length ? (
                 <ul>
-                  {selectedDocument.versionHistory.map((entry, index) => (
-                    <li key={index}>
-                      <strong>v{entry.version}</strong> – {entry.action} by{" "}
-                      <span>
-                        {entry.user.name} ({entry.user.id})
-                      </span>{" "}
-                      on{" "}
-                      <em>{new Date(entry.timestamp).toLocaleString()}</em>
+                  {selectedDocument.versionHistory.map((v, i) => (
+                    <li key={i}>
+                      <strong>v{v.version}</strong> – {v.action} by {v.user.name}{" "}
+                      ({v.user.id}) on{" "}
+                      {new Date(v.timestamp).toLocaleString()}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p>No version history found.</p>
+                <p>No version history available.</p>
               )}
             </div>
           )}
 
+          {/* === PDF Details Tab === */}
           {pdfDetails && (
             <div className="pdf-details-container">
               <h3>Document Details</h3>
-              <ul className="pdf-details-list">
+              <ul>
                 <li>
-                  <b className="detail-label">File Name:</b>
-                  <span className="detail-value">
-                    {selectedDocument?.metadata?.FileName || selectedDocument?.documentName || "N/A"}
-                  </span>
+                  <b>File Name:</b>{" "}
+                  {selectedDocument?.documentName || "N/A"}
                 </li>
                 <li>
-                  <b className="detail-label">File Size:</b>
-                  <span className="detail-value">
-                    {formatFileSize(selectedDocument?.metadata?.FileSize)}
-                  </span>
+                  <b>File Format:</b>{" "}
+                  {getFileFormat(selectedDocument?.documentName)}
                 </li>
                 <li>
-                  <b className="detail-label">Pages:</b>
-                  <span className="detail-value">
-                    {selectedDocument?.metadata?.PageCount || "N/A"}
-                  </span>
-                </li>
-                <li>
-                  <b className="detail-label">File Format:</b>
-                  <span className="detail-value">
-                    {selectedDocument?.metadata?.FileFormat || getFileFormat(selectedDocument?.documentName)}
-                  </span>
-                </li>
-                <li>
-                  <b className="detail-label">Document Type:</b>
-                  <span className="detail-value">
-                    {selectedModelType}
-                  </span>
-                </li>
-                <li>
-                  <b className="detail-label">Uploaded Date:</b>
-                  <span className="detail-value">
-                    {formatDate(selectedDocument?.metadata?.UploadDate || selectedDocument?.uploadedAt)}
-                  </span>
+                  <b>Document Type:</b> {selectedModelType}
                 </li>
               </ul>
             </div>

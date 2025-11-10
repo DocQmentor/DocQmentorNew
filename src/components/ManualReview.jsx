@@ -278,14 +278,23 @@ const ManualReview = () => {
   const { sortedData } = useSortableData(filteredDocs);
 
   const handleToggle = (doc) => {
-    navigate("/editmodal", {
-      state: {
-        selectedDocument: doc,
-        editedData: doc.extractedData,
-        documentType: doc.modelType,
-      },
-    });
-  };
+  const extracted = doc.extractedData || {};
+  const editedDoc = {};
+
+  // Dynamically flatten the extractedData
+  Object.keys(extracted).forEach((key) => {
+    editedDoc[key] = extracted[key] ?? "";
+  });
+
+  navigate("/editmodal", {
+    state: {
+      selectedDocument: doc,
+      editedData: editedDoc,  // ✅ flat object for EditModal
+      documentType: doc.modelType,
+    },
+  });
+};
+
 
   const totalPages = Math.ceil(filteredDocs.length / rowsPerPage);
   const paginatedData = sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
