@@ -8,65 +8,69 @@
   background-color: #f9f9f9;
 }
 
-/* ===== Main Content ===== */
+/* ===== Main Container ===== */
 .ManualReview-main-container {
   margin-top: 20px;
   flex: 1;
-  padding: 40px 30px;
+  padding: 50px 25px;
   box-sizing: border-box;
   width: 100%;
 }
 
 .ManualReview-Table-header h1 {
-  padding-top: 10px;
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 22px;
+  font-weight: 700;
   color: #0d3c61;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
 }
 
-/* ===== Filter Styles ===== */
+.ManualReview-Table-header p {
+  color: green;
+  font-weight: 500;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+/* ===== Filters Section ===== */
 .filters {
   display: flex;
-  gap: 20px;
-  /* flex-wrap: wrap; */
-  justify-content: space-around;
-  align-items: center;
-  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
 }
 
 .filters label {
   display: flex;
   flex-direction: column;
   font-weight: 500;
-  font-size: 15px;
-  white-space: nowrap;
+  font-size: 13px;
+  color: #0d3c61;
 }
 
 .filters input,
 .filters select {
-  border: 2px solid #0d3c61;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 14px;
+  border: 1.8px solid #0d3c61;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 13px;
   margin-top: 4px;
-  min-width: 100px;
+  min-width: 150px;
+  height: 32px;
 }
 
-/* ===== Export Button ===== */
+/* ===== Buttons ===== */
 .export-button,
 .reset-button {
   background-color: #004080;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-weight: bolder;
-  align-items: center;
-  display: flex;
+  border-radius: 5px;
+  font-weight: 600;
   cursor: pointer;
   height: 32px;
-  /* width: 90px; */
-  margin-top: 22px;
+  padding: 0 14px;
   transition: background 0.3s ease;
 }
 
@@ -75,33 +79,32 @@
   background-color: red;
 }
 
-/* ===== Table Styles ===== */
+/* ===== Table ===== */
 .ManualReview-Table {
   width: 100%;
-  table-layout: fixed !important;
   border-collapse: collapse;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  table-layout: fixed;
 }
 
 .ManualReview-Table th,
 .ManualReview-Table td {
-  padding: 14px 18px;
+  padding: 10px 12px;
   text-align: left;
-  overflow: hidden;
+  font-size: 13px;
+  border-bottom: 1px solid #ddd;
   white-space: nowrap;
   text-overflow: ellipsis;
-  /* border: 1px solid #ddd; */
-  font-size: 15px;
+  overflow: hidden;
 }
 
 .ManualReview-Table th {
   background-color: #0d3c61;
   color: #ffffff;
   font-weight: 600;
-  font-size: 14px;
 }
 
 .ManualReview-Table tr:nth-child(even) {
@@ -112,13 +115,15 @@
   background-color: #eaf1f5;
 }
 
+/* ===== Edit Button ===== */
 .ManualReview-Table button {
   background-color: #0d3c61;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -127,20 +132,15 @@
   background-color: #004080;
 }
 
-/* ===== Fixed Column Widths ===== */
+/* ===== Column Widths ===== */
 .ManualReview-Table th:nth-child(1),
 .ManualReview-Table td:nth-child(1) {
-  width: 160px;
-  white-space: normal !important;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  text-overflow: unset;
-  max-width: 160px;
+  width: 150px;
 }
 
 .ManualReview-Table th:nth-child(2),
 .ManualReview-Table td:nth-child(2) {
-  width: 120px;
+  width: 130px;
 }
 
 .ManualReview-Table th:nth-child(3),
@@ -155,59 +155,51 @@
 
 .ManualReview-Table th:nth-child(5),
 .ManualReview-Table td:nth-child(5) {
-  width: 100px;
+  width: 120px;
 }
 
 .ManualReview-Table th:nth-child(6),
 .ManualReview-Table td:nth-child(6) {
-  width: 100px;
+  width: 120px;
 }
 
 .ManualReview-Table th:nth-child(7),
 .ManualReview-Table td:nth-child(7) {
-  width: 110px;
+  width: 100px;
 }
 
 .ManualReview-Table th:nth-child(8),
 .ManualReview-Table td:nth-child(8) {
-  width: 140px;
+  width: 100px;
 }
 
 .ManualReview-Table th:nth-child(9),
 .ManualReview-Table td:nth-child(9) {
-  width: 80px;
+  width: 90px;
 }
 
 /* ===== Pagination ===== */
 .pagination {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 15px;
   align-items: center;
 }
 
 .pagination button {
   background-color: #f8f8f8;
-  /* border: 1px solid #ddd; */
   color: #0d3c61;
-  padding: 6px 12px;
-  margin: 0 5px;
+  padding: 5px 10px;
+  margin: 0 4px;
   cursor: pointer;
   border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 13px;
   transition: all 0.3s ease;
 }
 
 .pagination button:hover {
   background-color: #e9e9e9;
-}
-
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination span {
-  margin: 0 10px;
 }
 
 /* ===== Footer ===== */
@@ -216,33 +208,7 @@ footer {
   width: 100%;
 }
 
-/* ===== PDF Preview (Edit Modal) ===== */
-.pdf-preview {
-  width: 100%;
-  height: 600px;
-  border: 1px solid #ccc;
-}
-
-/* ===== Sortable Header Styling ===== */
-.sortable-header {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: white;
-  background-color: #0d3c61;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.ManualReview-Table th svg {
-  width: 16px;
-  height: 16px;
-  color: white;
-  fill: white;
-}
-
-/* ===== Modal Background ===== */
+/* ===== Modal ===== */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -256,59 +222,30 @@ footer {
   z-index: 999;
 }
 
-/* ===== Modal Box ===== */
 .modal {
   background: #ffffff;
-  padding: 24px 28px;
+  padding: 22px 26px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  width: 650px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  width: 600px;
   max-width: 95%;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
 }
 
-/* ===== Modal Heading ===== */
 .modal h3 {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 600;
   color: #222;
-  margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  padding-bottom: 8px;
 }
 
-/* ===== Version Table in Modal ===== */
-.version-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 24px;
-  font-size: 14px;
-}
-
-.version-table th,
-.version-table td {
-  padding: 12px 16px;
-  text-align: left;
-  border: 1px solid #e5e5e5;
-}
-
-.version-table th {
-  background-color: #f5f5f5;
-  font-weight: 600;
-  color: #333;
-}
-
-.version-table td {
-  color: #444;
-}
-
-/* ===== Modal Button ===== */
 .modal button {
   background-color: #007bff;
   color: white;
-  padding: 10px 20px;
-  font-size: 14px;
+  padding: 8px 16px;
+  font-size: 13px;
   font-weight: 500;
   border: none;
   border-radius: 6px;
@@ -319,12 +256,54 @@ footer {
 .modal button:hover {
   background-color: #0056b3;
 }
-.manual-review-table-change-table{
-  color: #0056b3;
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 1024px) {
+  .filters {
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  .filters input {
+    min-width: 130px;
+  }
+
+  .ManualReview-Table th,
+  .ManualReview-Table td {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
 }
-.manual-review-table-change-table button{
-  /* border: #004080 1px solid; */
-  border: #007bff 2px solid;
-  border-radius: 10px;
-  color: #004080;
+
+@media (max-width: 768px) {
+  .ManualReview-main-container {
+    padding: 15px;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters input,
+  .filters select {
+    width: 100%;
+  }
+
+  .export-button,
+  .reset-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ManualReview-Table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .ManualReview-Table th,
+  .ManualReview-Table td {
+    font-size: 11.5px;
+    padding: 7px 8px;
+  }
 }

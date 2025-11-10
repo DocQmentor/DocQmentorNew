@@ -333,7 +333,8 @@ const determineStatus = (doc) => {
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
           <div className="vendor-select-details">
-            <h2>{modelType} Dashboard</h2>
+          <h2>{modelType.charAt(0).toUpperCase() + modelType.slice(1)} Dashboard</h2>
+
             <p>Showing documents for {modelType}</p>
             <p>View your document processing activity and insights</p>
           </div>
@@ -397,6 +398,9 @@ const determineStatus = (doc) => {
                 onChange={FileChange}
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
               />
+              <button className="browse-btn" onClick={handleClick}>
+                Browse Files
+              </button>
             </div>
 
             <div className="file-load-section">

@@ -1,24 +1,35 @@
-.logo-container .title-center h1{
-    background-color: white;
+/* ===== Base Header Styles ===== */
+.logo-container .title-center h1 {
+  background-color: white;
 }
-.logo-container .title-center h1 span{
-    background-color: white;
+
+.logo-container .title-center h1 span {
+  background-color: white;
 }
-.header-component-container center p{
-    font-size: small;
-    padding-left: 100px;
-    background-color: white;
+
+.header-component-container center p {
+  font-size: 13px;
+  padding-left: 100px;
+  background-color: white;
+  font-family: "Nunito", sans-serif;
+  color: #0d3c61;
 }
-.header-component-container sup{
-    background-color: white;
-    font-size: small;
-    margin: 10px;
+
+.header-component-container sup {
+  background-color: white;
+  font-size: 12px;
+  margin: 10px;
+  font-family: "Nunito", sans-serif;
+  color: #47556e;
 }
+
+/* ===== Logo Title ===== */
 .title-center h1 {
   margin: 0;
-  font-size: 36px;
-  font-weight: bold;
-  font-family: sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  font-family: "Nunito", sans-serif;
+  color: #0d3c61;
 }
 
 .red-letter {
@@ -29,88 +40,99 @@
   color: #0071bc;
 }
 
+/* ===== Header Container ===== */
 .header-component-container header {
-    background: white;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 999;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
+  background: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  font-family: "Nunito", sans-serif;
+  transition: box-shadow 0.3s ease;
 }
 
 .header-component-container header::after {
-    content: '';
-    display: block;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: #266898;
+  content: '';
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #0d3c61;
 }
 
+/* ===== Header Links and Icons ===== */
 .header-component-container .a {
-    background-color: white;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
+  background-color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
 }
 
 .header-component-container .i {
-    background-color: white;
-    color: #47556e;
-    margin-right: 8px;
+  background-color: white;
+  color: #0d3c61;
+  margin-right: 8px;
+  font-size: 16px;
 }
 
+/* ===== Header Image / Logo ===== */
 .header-component-container img {
-    background-color: white;
-    height: 30px;
-    display: flex;
-    align-items: center;
+  background-color: white;
+  height: 30px;
+  display: flex;
+  align-items: center;
 }
 
+/* ===== Navigation Menu ===== */
 .header-component-container ul {
-    background-color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* gap: 20px; Reduced gap for better spacing */
-    margin: 0;
-    padding: 0;
-    height: 100%;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Nunito", sans-serif;
 }
 
 .header-component-container li {
-    background-color: white;
-    list-style: none;
-    cursor: pointer;
-    padding: 8px 12px;
-    color: #47556e;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    height: 100%;
-    transition: background-color 0.2s;
+  background-color: white;
+  list-style: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  color: #0d3c61;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  transition: all 0.3s ease;
+  font-size: 13px;
+  font-weight: 500;
+  position: relative;
 }
 
-.header-component-container li:hover
- {
-    border: #266898 1px dashed;
+/* ===== Hover & Active States ===== */
+.header-component-container li:hover {
+  border: #0d3c61 1px dashed;
+  background-color: #f5f8fa;
 }
+
 .header-component-container li.active {
   position: relative;
 }
 
-
 .header-component-container li.active,
-.header-component-container li.active  .i{
+.header-component-container li.active .i {
   color: #ed2224;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .header-component-container li .a {
@@ -121,14 +143,7 @@
   gap: 8px;
 }
 
-.header-component-container li:hover {
-  border: #266898 1px dashed;
-}
-
-
-
-/* Add these to your existing Header.css */
-
+/* ===== Profile Dropdown ===== */
 .profile-dropdown {
   position: absolute;
   top: 100%;
@@ -141,6 +156,7 @@
   z-index: 1000;
   animation: fadeIn 0.3s ease-in-out;
   transform-origin: top right;
+  font-family: "Nunito", sans-serif;
 }
 
 @keyframes fadeIn {
@@ -159,18 +175,19 @@
   display: flex;
   align-items: center;
   border-bottom: 1px solid #f0f0f0;
+  background-color: #ffffff;
 }
 
 .profile-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #266898;
+  background-color: #0d3c61;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 700;
   margin-right: 12px;
   flex-shrink: 0;
 }
@@ -181,10 +198,12 @@
 }
 
 .profile-name {
-  font-weight: bold;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #0d3c61;
+  font-size: 13px;
 }
 
 .profile-email {
@@ -195,10 +214,12 @@
   text-overflow: ellipsis;
 }
 
+/* ===== Profile Footer ===== */
 .profile-footer {
   padding: 12px 16px;
   display: flex;
   justify-content: flex-end;
+  background-color: #ffffff;
 }
 
 .logout-button {
@@ -209,15 +230,54 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   padding: 6px 12px;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  font-family: "Nunito", sans-serif;
 }
 
+.logout-button:hover {
+  background-color: rgba(237, 34, 36, 0.1);
+}
 
-
-/* Add this to make sure the profile li has relative positioning */
+/* ===== Ensures Profile li relative ===== */
 .header-component-container li {
   position: relative;
+}
+
+/* ===== Responsive Header ===== */
+@media (max-width: 1024px) {
+  .header-component-container header {
+    padding: 10px 15px;
+  }
+
+  .title-center h1 {
+    font-size: 26px;
+  }
+
+  .header-component-container li {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-component-container header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px 15px;
+  }
+
+  .title-center h1 {
+    font-size: 22px;
+  }
+
+  .header-component-container ul {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+    padding-top: 8px;
+  }
 }
