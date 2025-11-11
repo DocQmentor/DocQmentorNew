@@ -16,7 +16,7 @@ const documentTypeFields = {
   Invoice: [
     { key: "VendorName", label: "Vendor Name:", type: "text" },
     { key: "InvoiceId", label: "Invoice ID:", type: "text" },
-    { key: "InvoiceDate", label: "Invoice Date:", type: "date" },
+    { key: "InvoiceDate", label: "Invoice Date:", type: "text" },
     { key: "LPO", label: "LPO Number:", type: "text" },
     { key: "SubTotal", label: "Sub Total:", type: "text", sanitize: true },
     { key: "VAT", label: "VAT:", type: "text", sanitize: true },
@@ -116,6 +116,8 @@ const EditModal = () => {
         extracted?.[dbKey] ||
         selectedDocument?.[dbKey] ||
         "";
+
+      // ✅ Keep DB format as-is for all fields, including date
       initialData[field.key] = field.sanitize
         ? sanitizeNumeric(value)
         : getString(value);
@@ -123,7 +125,6 @@ const EditModal = () => {
 
     setEdited(initialData);
   }, [selectedDocument, initialEditedData, selectedModelType]);
-
   const handleCancel = () => navigate(-1);
 
   const handleFieldChange = (key, value, sanitize) => {

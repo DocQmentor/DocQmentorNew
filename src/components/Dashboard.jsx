@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Dashboard.css";
+
 import {
   Upload,
   Trash2,
@@ -70,123 +71,122 @@ const Dashboard = () => {
     fetchVendors();
   }, [modelType]);
 
-const hasAllMandatoryFields = (doc) => {
-  if (!doc || !doc.extractedData) return false;
+  const hasAllMandatoryFields = (doc) => {
+    if (!doc || !doc.extractedData) return false;
 
-  const type = (doc.modelType || modelType || "invoice").toLowerCase();
+    const type = (doc.modelType || modelType || "invoice").toLowerCase();
 
-  const modelFields = {
-    invoice: [
-      "VendorName",
-      "InvoiceId",
-      "InvoiceDate",
-      "LPO NO",
-      "SubTotal",
-      "VAT",
-      "InvoiceTotal",
-    ],
-    bankstatement: [
-      "AccountHolder",
-      "AccountNumber",
-      "StatementPeriod",
-      "OpeningBalance",
-      "ClosingBalance",
-    ],
-    mortgageforms: [
-      "Lendername",
-      "Borrowername",
-      "Loanamount",
-      "Loantenure",
-      "Interest",
-    ],
+    const modelFields = {
+      invoice: [
+        "VendorName",
+        "InvoiceId",
+        "InvoiceDate",
+        "LPO NO",
+        "SubTotal",
+        "VAT",
+        "InvoiceTotal",
+      ],
+      bankstatement: [
+        "AccountHolder",
+        "AccountNumber",
+        "StatementPeriod",
+        "OpeningBalance",
+        "ClosingBalance",
+      ],
+      mortgageforms: [
+        "Lendername",
+        "Borrowername",
+        "Loanamount",
+        "Loantenure",
+        "Interest",
+      ],
+    };
+
+    const required = modelFields[type] || modelFields.invoice;
+
+    return required.every((key) => {
+      const value = doc.extractedData[key];
+      return (
+        value !== undefined && value !== null && String(value).trim() !== ""
+      );
+    });
   };
 
-  const required = modelFields[type] || modelFields.invoice;
+  const determineStatus = (doc) => {
+    if (!doc) return "Manual Review";
 
-  return required.every((key) => {
-    const value = doc.extractedData[key];
-    return value !== undefined && value !== null && String(value).trim() !== "";
-  });
-};
+    // ✅ If reviewed manually
+    if (
+      doc.status?.toLowerCase() === "reviewed" ||
+      doc.reviewStatus?.toLowerCase() === "reviewed" ||
+      doc.wasReviewed === true ||
+      doc.reviewedBy
+    ) {
+      return "Reviewed";
+    }
 
+    // ✅ Extract total confidence score (handles both 83.24% or 0.83 formats)
+    let score = 0;
+    if (doc.totalConfidenceScore) {
+      const raw = String(doc.totalConfidenceScore).replace(/[^\d.]/g, "");
+      score = parseFloat(raw);
+      if (score <= 1) score *= 100; // handles normalized scores like 0.83
+    }
 
+    // ✅ If mandatory fields missing or score < 85 → Manual Review
+    const hasMissingFields = !hasAllMandatoryFields(doc);
+    if (score < 85 || hasMissingFields) return "Manual Review";
 
-const determineStatus = (doc) => {
-  if (!doc) return "Manual Review";
-
-  // ✅ If reviewed manually
-  if (
-    doc.status?.toLowerCase() === "reviewed" ||
-    doc.reviewStatus?.toLowerCase() === "reviewed" ||
-    doc.wasReviewed === true ||
-    doc.reviewedBy
-  ) {
-    return "Reviewed";
-  }
-
-  // ✅ Extract total confidence score (handles both 83.24% or 0.83 formats)
-  let score = 0;
-  if (doc.totalConfidenceScore) {
-    const raw = String(doc.totalConfidenceScore).replace(/[^\d.]/g, "");
-    score = parseFloat(raw);
-    if (score <= 1) score *= 100; // handles normalized scores like 0.83
-  }
-
-  // ✅ If mandatory fields missing or score < 85 → Manual Review
-  const hasMissingFields = !hasAllMandatoryFields(doc);
-  if (score < 85 || hasMissingFields) return "Manual Review";
-
-  // ✅ Otherwise → Completed
-  return "Completed";
-};
-
-
+    // ✅ Otherwise → Completed
+    return "Completed";
+  };
 
   const fetchDocumentsFromBackend = async () => {
-  try {
-    // ✅ Fetch data from Cosmos via Function API
-    const response = await fetch(
-      `https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==`
-    );
-    if (!response.ok) throw new Error("Failed to fetch document data");
+    try {
+      // ✅ Fetch data from Cosmos via Function API
+      const response = await fetch(
+        `https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==`
+      );
+      if (!response.ok) throw new Error("Failed to fetch document data");
 
-    const documents = await response.json();
+      const documents = await response.json();
 
-    // ✅ Normalize modelType (case-insensitive match)
-    const normalizedModelType = (modelType || "").toLowerCase();
+      // ✅ Normalize modelType (case-insensitive match)
+      const normalizedModelType = (modelType || "").toLowerCase();
 
-    // ✅ Only keep documents matching current dashboard’s modelType
-    const filteredDocs = documents.filter(
-      (doc) => doc.modelType?.toLowerCase() === normalizedModelType
-    );
+      // ✅ Only keep documents matching current dashboard’s modelType
+      const filteredDocs = documents.filter(
+        (doc) => doc.modelType?.toLowerCase() === normalizedModelType
+      );
 
-    // ✅ Apply status logic
-    const withStatus = filteredDocs.map((doc) => ({
-      ...doc,
-      status: determineStatus(doc),
-    }));
+      // ✅ Apply status logic
+      const withStatus = filteredDocs.map((doc) => ({
+        ...doc,
+        status: determineStatus(doc),
+      }));
 
-    // ✅ Separate into all/global & user-specific sets
-    const userEmail = (email || currentUser.id || "").toLowerCase();
+      // ✅ Separate into all/global & user-specific sets
+      const userEmail = (email || currentUser.id || "").toLowerCase();
 
-    const userFilteredDocs = withStatus.filter((doc) => {
-      const uploader =
-        typeof doc.uploadedBy === "string"
-          ? doc.uploadedBy
-          : doc.uploadedBy?.id;
-      return uploader?.toLowerCase() === userEmail;
-    });
+      const userFilteredDocs = withStatus.filter((doc) => {
+        const uploader =
+          typeof doc.uploadedBy === "string"
+            ? doc.uploadedBy
+            : doc.uploadedBy?.id;
+        return uploader?.toLowerCase() === userEmail;
+      });
 
-    // ✅ Set state
-    setGlobalDocuments(withStatus);
-    setAllDocuments(userFilteredDocs);
+      // ✅ Set state
+      setGlobalDocuments(withStatus);
+      setAllDocuments(userFilteredDocs);
 
-    console.log(`📦 Loaded ${withStatus.length} ${modelType} documents from DB`);
-  } catch (error) {
-    console.error("❌ Error loading backend documents:", error);
-  }
-};
-
+      console.log(
+        `📦 Loaded ${withStatus.length} ${modelType} documents from DB`
+      );
+    } catch (error) {
+      console.error("❌ Error loading backend documents:", error);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -300,13 +300,25 @@ const determineStatus = (doc) => {
   const totalPages = Math.ceil(userDocs.length / documentsPerPage);
 
   const stats = (() => {
-    const globalDocs = globalDocuments;
-    const total = globalDocs.length;
+    // 🔹 Start with all global documents
+    let filteredDocs = globalDocuments;
+
+    // 🔹 If vendor selected, filter documents that match vendor name
+    if (selectedVendor) {
+      filteredDocs = filteredDocs.filter((doc) =>
+        (doc.documentName || "")
+          .toLowerCase()
+          .includes(selectedVendor.toLowerCase())
+      );
+    }
+
+    const total = filteredDocs.length;
     let completed = 0,
       manualReview = 0,
       inProcess = 0;
 
-    globalDocs.forEach((doc) => {
+    // 🔹 Count status by category
+    filteredDocs.forEach((doc) => {
       const status = determineStatus(doc);
       if (status === "Completed" || status === "Reviewed") completed++;
       else if (status === "Manual Review") manualReview++;
@@ -333,9 +345,14 @@ const determineStatus = (doc) => {
       <div className="Dashboard-main-section">
         <nav className="vendor-select">
           <div className="vendor-select-details">
-          <h2>{modelType.charAt(0).toUpperCase() + modelType.slice(1)} Dashboard</h2>
+            <h2>
+              {modelType.charAt(0).toUpperCase() + modelType.slice(1)} Dashboard
+            </h2>
 
-            <p>Showing documents for {modelType}</p>
+            <p>
+              Showing documents for{" "}
+              {modelType.charAt(0).toUpperCase() + modelType.slice(1)}
+            </p>
             <p>View your document processing activity and insights</p>
           </div>
           <div className="Dashboard-main-section-vendor-select">
@@ -384,7 +401,7 @@ const determineStatus = (doc) => {
               <h3>Upload Documents</h3>
               <p>Upload documents for AI-powered data extraction</p>
             </div>
-            <div className="input-section" onClick={handleClick}>
+            <div className="input-section">
               <Upload className="Upload" size={48} />
               <h3 className="upload-section-h3">
                 Drop files here or click to upload
@@ -505,9 +522,7 @@ const determineStatus = (doc) => {
           </div>
         </div>
       </div>
-      <footer>
-        <Footer />
-      </footer>
+      <Footer />
       <ToastContainer />
     </div>
   );

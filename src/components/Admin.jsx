@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, BarChart2, Users, Database, X, Shield, Download, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import './Admin.css';
 import Footer from "../Layout/Footer";
-import FilePagination from '../Layout/Filepagination';
+import FilePagination from '../Layout/FilePagination';
 import useSortableData from "../utils/useSortableData";
 
 const Admin = () => {

@@ -333,7 +333,12 @@ function Table() {
         .toLowerCase()
         .includes(lenderNameFilter.toLowerCase());
 
-    return matchesSearch && matchesVendor && matchesAccountHolder && matchesLenderName;
+    return (
+      matchesSearch &&
+      matchesVendor &&
+      matchesAccountHolder &&
+      matchesLenderName
+    );
   });
 
   const handleInfoClick = (file) => {
@@ -368,9 +373,7 @@ function Table() {
     });
     saveAs(
       blob,
-      `${selectedModelType}_Report_${new Date()
-        .toISOString()
-        .slice(0, 10)}.csv`
+      `${selectedModelType}_Report_${new Date().toISOString().slice(0, 10)}.csv`
     );
   };
 
@@ -412,7 +415,7 @@ function Table() {
     <div className="table-component-container">
       <Header />
       <div className="dataview-container">
-        <h2>{selectedModelType} Data View</h2>
+        <h1>{selectedModelType} Data View</h1>
 
         {/* Model Type Selector */}
         {/* <div className="model-type-selector">
@@ -431,7 +434,6 @@ function Table() {
 
         {/* Filters */}
         <div className="filters">
-          {/* Vendor Filter (Invoice only) */}
           {selectedModelType === "Invoice" && (
             <label>
               <strong>Vendor:</strong>
@@ -508,7 +510,7 @@ function Table() {
             <strong>Search All:</strong>
             <input
               type="text"
-              placeholder={`Search ${selectedModelType.toLowerCase()}...`}
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -535,10 +537,15 @@ function Table() {
                     {modelTypeHeaders[selectedModelType].map((header, idx) => (
                       <th
                         key={idx}
-                        onClick={() => toggleSort(modelTypeKeys[selectedModelType][idx])}
+                        onClick={() =>
+                          toggleSort(modelTypeKeys[selectedModelType][idx])
+                        }
                       >
                         <span className="sortable-header">
-                          {header} {renderSortIcon(modelTypeKeys[selectedModelType][idx])}
+                          {header}{" "}
+                          {renderSortIcon(
+                            modelTypeKeys[selectedModelType][idx]
+                          )}
                         </span>
                       </th>
                     ))}
@@ -551,27 +558,39 @@ function Table() {
                         {modelTypeKeys[selectedModelType].map((key, idx) =>
                           key === "_rawDocument" ? (
                             <td key={idx}>
-                              <button 
+                              <button
                                 className="action-btn"
-                                onClick={() => handleViewDocument(item._rawDocument)}
+                                onClick={() =>
+                                  handleViewDocument(item._rawDocument)
+                                }
                               >
                                 View
                               </button>
                             </td>
                           ) : key === "confidenceScore" ? (
                             <td key={idx}>
-                              {item.confidenceScore !== "N/A" ? 
-                                `${parseFloat(item.confidenceScore).toFixed(2)}%` : "N/A"}
+                              {item.confidenceScore !== "N/A"
+                                ? `${parseFloat(item.confidenceScore).toFixed(
+                                    2
+                                  )}%`
+                                : "N/A"}
                               {item._rawDocument?.status === "Reviewed" && (
                                 <Info
                                   size={16}
                                   color="#007bff"
-                                  style={{ cursor: "pointer", marginLeft: "5px" }}
-                                  onClick={() => handleInfoClick(item._rawDocument)}
+                                  style={{
+                                    cursor: "pointer",
+                                    marginLeft: "5px",
+                                  }}
+                                  onClick={() =>
+                                    handleInfoClick(item._rawDocument)
+                                  }
                                 />
                               )}
                             </td>
-                          ) : key === "invoiceDate" || key === "uploadDate" || key === "StatementPeriod" ? (
+                          ) : key === "invoiceDate" ||
+                            key === "uploadDate" ||
+                            key === "StatementPeriod" ? (
                             <td key={idx}>{formatDate(item[key])}</td>
                           ) : (
                             <td key={idx}>{item[key]}</td>
@@ -581,7 +600,10 @@ function Table() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={modelTypeHeaders[selectedModelType].length} style={{ textAlign: "center" }}>
+                      <td
+                        colSpan={modelTypeHeaders[selectedModelType].length}
+                        style={{ textAlign: "center" }}
+                      >
                         No records found.
                       </td>
                     </tr>

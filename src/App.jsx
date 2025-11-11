@@ -7,7 +7,7 @@ import {
   UnauthenticatedTemplate,
 } from "@azure/msal-react";
 import { PublicClientApplication, InteractionStatus } from "@azure/msal-browser";
- 
+ import './styles/theme.css';  
 import Login from "./components/Login";
 import Home from "./components/Home";
 import Table from "./components/Table";

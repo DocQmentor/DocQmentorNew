@@ -1,0 +1,32 @@
+/* =========================================
+   🎨 DOCQMENTOR OFFICIAL THEME
+   ========================================= */
+:root {
+  /* ===== Brand Core ===== */
+  --primary-color: #256695;     /* Main Blue - Headers, Tables, Buttons (Primary) */
+  --secondary-color: #ec2225;   /* Accent Red - Highlights, CTAs, Icons */
+
+  /* ===== Functional Colors ===== */
+  --success-color: #2e9a55;     /* Success, Completed */
+  --warning-color: #ffaf00;     /* In Process, Pending */
+  --danger-color: #ec1212;      /* Manual Review / Failed */
+
+  /* ===== Neutral & Layout ===== */
+  --background-color: #f9f9f9;
+  --card-bg: #ffffff;
+  --border-color: #ccc;
+
+  /* ===== Text ===== */
+  --text-color: var(--primary-color);
+  --text-muted: #47556e;
+  --text-light: #ffffff;
+
+  /* ===== Table Rows ===== */
+  --table-row-even: #f4f7fa;
+  --table-row-hover: #eaf1f5;
+
+  /* ===== Common Elements ===== */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 4px 10px rgba(0, 0, 0, 0.15);
+  --btn-radius: 6px;
+}

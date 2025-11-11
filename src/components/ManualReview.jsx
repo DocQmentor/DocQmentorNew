@@ -340,7 +340,7 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
       {show ? (
         <div className="ManualReview-main-container">
           <div className="ManualReview-Table-header">
-            <h1>Manual Review</h1>
+            <h1> {selectedModelType} Manual Review</h1>
 
             {/* <p style={{ color: "green" }}>
               Showing {filteredDocs.length} / {manualReviewDocs.length} documents
@@ -385,18 +385,20 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
                 </label>
               )}
               <label>
-                <strong>From:</strong>
+                <strong>From Date:</strong>
                 <input
                   type="date"
                   value={fromDate}
+                  max={today}
                   onChange={(e) => setFromDate(e.target.value)}
                 />
               </label>
               <label>
-                <strong>To:</strong>
+                <strong>To Date:</strong>
                 <input
                   type="date"
                   value={toDate}
+                  max={today}
                   onChange={(e) => setToDate(e.target.value)}
                 />
               </label>
@@ -412,7 +414,7 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
                 </select>
               </label>
               <label>
-                <strong>Search:</strong>
+                <strong>Search All:</strong>
                 <input
                   type="text"
                   placeholder="Search..."
@@ -431,6 +433,8 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
 
           {loading && <p>Loading documents...</p>}
           {error && <p style={{ color: "red" }}>Error: {error}</p>}
+
+          
           <div style={{ overflowX: "auto" }}>
             <table className="ManualReview-Table">
               <thead>
