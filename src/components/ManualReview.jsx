@@ -170,59 +170,60 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
         const data = await response.json();
 
         const docsNeedingReview = data.filter((doc) => {
-          const model = doc.modelType?.toLowerCase()?.trim();
-          if (!model) return false;
+  const model = doc.modelType?.toLowerCase()?.trim();
+  const selected = selectedModelType.toLowerCase();
 
-          // skip already reviewed
-          if (doc.wasReviewed === true || doc.wasReviewed === "true")
-            return false;
+  // ✅ Only include docs matching the current selected model type
+  if (!model || model !== selected) return false;
 
-          // parse confidence safely
-          let totalScore = 0;
-          if (typeof doc.totalConfidenceScore === "string") {
-            totalScore =
-              parseFloat(doc.totalConfidenceScore.replace("%", "").trim()) || 0;
-          } else {
-            totalScore = parseFloat(doc.totalConfidenceScore) || 0;
-          }
+  // ✅ Skip already reviewed
+  if (doc.wasReviewed === true || doc.wasReviewed === "true") return false;
 
-          const requiredFieldsByModel = {
-            invoice: [
-              "VendorName",
-              "InvoiceId",
-              "InvoiceDate",
-              "LPO NO",
-              "SubTotal",
-              "VAT",
-              "InvoiceTotal",
-            ],
-            bankstatement: [
-              "AccountHolder",
-              "AccountNumber",
-              "StatementPeriod",
-              "OpeningBalance",
-              "ClosingBalance",
-            ],
-            mortgageforms: [
-              "Lendername",
-              "Borrowername",
-              "Loanamount",
-              "Interest",
-              "Loantenure",
-            ],
-          };
+  // ✅ Parse confidence safely
+  let totalScore = 0;
+  if (typeof doc.totalConfidenceScore === "string") {
+    totalScore =
+      parseFloat(doc.totalConfidenceScore.replace("%", "").trim()) || 0;
+  } else {
+    totalScore = parseFloat(doc.totalConfidenceScore) || 0;
+  }
 
-          const extracted = doc.extractedData || {};
-          const requiredFields = requiredFieldsByModel[model] || [];
-          const hasMissing = requiredFields.some(
-            (field) =>
-              !extracted[field] || extracted[field].toString().trim() === ""
-          );
+  const requiredFieldsByModel = {
+    invoice: [
+      "VendorName",
+      "InvoiceId",
+      "InvoiceDate",
+      "LPO NO",
+      "SubTotal",
+      "VAT",
+      "InvoiceTotal",
+    ],
+    bankstatement: [
+      "AccountHolder",
+      "AccountNumber",
+      "StatementPeriod",
+      "OpeningBalance",
+      "ClosingBalance",
+    ],
+    mortgageforms: [
+      "Lendername",
+      "Borrowername",
+      "Loanamount",
+      "Interest",
+      "Loantenure",
+    ],
+  };
 
-          // fail condition
-          const needsReview = totalScore < 85 || hasMissing;
-          return needsReview;
-        });
+  const extracted = doc.extractedData || {};
+  const requiredFields = requiredFieldsByModel[model] || [];
+  const hasMissing = requiredFields.some(
+    (field) => !extracted[field] || extracted[field].toString().trim() === ""
+  );
+
+  // ✅ Keep only documents with low confidence or missing fields
+  return totalScore < 85 || hasMissing;
+});
+
 
         console.log("📊 Docs needing review:", docsNeedingReview);
         setManualReviewDocs(docsNeedingReview);

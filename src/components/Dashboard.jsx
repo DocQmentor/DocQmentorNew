@@ -374,24 +374,24 @@ const Dashboard = () => {
 
         <main className="stats-container">
           <div className="stat-box Total">
-            <FileText className="i" size={24} />
-            <p>Total</p>
-            <div className="total">{stats.total}</div>
+            <FileText className="stat-icon" size={24} />
+            <p className="stat-label">Total</p>
+            <div className="stat-value">{stats.total}</div>
           </div>
           <div className="stat-box completed">
-            <CheckCircle className="i" size={24} />
-            <p>Completed</p>
-            <div className="total">{stats.completed}</div>
+            <CheckCircle className="stat-icon" size={24} />
+            <p className="stat-label">Completed</p>
+            <div className="stat-value">{stats.completed}</div>
           </div>
           <div className="stat-box inprocess">
-            <Clock className="i" size={24} />
-            <p>In Process</p>
-            <div className="total">{stats.inProcess}</div>
+            <Clock className="stat-icon" size={24} />
+            <p className="stat-label">In Process</p>
+            <div className="stat-value">{stats.inProcess}</div>
           </div>
           <div className="stat-box manual-review">
-            <AlertTriangle className="i" size={24} />
-            <p>Manual Review</p>
-            <div className="total">{stats.manualReview}</div>
+            <AlertTriangle className="stat-icon" size={24} />
+            <p className="stat-label">Manual Review</p>
+            <div className="stat-value">{stats.manualReview}</div>
           </div>
         </main>
 
@@ -525,6 +525,7 @@ const Dashboard = () => {
       <Footer />
       <ToastContainer />
     </div>
+   
   );
 };
 

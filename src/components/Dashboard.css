@@ -6,6 +6,12 @@
 
 }
 
+.status-section table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  align-items: center;
+}
 .dashboard-total-container {
     width: 100%;
     min-height: 100vh;
@@ -23,6 +29,14 @@
     align-items: center;
     gap: 12px;
 }
+.footer-component-container {
+  width: 100vw; /* stretches to full viewport width */
+  margin-left: calc(-50vw + 50%); /* fixes center offset if parent is centered */
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
+}
+
 .dashboard-heading {
       /* margin-left: 200px; */
   font-size: 28px;
@@ -34,6 +48,7 @@
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
+  align-items: center;
 }
 
 /* ===== Fixed Column Widths ===== */
@@ -186,43 +201,96 @@
   box-shadow: 0 0 0 3px rgba(21, 67, 96, 0.15);
   cursor: pointer;
 }
+/* ====== Stats Container ====== */
 .stats-container {
-    width: 100%;
-    display: flex;
-    gap: 20px;
-    justify-content: space-around;
-    align-items: center;
-    text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* reduced gap between cards */
+  flex-wrap: wrap;
+  width: 90%;
+  max-width: 1100px; /* slightly narrower overall */
+  margin: 10px auto 20px;
+  box-sizing: border-box;
 }
-.stats-container .Total{
-    grid-area: Total;
-}
-.stats-container .completed{
-    grid-area: completed;
-}
-.stats-container .inprocess{
-    grid-area: inprocess;
-}
-.stats-container .manual-review{
-    grid-area: manual-review;
-    /* cursor: pointer; */
-}
+
+/* ====== Stat Card ====== */
 .stat-box {
-    width: 100%;
-    height: 100px;
-    background-color: #ffff;
-    padding: 30px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    display: grid;
-    justify-content: space-around;
-    font-size: larger;
-    align-items: center;
-    grid-template-areas:
-    "i b"
-    "i total"
-    ;
+  flex: 1 1 22%;
+  min-width: 200px; /* reduced width */
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+  text-align: center;
+  padding: 22px 8px 18px; /* tighter padding */
+  transition: all 0.3s ease;
+  border: 1px solid #f2f2f2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+
+.stat-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ====== Icon ====== */
+.stat-icon {
+  font-size: 32px; /* smaller icon */
+  margin-bottom: 8px;
+}
+
+/* ====== Label ====== */
+.stat-label {
+  font-size: 15px; /* smaller label */
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+/* ====== Value ====== */
+.stat-value {
+  font-size: 22px; /* smaller number */
+  font-weight: 700;
+}
+
+/* ====== Color Variations ====== */
+.Total .stat-icon,
+.Total .stat-value {
+  color: #0078d4;
+}
+
+.completed .stat-icon,
+.completed .stat-value {
+  color: #1e9b50;
+}
+
+.inprocess .stat-icon,
+.inprocess .stat-value {
+  color: #f7a600;
+}
+
+.manual-review .stat-icon,
+.manual-review .stat-value {
+  color: #d93025;
+}
+
+/* ====== Responsive Design ====== */
+@media (max-width: 1024px) {
+  .stat-box {
+    flex: 1 1 45%;
+  }
+}
+
+@media (max-width: 600px) {
+  .stat-box {
+    flex: 1 1 100%;
+  }
+}
+
+
 .Dashboard-upload-table-section{
     gap: 20px;
     border-radius: 10px;
