@@ -272,3 +272,104 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
     throw error;
   }
 };
+// import { BlobServiceClient } from "@azure/storage-blob";
+// import { v4 as uuidv4 } from "uuid";
+// import axios from "axios";
+
+// // Azure info
+// const BLOB_SERVICE_URL_WITH_SAS =
+//   "https://docqmentor2blob.blob.core.windows.net/?sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-05-31T18:29:59Z&st=2025-05-21T09:45:27Z&spr=https&sig=UO0XVGFTlz3IpM6Q5LIkrTkCDQcr3Rx%2FeXn3FEvsQJM%3D";
+
+// const CONTAINER_NAME = "docqmentor2";
+
+// const AZURE_FUNCTION_URL =
+//   "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==";
+
+// // Helpers
+// const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
+
+// const extractFolderName = (filename) => {
+//   const baseName = filename.substring(0, filename.lastIndexOf(".")) || filename;
+//   let parts = baseName.split(/[\s\-_]+/);
+
+//   const filtered = parts.filter((p) => !/^\d+$/.test(p) && !/^copy$/i.test(p));
+//   let cleaned = filtered.join(" ");
+//   cleaned = splitCamelCase(cleaned);
+
+//   return cleaned.trim().toUpperCase();
+// };
+
+// // Duplicate check
+// const fileExists = async (containerClient, folderPath, fileName) => {
+//   for await (const blob of containerClient.listBlobsFlat({ prefix: folderPath })) {
+//     const existing = blob.name.substring(blob.name.lastIndexOf("/") + 1);
+//     if (existing.toLowerCase() === fileName.toLowerCase()) {
+//       return true;
+//     }
+//   }
+//   return false;
+// };
+
+// // MAIN Upload function
+// export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
+//   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
+//   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
+
+//   const folderName = extractFolderName(file.name);
+//   const fileName = `${uuidv4()}-${file.name}`; // keep UUID prefix
+//   const filePath = `${modelType}/${folderName}/${fileName}`;
+//   const folderPath = `${modelType}/${folderName}/`;
+
+//   // check duplicates for original file name, not UUID
+//   const exists = await fileExists(containerClient, folderPath, file.name);
+//   if (exists) {
+//     return { error: `File "${file.name}" already exists. Please rename and upload again.` };
+//   }
+
+//   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
+
+//   // Upload
+//   await blockBlobClient.uploadData(file, {
+//     blobHTTPHeaders: { blobContentType: file.type },
+//     onProgress: (ev) => {
+//       if (onProgress && ev.loadedBytes && file.size) {
+//         const percent = Math.round((ev.loadedBytes * 100) / file.size);
+//         onProgress(percent);
+//       }
+//     },
+//   });
+
+//   const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
+//   const blobUrlWithSAS = `${blockBlobClient.url}?${sasToken}`;
+
+//   // Metadata
+//   const metadata = {
+//     FileName: file.name,
+//     FileSize: file.size,
+//     FileFormat: file.type,
+//     UploadDate: new Date().toISOString(),
+//     PageCount: 0,
+//   };
+
+//   const uploadId = uuidv4();
+
+//   // POST to backend (old working body)
+//   await axios.post(`${AZURE_FUNCTION_URL}&modelType=${modelType}`, {
+//     uploadId,
+//     blobUrl: blobUrlWithSAS,
+//     documentName: file.name,
+//     modelType,
+//     uploadedBy: { id: userId, name: userName },
+//     metadata,
+//   });
+
+//   // return for UI
+//   return {
+//     fileName: file.name,
+//     folderName,
+//     uploadedAt: new Date(),
+//     status: "In Process",
+//     url: blobUrlWithSAS,
+//     modelType,
+//   };
+// };

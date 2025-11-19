@@ -38,7 +38,7 @@ const Dashboard = () => {
   const [selectedVendor, setSelectedVendor] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [modelType, setModelType] = useState("");
-
+  const [localInProcess, setLocalInProcess] = useState([]);
   const selectedmodelType =
     localStorage.getItem("selectedModelType") || "Invoice";
   const documentsPerPage = 10;
@@ -111,7 +111,17 @@ const Dashboard = () => {
       );
     });
   };
+ const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
 
+  const extractFolderName = (filename) => {
+    const baseName = filename.substring(0, filename.lastIndexOf(".")) || filename;
+    let parts = baseName.split(/[\s\-_]+/);
+
+    const filtered = parts.filter((p) => !/^\d+$/.test(p) && !/^copy$/i.test(p));
+    let cleaned = filtered.join(" ");
+    cleaned = splitCamelCase(cleaned);
+    return cleaned.trim().toUpperCase();
+  };
   const determineStatus = (doc) => {
     if (!doc) return "Manual Review";
 
@@ -208,17 +218,64 @@ const Dashboard = () => {
   };
 
   // 🧩 File upload and processing
+   // FileChange: validate duplicates against DB (globalDocuments) and local queue (localInProcess)
   const FileChange = (e) => {
-    const newFiles = Array.from(e.target.files).map((file) => ({
-      file,
-      fileName: file.name,
-      uploadId: uuidv4(),
-      uploadedAt: new Date().toISOString(),
-      status: "In Process",
-      url: null,
-    }));
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    const validFiles = [];
+
+    for (const file of files) {
+      const fileName = file.name;
+      const folderName = extractFolderName(fileName);
+
+      // 1) Check local in-process queue first (files just selected or uploading)
+      const foundInLocal = localInProcess.some(
+        (item) => item.documentName?.toLowerCase() === fileName.toLowerCase()
+      );
+      if (foundInLocal) {
+        toast.error(`File "${fileName}" is already queued for upload.`);
+        continue;
+      }
+
+      // 2) Check DB / already processed files (globalDocuments)
+      //    We compare by documentName or url/fileName if documentName missing
+      const foundInDB = globalDocuments.some((doc) => {
+        const docName = (doc.documentName || doc.fileName || "").toLowerCase();
+        // ensure same modelType and vendor folder (if your DB has modelType/vendor info you can refine)
+        return docName === fileName.toLowerCase();
+      });
+
+      if (foundInDB) {
+        toast.error(`File "${fileName}" already exists in storage. Please rename and select again.`);
+        continue;
+      }
+
+      // Passed checks -> add to selected files list
+      validFiles.push({
+        file,
+        fileName,
+        uploadId: uuidv4(),
+        uploadedAt: new Date().toISOString(),
+        status: "In Process",
+        url: null,
+        folderName,
+      });
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...validFiles]);
+      // add them to localInProcess immediately so they are counted and blocked from re-selection
+      const queueItems = validFiles.map((f) => ({
+        id: f.uploadId,
+        documentName: f.fileName,
+        uploadedAt: f.uploadedAt,
+        status: "In Process",
+      }));
+      setLocalInProcess((prev) => [...prev, ...queueItems]);
+    }
   };
+
 
   const handleDeleteFile = (index) => {
     const updated = [...selectedFiles];
@@ -229,41 +286,58 @@ const Dashboard = () => {
   const handleClick = () => fileInputRef.current.click();
 
   const handleProcessFiles = async () => {
-    if (selectedFiles.length === 0) return;
-    setIsUploading(true);
+  if (selectedFiles.length === 0) return;
+  setIsUploading(true);
 
-    for (const fileObj of selectedFiles) {
-      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
-        autoClose: 1000,
-      });
+  // Add selected files to local in-process list
+  const localQueueItems = selectedFiles.map((fileObj) => ({
+    id: fileObj.uploadId,
+    documentName: fileObj.fileName,
+    uploadedAt: new Date().toISOString(),
+    status: "In Process",
+  }));
 
-      try {
-        await uploadToAzure(
-          fileObj.file,
-          modelType,
-          email || currentUser.id,
-          name || currentUser.name,
-          (percent) => {
-            toast.update(toastId, {
-              render: `${fileObj.fileName} uploading: ${percent}%`,
-              isLoading: percent < 100,
-              autoClose: percent >= 100 ? 2000 : false,
-            });
-          }
-        );
-        toast.success(`${fileObj.fileName} uploaded successfully!`);
-      } catch (err) {
-        console.error(err);
-        toast.error(`Failed to upload ${fileObj.fileName}`);
+  setLocalInProcess((prev) => [...prev, ...localQueueItems]);
+
+  for (const fileObj of selectedFiles) {
+    const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
+      autoClose: 1000,
+    });
+
+    try {
+      const result = await uploadToAzure(
+        fileObj.file,
+        modelType,
+        email || currentUser.id,
+        name || currentUser.name,
+        (percent) => {
+          toast.update(toastId, {
+            render: `${fileObj.fileName} uploading: ${percent}%`,
+            isLoading: percent < 100,
+            autoClose: percent >= 100 ? 2000 : false,
+          });
+        }
+      );
+
+      // Duplicate Error (no console error)
+      if (result?.error) {
+        toast.error(result.error);
+        continue;
       }
+
+      toast.success(`${fileObj.fileName} uploaded successfully!`);
+
+    } catch (err) {
+      toast.error("Upload failed. Please try again.");
     }
+  }
 
-    setSelectedFiles([]);
-    setIsUploading(false);
+  setSelectedFiles([]);
+  setIsUploading(false);
 
-    // ✅ Re-fetch after upload to prevent duplicates
-    await fetchDocumentsFromBackend();
-  };
+  await fetchDocumentsFromBackend();
+};
+
 
   // 🧩 Date formatter
   const formatDate = (dateString) => {
