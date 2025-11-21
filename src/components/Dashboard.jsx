@@ -240,11 +240,21 @@ const Dashboard = () => {
 
       // 2) Check DB / already processed files (globalDocuments)
       //    We compare by documentName or url/fileName if documentName missing
-      const foundInDB = globalDocuments.some((doc) => {
-        const docName = (doc.documentName || doc.fileName || "").toLowerCase();
-        // ensure same modelType and vendor folder (if your DB has modelType/vendor info you can refine)
-        return docName === fileName.toLowerCase();
-      });
+     const foundInDB = globalDocuments.some((doc) => {
+  const docName =
+    (doc.documentName || doc.fileName || doc.url || "").toLowerCase();
+
+  // extract name from blobUrl if needed
+  const urlName = doc.blobUrl
+    ? doc.blobUrl.split("/").pop().split("?")[0].toLowerCase()
+    : "";
+
+  return (
+    docName === fileName.toLowerCase() ||
+    urlName === fileName.toLowerCase()
+  );
+});
+
 
       if (foundInDB) {
         toast.error(`File "${fileName}" already exists in storage. Please rename and select again.`);
