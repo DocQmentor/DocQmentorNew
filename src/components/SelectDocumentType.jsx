@@ -30,7 +30,7 @@ const SelectDocumentType = () => {
           <h1>Select Document Type</h1>
           <p>
             Choose the document you want to upload and process with AI-powered
-            automation.
+            automation New update.
           </p>
         </div>
 

@@ -182,6 +182,8 @@
 // };
 
 
+
+// new **********************************************
 import { BlobServiceClient } from "@azure/storage-blob";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
@@ -207,32 +209,14 @@ const extractFolderName = (filename) => {
   return cleaned.trim().toUpperCase();
 };
 
-// 🚨 Check if file exists in Blob storage (same directory)
-const fileExistsInBlob = async (containerClient, folderPath, fileName) => {
-  for await (const blob of containerClient.listBlobsFlat({ prefix: folderPath })) {
-    const existingName = blob.name.split("/").pop().toLowerCase();
-    if (existingName === fileName.toLowerCase()) {
-      return true;
-    }
-  }
-  return false;
-};
-
-// 🚀 FINAL UPLOAD FUNCTION (No UUID + Duplicate Safe)
+// ✅ Enhanced upload with metadata
 export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
 
   const folderName = extractFolderName(file.name);
-  const filePath = `${modelType}/${folderName}/${file.name}`;
-  const folderPath = `${modelType}/${folderName}/`;
-
-  // ❗ Duplicate Check Right Before Upload
-  const exists = await fileExistsInBlob(containerClient, folderPath, file.name);
-  if (exists) {
-    return { error: `File "${file.name}" already exists. Please rename and upload again.` };
-  }
-
+  const uniqueFileName = `${uuidv4()}-${file.name}`;
+  const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
 
   try {
@@ -247,29 +231,31 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
       },
     });
 
-    // 2️⃣ Generate SAS URL
+    // 2️⃣ Generate SAS-protected URL
     const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
-    const blobUrlWithSAS = `${blockBlobClient.url}?${sasToken}`;
+    const blobUrlWithSAS = blockBlobClient.url.includes("?")
+      ? blockBlobClient.url
+      : `${blockBlobClient.url}?${sasToken}`;
 
-    // 3️⃣ Metadata
+    // 3️⃣ Metadata for Cosmos DB
     const metadata = {
-      FileName: file.name,
-      FileSize: file.size,
-      FileFormat: file.type || "application/pdf",
+      fileName: file.name,
+      fileSizeKB: file.size,
+      fileFormat: file.type || "application/pdf",
       UploadDate: new Date().toISOString(),
-      PageCount: 0,
+      pageCount: 0, // can be updated later
     };
 
     // 4️⃣ Post to backend
     const uploadId = uuidv4();
-
     await axios.post(AZURE_FUNCTION_URL, {
       uploadId,
       blobUrl: blobUrlWithSAS,
       documentName: file.name,
       modelType,
       uploadedBy: { id: userId, name: userName },
-      metadata,
+      metadata, // ✅ added metadata
+      
     });
 
     // 5️⃣ Return UI info
