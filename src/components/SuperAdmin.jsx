@@ -29,6 +29,8 @@ const SuperAdmin = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form Submitted:", { ...formData, plan, aiModelOne, aiModelTwo });
+
+    alert("Client Added Successfully!");
     setShowPopup(false);
     handleClear();
   };
@@ -38,28 +40,28 @@ const SuperAdmin = () => {
       <main className="superAdmin-main">
         {/* Stats Box */}
         <div className="superAdmin-stats-box">
-          <ul>
-            <li>
-              <p>Total Docs</p>
-              <p>1,000</p>
-            </li>
-            <li>
-              <p>Avg Docs / Day</p>
-              <p>2,000</p>
-            </li>
-            <li>
-              <p>No. of Users</p>
-              <p>3,000</p>
-            </li>
-          </ul>
-        </div>
+  <div className="stat-card">
+    <h3>1,000</h3>
+    <p>Total Documents</p>
+  </div>
+  <div className="stat-card">
+    <h3>3,000</h3>
+    <p>Total Users</p>
+  </div>
+  <div className="stat-card">
+    <h3>15</h3>
+    <p>Total Clients</p>
+  </div>
+</div>
 
-        {/* Clients Table */}
+
+        {/* Table + Add Button */}
         <div className="superAdmin-add-table">
           <div className="superAdmin-add-clients">
             <h3>Client Management</h3>
-            <button onClick={() => setShowPopup(true)}>Add Client</button>
+            <button className="primary-btn" onClick={() => setShowPopup(true)}>+ Add Client</button>
           </div>
+
           <div className="superAdmin-table-box">
             <table>
               <thead>
@@ -72,12 +74,13 @@ const SuperAdmin = () => {
                 </tr>
               </thead>
               <tbody>
+                {/* Dynamic Rows Later */}
                 <tr>
                   <td>--</td>
                   <td>--</td>
                   <td>--</td>
                   <td>--</td>
-                  <td><button>View</button></td>
+                  <td><button className="view-btn">View</button></td>
                 </tr>
               </tbody>
             </table>
@@ -85,27 +88,27 @@ const SuperAdmin = () => {
         </div>
       </main>
 
-      {/* Popup Form */}
+      {/* Popup */}
       {showPopup && (
         <div className="popup-overlay">
-          <div className="popup-form">
+          <div className="popup-form animate-popup">
             <h2>Add Client</h2>
             <form onSubmit={handleSubmit}>
               {/* Subscription Plan */}
-              <label>Subscription Plan:</label>
+              <label>Subscription Plan*</label>
               <select value={plan} onChange={(e) => setPlan(e.target.value)} required>
                 <option value="">Select Plan</option>
-                <option value="Pro">Pro (Starter)</option>
-                <option value="Pro+">Pro+ (Advanced)</option>
-                <option value="Premium">Premium (Enterprise)</option>
+                <option value="Pro">Pro (Starter) - 1 AI Model</option>
+                <option value="Pro+">Pro+ (Advanced) - 2 AI Models</option>
+                <option value="Premium">Premium (Enterprise) - All AI Models</option>
               </select>
 
-              {/* AI Models */}
+              {/* Dynamic AI Model Options */}
               {plan === "Pro" && (
                 <>
-                  <label>AI Model:</label>
+                  <label>Select AI Model*</label>
                   <select value={aiModelOne} onChange={(e) => setAiModelOne(e.target.value)} required>
-                    <option value="">Select Model</option>
+                    <option value="">Choose Model</option>
                     {aiOptions.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
                     ))}
@@ -115,76 +118,52 @@ const SuperAdmin = () => {
 
               {plan === "Pro+" && (
                 <>
-                  <label>AI Model One:</label>
+                  <label>AI Model One*</label>
                   <select value={aiModelOne} onChange={(e) => setAiModelOne(e.target.value)} required>
-                    <option value="">Select Model</option>
-                    {aiOptions
-                      .filter((opt) => opt !== aiModelTwo)
-                      .map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
+                    <option value="">Choose Model</option>
+                    {aiOptions.filter(opt => opt !== aiModelTwo).map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
                   </select>
 
-                  <label>AI Model Two:</label>
+                  <label>AI Model Two*</label>
                   <select value={aiModelTwo} onChange={(e) => setAiModelTwo(e.target.value)} required>
-                    <option value="">Select Model</option>
-                    {aiOptions
-                      .filter((opt) => opt !== aiModelOne)
-                      .map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
+                    <option value="">Choose Model</option>
+                    {aiOptions.filter(opt => opt !== aiModelOne).map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
                   </select>
                 </>
               )}
 
               {plan === "Premium" && (
                 <div className="premium-models">
-                  <p>AI Models: Invoice, Bank Statement, Mortgage (Pre-selected)</p>
+                  <p><strong>AI Models included:</strong> Invoice, Bank Statement & Mortgage ✔</p>
                 </div>
               )}
 
-              {/* Client Details */}
-              <label>Company Name:</label>
-              <input
-                type="text"
-                name="companyName"
-                value={formData.companyName}
-                onChange={handleInputChange}
-                required
-              />
+              {/* Company Details */}
+              <label>Company Name*</label>
+              <input type="text" name="companyName" value={formData.companyName} onChange={handleInputChange} required />
 
-              <label>Email:</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
+              <label>Email*</label>
+              <input type="email" name="email" value={formData.email} onChange={handleInputChange} required />
 
-              <label>Company Address:</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-              />
+              <label>Address*</label>
+              <input type="text" name="address" value={formData.address} onChange={handleInputChange} required />
 
               {/* Actions */}
               <div className="form-actions">
-                <button type="submit">Submit</button>
-                <button type="button" onClick={handleClear}>Clear</button>
-                <button type="button" onClick={() => setShowPopup(false)}>Cancel</button>
+                <button type="submit" className="primary-btn">Submit</button>
+                <button type="button" className="clear-btn" onClick={handleClear}>Clear</button>
+                <button type="button" className="cancel-btn" onClick={() => setShowPopup(false)}>Cancel</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      <footer>
-        <Footer />
-      </footer>
+      <footer><Footer /></footer>
     </div>
   );
 };

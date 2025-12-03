@@ -1,102 +1,109 @@
-.superAdmin-container{
+/* MAIN PAGE STRUCTURE */
+.superAdmin-container {
   width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
-.superAdmin-main{
-  border: 1px solid #ccc;
-  /* margin-top: 65px; */
-  margin: 65px 10px 0 10px;
-  border-radius: 10px;
-  flex: 1;
+
+.superAdmin-main {
+  margin: 70px 20px 0 20px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* STATS CARDS */
+.superAdmin-stats-box ul {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+.superAdmin-stats-box ul li {
+  list-style: none;
+  background: #0d3c61;
+  width: 180px;
+  height: 80px;
+  border-radius: 12px;
+  color: white;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  justify-content: center;
+  align-items: center;
+}
+
+.superAdmin-stats-box h4 {
+  font-size: 22px;
+  margin: 0;
+}
+
+/* TABLE SECTION */
+.superAdmin-add-table {
+  margin-top: 25px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.superAdmin-add-clients {
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
 }
-.superAdmin-stats-box{
-    width: 100%;
-}
-.superAdmin-stats-box ul{
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-.superAdmin-stats-box ul li{
-    list-style: none;
-    width: 160px;
-    height: 50px;
-    background-color: #0d3c61;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10px;
-}
-.superAdmin-stats-box ul li p{
-    background-color: #0d3c61;
-}
-.superAdmin-add-clients button,
-.superAdmin-table-box table button{
-    background-color: #0d3c61;
-    color: white;
-    border-radius: 10px;
-    border: none;
-}
-.superAdmin-add-table{
-    padding: 10px;
-    flex: 1;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    width: 100%;
-}
-.superAdmin-add-clients{
-    padding: 5px 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.superAdmin-add-clients h3{
-    color: #0d3c61;
-}
-.superAdmin-add-clients button{
-    width: 100px;
-    height: 40px;
-}
-.superAdmin-table-box{
-    display: flex;
-    justify-content: center;
-    /* width: 100%; */
-    padding: 10px;
-}
-.superAdmin-table-box table{
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-.superAdmin-table-box table th,
-.superAdmin-table-box table td{
-    text-align: center;
-    padding: 10px;
-    border: 1px solid #ddd;
-}
-.superAdmin-table-box table th{
-    color: white;
-  background: #0d3c61;
+
+.superAdmin-add-clients h3 {
+  color: #0d3c61;
   font-weight: 600;
 }
-.superAdmin-table-box button{
-    width: 60px;
-    height: 30px;
+
+.primary-btn {
+  background: #0d3c61;
+  border: none;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
+.primary-btn:hover {
+  background: #145a87;
+}
 
-/* Popup Overlay */
+.superAdmin-table-box table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.superAdmin-table-box table th {
+  background: #0d3c61;
+  color: #fff;
+  padding: 12px;
+  border: none;
+}
+
+.superAdmin-table-box table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.view-btn {
+  background: #145a87;
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* POPUP UI */
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -107,55 +114,104 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
-/* Popup Form */
 .popup-form {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 400px;
-  max-width: 90%;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  background: #fff;
+  padding: 25px;
+  width: 450px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+.animate-popup {
+  animation: fadeInUp 0.3s ease-in-out;
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .popup-form h2 {
-  margin-bottom: 15px;
+  text-align: center;
   color: #0d3c61;
+  margin-bottom: 15px;
 }
 
 .popup-form label {
-  display: block;
-  margin: 10px 0 5px;
   font-weight: 600;
+  margin-top: 12px;
+  display: block;
 }
 
 .popup-form input,
 .popup-form select {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  margin-top: 5px;
 }
 
+.premium-models {
+  background: #e8f2fa;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* ACTION BUTTONS */
 .form-actions {
   display: flex;
-  justify-content: space-between;
+  gap: 10px;
+  margin-top: 15px;
 }
 
-.form-actions button {
-  flex: 1;
-  margin: 5px;
-  padding: 10px;
-  background-color: #0d3c61;
-  color: white;
-  border: none;
-  border-radius: 5px;
+.clear-btn {
+  background: #9e9e9e;
+}
+
+.cancel-btn {
+  background: #c62828;
+}
+.cancel-btn:hover {
+  background: #a91f1f;
+}
+.superAdmin-stats-box {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  width: 200px;
+  background: #0d3c61;
+  color: #fff;
+  padding: 18px 10px;
+  text-align: center;
+  border-radius: 12px;
+  box-shadow: 0px 3px 8px rgba(0,0,0,0.15);
+  transition: 0.3s;
   cursor: pointer;
 }
 
-.form-actions button:hover {
-  background-color: #145a87;
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0px 5px 12px rgba(0,0,0,0.2);
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.stat-card p {
+  margin: 5px 0 0;
+  font-size: 14px;
 }

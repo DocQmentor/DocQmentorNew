@@ -437,7 +437,7 @@ const Dashboard = () => {
               Showing documents for{" "}
               {modelType.charAt(0).toUpperCase() + modelType.slice(1)}
             </p>
-            <p>View your document processing activity and insights       ..............................................</p>
+            <p>View your document processing activity and insights </p>
           </div>
           <div className="Dashboard-main-section-vendor-select">
             <label className="select">Select Vendor:</label>

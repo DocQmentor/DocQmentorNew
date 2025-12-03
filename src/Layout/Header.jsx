@@ -115,7 +115,7 @@ const Header = ({ minimal }) => {
                   <FileText size={20} className="i" /> Data View
                 </NavLink>
               </li>
-              {/* <li className={location.pathname === '/superadmin' ? 'active' : ''}>
+              <li className={location.pathname === '/superadmin' ? 'active' : ''}>
                 <NavLink
                   to="/superadmin"
                   className="a"
@@ -123,7 +123,7 @@ const Header = ({ minimal }) => {
                 >
                   <FileText size={20} className="i" /> Super Admin
                 </NavLink>
-              </li> */}
+              </li>
               <li className={location.pathname === '/admin' ? 'active' : ''}>
                 <NavLink
                   to="/admin"
