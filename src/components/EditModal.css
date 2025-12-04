@@ -156,14 +156,14 @@
 }
 .ManualReview-Edit-editDetails-form-ul-Cancel {
   background-color: #ed2224;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
 }
 .ManualReview-Edit-editDetails-form-ul-Save-Changes-i{
   background-color: #2e9a55;
 }
 .ManualReview-Edit-editDetails-form-ul-Save-Changes {
   background-color: #2e9a55;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
 }
 
 /* ===== Version History Section ===== */

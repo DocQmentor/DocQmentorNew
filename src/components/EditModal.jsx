@@ -20,14 +20,29 @@ const documentTypeFields = {
     { key: "LPO", label: "LPO Number:", type: "text" },
     { key: "SubTotal", label: "Sub Total:", type: "text", sanitize: true },
     { key: "VAT", label: "VAT:", type: "text", sanitize: true },
-    { key: "InvoiceTotal", label: "Invoice Total:", type: "text", sanitize: true },
+    {
+      key: "InvoiceTotal",
+      label: "Invoice Total:",
+      type: "text",
+      sanitize: true,
+    },
   ],
   BankStatement: [
     { key: "AccountHolder", label: "Account Holder:", type: "text" },
     { key: "AccountNumber", label: "Account Number:", type: "text" },
     { key: "StatementPeriod", label: "Statement Period:", type: "text" },
-    { key: "OpeningBalance", label: "Opening Balance:", type: "text", sanitize: true },
-    { key: "ClosingBalance", label: "Closing Balance:", type: "text", sanitize: true },
+    {
+      key: "OpeningBalance",
+      label: "Opening Balance:",
+      type: "text",
+      sanitize: true,
+    },
+    {
+      key: "ClosingBalance",
+      label: "Closing Balance:",
+      type: "text",
+      sanitize: true,
+    },
   ],
   MortgageForms: [
     { key: "LenderName", label: "Lender Name:", type: "text" },
@@ -57,8 +72,8 @@ const fieldMapping = {
     ClosingBalance: "ClosingBalance",
   },
   MortgageForms: {
-    LenderName: "Lendername",      // match DB casing
-    BorrowerName: "Borrowername",  // match DB casing
+    LenderName: "Lendername", // match DB casing
+    BorrowerName: "Borrowername", // match DB casing
     LoanAmount: "Loanamount",
     Interest: "Interest",
     LoanTenure: "Loantenure",
@@ -83,10 +98,11 @@ const EditModal = () => {
   const currentUser = { id: accounts[0]?.username, name: accounts[0]?.name };
 
   // ✅ Normalize modelType (case-insensitive)
-  const rawType =
-    (selectedDocument?.modelType ||
-      localStorage.getItem("selectedModelType") ||
-      "Invoice").toLowerCase();
+  const rawType = (
+    selectedDocument?.modelType ||
+    localStorage.getItem("selectedModelType") ||
+    "Invoice"
+  ).toLowerCase();
 
   const modelMap = {
     invoice: "Invoice",
@@ -271,13 +287,30 @@ const EditModal = () => {
                     className="ManualReview-Edit-editDetails-form-ul-Cancel"
                     onClick={handleCancel}
                   >
-                    <X size={20} /> Cancel
+                    <X
+                      size={20}
+                      color="white"
+                      strokeWidth={2}
+                      style={{ background: "transparent", marginRight: 4 }}
+                    />
+                    <span color="white"
+                      strokeWidth={2}
+                      style={{ background: "transparent", marginRight: 4 }}>Cancel</span>
                   </li>
+
                   <li
                     className="ManualReview-Edit-editDetails-form-ul-Save-Changes"
                     onClick={handleSave}
                   >
-                    <Save size={20} /> Save Changes
+                    <Save
+                      size={20}
+                      color="white"
+                      strokeWidth={2}
+                      style={{ background: "transparent", marginRight: 4 }}
+                    />
+                    <span color="white"
+                      strokeWidth={2}
+                      style={{ background: "transparent", marginRight: 4 }}>Save Changes</span>
                   </li>
                 </ul>
               </form>
@@ -292,8 +325,8 @@ const EditModal = () => {
                 <ul>
                   {selectedDocument.versionHistory.map((v, i) => (
                     <li key={i}>
-                      <strong>v{v.version}</strong> – {v.action} by {v.user.name}{" "}
-                      ({v.user.id}) on{" "}
+                      <strong>v{v.version}</strong> – {v.action} by{" "}
+                      {v.user.name} ({v.user.id}) on{" "}
                       {new Date(v.timestamp).toLocaleString()}
                     </li>
                   ))}
@@ -310,8 +343,7 @@ const EditModal = () => {
               <h3>Document Details</h3>
               <ul>
                 <li>
-                  <b>File Name:</b>{" "}
-                  {selectedDocument?.documentName || "N/A"}
+                  <b>File Name:</b> {selectedDocument?.documentName || "N/A"}
                 </li>
                 <li>
                   <b>File Format:</b>{" "}
