@@ -11,7 +11,7 @@
 /* ===== Page Title ===== */
 .dataview-container h1 {
   font-size: 22px;
-  font-weight: bold;
+  font-weight: 700;
   color: #0d3c61;
   margin-bottom: 12px;
   padding-bottom: 8px;
@@ -20,6 +20,7 @@
 
 /* ===== Main Container ===== */
 .dataview-container {
+  
   margin-top: 20px;
   flex: 1;
   padding: 50px 25px;

@@ -380,8 +380,8 @@ a:hover {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: #0d3c61;
-    background-color: #ffffff;
+    color: #ffffff;
+    background-color: #0d3c61;
     font-weight: 700;
     white-space: nowrap;
     cursor: pointer;

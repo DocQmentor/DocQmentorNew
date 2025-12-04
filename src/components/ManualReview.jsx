@@ -238,79 +238,104 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
   }, [refreshTrigger]);
 
   // Build & filter docs
-  useEffect(() => {
-    const mapped = manualReviewDocs.map((doc) => {
-      const extracted = doc.extractedData || {};
-      const model = doc.modelType?.toLowerCase() || "";
-      const common = {
-        uploadDate: doc.timestamp ? formatDate(doc.timestamp) : "",
-        rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
-        confidenceScore: `${(
-          parseFloat(doc.totalConfidenceScore?.replace("%", "")) || 0
-        ).toFixed(2)}%`,
-        _rawDocument: doc,
+useEffect(() => {
+  const today = new Date();
+  const mapped = manualReviewDocs.map((doc) => {
+    const extracted = doc.extractedData || {};
+    const model = doc.modelType?.toLowerCase() || "";
+    const timestamp = doc.timestamp || doc.uploadDate || null;
+
+    let rawDate = null;
+    if (timestamp) {
+      rawDate = new Date(timestamp);
+      if (isNaN(rawDate.getTime())) rawDate = null;
+    }
+
+    const common = {
+      uploadDate: rawDate ? formatDate(rawDate) : "",
+      rawUploadDate: rawDate,
+      confidenceScore: `${(
+        parseFloat(doc.totalConfidenceScore?.replace("%", "")) || 0
+      ).toFixed(2)}%`,
+      _rawDocument: doc,
+    };
+
+    if (model === "invoice") {
+      return {
+        ...common,
+        VendorName: getString(extracted.VendorName),
+        InvoiceId: getString(extracted.InvoiceId),
+        InvoiceDate: formatDate(extracted.InvoiceDate),
+        LPONO: getString(extracted["LPO NO"]),
+        SubTotal: formatNumber(getString(extracted.SubTotal)),
+        VAT: formatNumber(getString(extracted.VAT)),
+        InvoiceTotal: formatNumber(getString(extracted.InvoiceTotal)),
       };
+    } else if (model === "bankstatement") {
+      return {
+        ...common,
+        AccountHolder: getString(extracted.AccountHolder),
+        AccountNumber: getString(extracted.AccountNumber),
+        StatementPeriod: getString(extracted.StatementPeriod),
+        OpeningBalance: formatNumber(getString(extracted.OpeningBalance)),
+        ClosingBalance: formatNumber(getString(extracted.ClosingBalance)),
+      };
+    } else if (model === "mortgageforms") {
+      return {
+        ...common,
+        Lendername: getString(extracted.Lendername),
+        Borrowername: getString(extracted.Borrowername),
+        Loanamount: formatNumber(getString(extracted.Loanamount)),
+        Interest: getString(extracted.Interest),
+        Loantenure: getString(extracted.Loantenure),
+      };
+    }
+    return common;
+  });
 
-      if (model === "invoice") {
-        return {
-          ...common,
-          VendorName: getString(extracted.VendorName),
-          InvoiceId: getString(extracted.InvoiceId),
-          InvoiceDate: formatDate(extracted.InvoiceDate),
-          LPONO: getString(extracted["LPO NO"]),
-          SubTotal: formatNumber(getString(extracted.SubTotal)),
-          VAT: formatNumber(getString(extracted.VAT)),
-          InvoiceTotal: formatNumber(getString(extracted.InvoiceTotal)),
-        };
-      } else if (model === "bankstatement") {
-        return {
-          ...common,
-          AccountHolder: getString(extracted.AccountHolder),
-          AccountNumber: getString(extracted.AccountNumber),
-          StatementPeriod: getString(extracted.StatementPeriod),
-          OpeningBalance: formatNumber(getString(extracted.OpeningBalance)),
-          ClosingBalance: formatNumber(getString(extracted.ClosingBalance)),
-        };
-      } else if (model === "mortgageforms") {
-        return {
-          ...common,
-          Lendername: getString(extracted.Lendername),
-          Borrowername: getString(extracted.Borrowername),
-          Loanamount: formatNumber(getString(extracted.Loanamount)),
-          Interest: getString(extracted.Interest),
-          Loantenure: getString(extracted.Loantenure),
-        };
-      }
-      return common;
-    });
+  const filtered = mapped.filter((item) => {
+    const itemDate = item.rawUploadDate;
 
-    const filtered = mapped.filter((item) => {
-      const matchSearch = Object.values(item)
-        .join(" ")
+    // Upload date window filtering
+    if (uploadDateFilter !== "all" && itemDate) {
+      const last7 = new Date(today);
+      const last30 = new Date(today);
+      last7.setDate(today.getDate() - 7);
+      last30.setDate(today.getDate() - 30);
+
+      if (uploadDateFilter === "7days" && itemDate < last7) return false;
+      if (uploadDateFilter === "30days" && itemDate < last30) return false;
+    }
+  if (fromDate) {
+    const from = new Date(fromDate);
+    if (isNaN(from.getTime()) || itemDate < from) return false;
+  }
+
+  if (toDate) {
+    const to = new Date(toDate);
+    to.setHours(23, 59, 59, 999); 
+    if (isNaN(to.getTime()) || itemDate > to) return false;
+  }
+    const matchSearch = Object.values(item)
+      .join(" ")
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    const matchVendor =
+      (item.VendorName || item.AccountHolder || item.Lendername || "")
         .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+        .includes(vendorFilter.toLowerCase());
 
-      const matchVendor =
-        item.VendorName?.toLowerCase().includes(vendorFilter.toLowerCase()) ||
-        item.AccountHolder?.toLowerCase().includes(
-          vendorFilter.toLowerCase()
-        ) ||
-        item.Lendername?.toLowerCase().includes(vendorFilter.toLowerCase());
+    return matchSearch && matchVendor;
+  });
 
-      const itemDate = item.rawUploadDate;
-      const from = fromDate ? new Date(fromDate) : null;
-      const to = toDate ? new Date(toDate) : null;
-      const matchesDate =
-        (!from || (itemDate && itemDate >= from)) &&
-        (!to || (itemDate && itemDate <= to));
+  setFilteredDocs(filtered);
+  setCurrentPage(1); // reset page on filter changes
 
-      return matchSearch && matchVendor && matchesDate;
-    });
+}, [manualReviewDocs, searchQuery, vendorFilter, uploadDateFilter, fromDate, toDate]);
 
-    setFilteredDocs(filtered);
-  }, [manualReviewDocs, searchQuery, vendorFilter, fromDate, toDate]);
+const { sortedData, toggleSort, renderSortIcon } = useSortableData(filteredDocs);
 
-  const { sortedData } = useSortableData(filteredDocs);
 
   const handleToggle = (doc) => {
     const extracted = doc.extractedData || {};
@@ -329,8 +354,8 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
       },
     });
   };
+const totalPages = Math.ceil(sortedData.length / rowsPerPage);
 
-  const totalPages = Math.ceil(filteredDocs.length / rowsPerPage);
   const paginatedData = sortedData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
@@ -399,6 +424,7 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
                 <input
                   type="date"
                   value={toDate}
+                   min={fromDate}  
                   max={today}
                   onChange={(e) => setToDate(e.target.value)}
                 />
@@ -438,13 +464,21 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
           
           <div style={{ overflowX: "auto" }}>
             <table className="ManualReview-Table">
-              <thead>
-                <tr>
-                  {modelHeaders[selectedModelType].map((header, idx) => (
-                    <th key={idx}>{header}</th>
-                  ))}
-                </tr>
-              </thead>
+             <thead>
+  <tr>
+    {modelHeaders[selectedModelType].map((header, idx) => (
+      <th
+        key={idx}
+        onClick={() => toggleSort(modelKeys[selectedModelType][idx])}
+      >
+        <span className="sortable-header">
+          {header} {renderSortIcon(modelKeys[selectedModelType][idx])}
+        </span>
+      </th>
+    ))}
+  </tr>
+</thead>
+
               <tbody>
                 {paginatedData.length > 0 ? (
                   paginatedData.map((item, index) => (
@@ -481,12 +515,13 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
           </div>
           {filteredDocs.length > rowsPerPage && (
             <FilePagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              rowsPerPage={rowsPerPage}
-              totalItems={filteredDocs.length}
-            />
+  currentPage={currentPage}
+  totalPages={totalPages}
+  onPageChange={setCurrentPage}
+  rowsPerPage={rowsPerPage}
+  totalItems={sortedData.length}
+/>
+
           )}
         </div>
       ) : (

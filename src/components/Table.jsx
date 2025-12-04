@@ -302,44 +302,72 @@ function Table() {
     fetchData();
   }, [selectedModelType]);
 
-  const filteredData = sortedData.filter((item) => {
-    const matchesSearch = searchQuery
-      ? modelTypeSearchFields[selectedModelType].some((field) =>
-          (item[field] || "")
-            .toString()
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-        )
-      : true;
+const filteredData = sortedData.filter((item) => {
+  const itemDate = item.rawUploadDate ? new Date(item.rawUploadDate) : null;
+  const today = new Date();
 
-    const matchesVendor =
-      selectedModelType !== "Invoice" ||
-      !vendorFilter ||
-      (item.VendorName || "")
+  // --- Upload Date Filter (7 days / 30 days) ---
+  if (uploadDateFilter !== "all" && itemDate) {
+    const last7 = new Date(today);
+    last7.setDate(today.getDate() - 7);
+
+    const last30 = new Date(today);
+    last30.setDate(today.getDate() - 30);
+
+    if (uploadDateFilter === "7days" && itemDate < last7) return false;
+    if (uploadDateFilter === "30days" && itemDate < last30) return false;
+  }
+
+  // --- From Date Filter ---
+  if (fromDate) {
+    const from = new Date(fromDate);
+    if (!itemDate || itemDate < from) return false;
+  }
+
+  // --- To Date Filter ---
+  if (toDate) {
+    const to = new Date(toDate);
+    to.setHours(23, 59, 59, 999);
+    if (!itemDate || itemDate > to) return false;
+  }
+
+  // --- Search Filter ---
+  const matchesSearch =
+    !searchQuery ||
+    modelTypeSearchFields[selectedModelType].some((field) =>
+      (item[field] || "")
+        .toString()
         .toLowerCase()
-        .includes(vendorFilter.toLowerCase());
-
-    const matchesAccountHolder =
-      selectedModelType !== "BankStatement" ||
-      !accountHolderFilter ||
-      (item.AccountHolder || "")
-        .toLowerCase()
-        .includes(accountHolderFilter.toLowerCase());
-
-    const matchesLenderName =
-      selectedModelType !== "MortgageForms" ||
-      !lenderNameFilter ||
-      (item.Lendername || "")
-        .toLowerCase()
-        .includes(lenderNameFilter.toLowerCase());
-
-    return (
-      matchesSearch &&
-      matchesVendor &&
-      matchesAccountHolder &&
-      matchesLenderName
+        .includes(searchQuery.toLowerCase())
     );
-  });
+
+  // --- Model-specific Filters ---
+  const matchesVendor =
+    selectedModelType !== "Invoice" ||
+    !vendorFilter ||
+    (item.VendorName || "").toLowerCase().includes(vendorFilter.toLowerCase());
+
+  const matchesAccountHolder =
+    selectedModelType !== "BankStatement" ||
+    !accountHolderFilter ||
+    (item.AccountHolder || "")
+      .toLowerCase()
+      .includes(accountHolderFilter.toLowerCase());
+
+  const matchesLenderName =
+    selectedModelType !== "MortgageForms" ||
+    !lenderNameFilter ||
+    (item.Lendername || "")
+      .toLowerCase()
+      .includes(lenderNameFilter.toLowerCase());
+
+  return (
+    matchesSearch &&
+    matchesVendor &&
+    matchesAccountHolder &&
+    matchesLenderName
+  );
+});
 
   const handleInfoClick = (file) => {
     if (file.versionHistory && Array.isArray(file.versionHistory)) {
@@ -392,7 +420,8 @@ function Table() {
     ).padStart(2, "0")}-${date.getFullYear()}`;
   }
 
-  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+ const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+
   const currentRows = filteredData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
@@ -487,6 +516,7 @@ function Table() {
             <input
               type="date"
               value={toDate}
+               min={fromDate}  
               max={today}
               onChange={(e) => setToDate(e.target.value)}
             />
@@ -588,9 +618,8 @@ function Table() {
                                 />
                               )}
                             </td>
-                          ) : key === "invoiceDate" ||
-                            key === "uploadDate" ||
-                            key === "StatementPeriod" ? (
+                          ) :key.toLowerCase().includes("date")
+? (
                             <td key={idx}>{formatDate(item[key])}</td>
                           ) : (
                             <td key={idx}>{item[key]}</td>

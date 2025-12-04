@@ -16,13 +16,20 @@
   box-sizing: border-box;
   width: 100%;
 }
-
-.ManualReview-main-container h2 {
+.ManualReview-Table-header h1{
+   font-size: 22px;
+  font-weight: 700;
+  color: #0d3c61;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  width: 100%;
+}
+/* .ManualReview-main-container h2 {
   font-size: 22px;
   font-weight: 700;
   color: #0d3c61;
   margin-bottom: 10px;
-}
+} */
 
 /* ===== Fixed Column Widths ===== */
 .ManualReview-Table th:nth-child(1),
