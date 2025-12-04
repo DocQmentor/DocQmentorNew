@@ -98,11 +98,15 @@ a:hover {
     grid-template-columns: 3fr 1fr;
     grid-template-rows: auto 1fr;
     gap: 12px;
-    margin-top: 65px;
+    margin-top: 55px;
     flex: 1;
-    width: 96%;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
+    
+  padding-left: 12px;
+  padding-right: 12px;
+
     padding: 0 0 var(--spacing-lg) 0;
     animation: fadeIn var(--transition-slow);
 }
@@ -217,41 +221,91 @@ a:hover {
 /* KPI STATS BOXES                                */
 /* ========================================================================= */
 
+/* ===================== */
+/* ADMIN STATS — Improved */
+/* ===================== */
+
 .admin-stats-box {
-    margin-bottom: 0;
-    flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 12px 0 20px 0;
 }
 
 .admin-stats-box ul {
-    display: flex;
-    list-style: none;
-    justify-content: space-between;
-    padding: 0;
-    margin: 0;
-    gap: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  gap: 18px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
 }
 
+/* Each card */
 .admin-stats-box li {
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 14px 10px;
-    display: grid;
-    grid-template-areas:
-        "icon text"
-        "icon number";
-    grid-template-columns: 50px 1fr;
-    align-items: center;
-    background-color: #ffffff;
-    transition: all var(--transition-medium);
-    cursor: default;
-    flex: 1;
-    min-height: 90px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+  flex: 1 1 220px;
+  max-width: 260px;
+  min-width: 220px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 16px 14px;
+  display: grid;
+  grid-template-areas:
+      "icon text"
+      "icon number";
+  grid-template-columns: 45px 1fr;
+  align-items: center;
+  cursor: default;
+  transition: all var(--transition-medium);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
 }
 
 .admin-stats-box li:hover {
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.10);
+}
+
+/* Icon */
+.iconForCount {
+  grid-area: icon;
+  color: #0d3c61;
+  font-size: 22px;
+}
+
+/* Text Label */
+.textForCout {
+  grid-area: text;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Big Number */
+.numberForCout {
+  grid-area: number;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0d3c61;
+  margin-top: 2px;
+}
+
+/* RESPONSIVE FIXES */
+@media (max-width: 992px) {
+  .admin-stats-box ul {
+    gap: 14px;
+  }
+  .admin-stats-box li {
+    flex: 1 1 48%;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-stats-box li {
+    flex: 1 1 100%;
+  }
 }
 
 .iconForCount {
@@ -597,6 +651,7 @@ a:hover {
     padding: 8px 14px;
     background-color: #ffffff;
     border-radius: 8px;
+    margin :10px;
     margin-bottom: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     border: 1px solid var(--border-light);
