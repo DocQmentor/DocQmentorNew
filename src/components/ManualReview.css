@@ -310,3 +310,101 @@
     padding: 7px 8px;
   }
 }
+/* 📱 Tablet (Two-column filters and controlled table width) */
+@media (max-width: 1024px) {
+
+  .ManualReview-main-container {
+    padding: 30px 16px;
+  }
+
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+    gap: 10px;
+  }
+
+  .ManualReview-Table th,
+  .ManualReview-Table td {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+
+/* 📱 Mobile Layout: Filters stacked and scrollable table */
+@media (max-width: 768px) {
+
+  .ManualReview-main-container {
+    padding: 20px 10px;
+  }
+
+  .filters {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filters input,
+  .filters select,
+  .export-button,
+  .reset-button {
+    width: 100%;
+  }
+
+  /* Force Scroll Table on Mobile */
+  .ManualReview-Table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Ensure cells readable */
+  .ManualReview-Table th,
+  .ManualReview-Table td {
+    min-width: 120px;
+    font-size: 11px;
+    padding: 6px;
+  }
+
+  .ManualReview-Table-header h1 {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  /* Reduce width & center Filter section */
+  .ManualReview-Table-header .filters {
+    width: 100%;
+  }
+}
+
+/* 📱 Extra Small Phones */
+@media (max-width: 480px) {
+
+  .ManualReview-main-container {
+    padding: 15px 6px;
+  }
+
+  .ManualReview-full-container {
+    overflow-x: hidden;
+  }
+
+  /* Smaller buttons */
+  .ManualReview-Table button {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+/* 📱 Ultra Small Devices (≤360px width) */
+@media (max-width: 360px) {
+  .ManualReview-Table th,
+  .ManualReview-Table td {
+    min-width: 100px;
+    font-size: 10px;
+  }
+
+  .filters label {
+    font-size: 11px;
+  }
+}

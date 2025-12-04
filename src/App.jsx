@@ -53,7 +53,8 @@ const ProtectedLayout = () => {
  
   return (
     <div className="app-container">
-      <Header />
+      <Header minimal={location.pathname === "/select"} />
+
       <main className="main-content">
         <Outlet />
       </main>

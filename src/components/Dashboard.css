@@ -732,3 +732,93 @@
     }
 }
 
+/* 📱 Tablet & Mobile Improvements */
+
+/* Vendor select alignment */
+@media (max-width: 1024px) {
+  .vendor-select {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .Dashboard-main-section-vendor-select {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .vendor-dropdown {
+    width: 100%;
+  }
+}
+
+/* Upload + Table section: stack vertically */
+@media (max-width: 900px) {
+  .Dashboard-upload-table-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .upload-section,
+  .status-section {
+    width: 100%;
+  }
+}
+
+/* Stats container: single column on mobile */
+@media (max-width: 768px) {
+  .stats-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .stat-box {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* Table scroll for small screens */
+@media (max-width: 650px) {
+  .status-section table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .status-section th,
+  .status-section td {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    min-width: 120px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 450px) {
+  .vendor-select-details h2 {
+    font-size: 16px;
+  }
+
+  .action-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+}
+
+/* Fix right-side white gap */
+.dashboard-total-container {
+  width: 100%;
+  overflow-x: hidden;
+}
