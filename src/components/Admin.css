@@ -631,7 +631,13 @@ a:hover {
     cursor: pointer;
     transition: all var(--transition-medium);
 }
-
+.cancel-btn{
+    color: white;
+    background-color: red;
+}
+.cancel-btn:hover{
+    transform: translateY(-1px);
+}
 .reset-filters-btn:hover,
 .reset-btn:hover,
 .clear-btn:hover,
@@ -873,8 +879,9 @@ a:hover {
 /* Filter and Form Sections */
 .filter-section,
 .add-user-form {
+    margin-top: 10px;
     padding: 12px;
-    background-color: var(--page-bg);
+    /* background-color: var(--page-bg); */
     border: 1px solid var(--border-light);
     border-radius: 8px;
     margin-bottom: 16px;
@@ -922,7 +929,7 @@ a:hover {
 }
 
 .user-item:hover {
-    background-color: #f0f3f6;
+    /* background-color: #f0f3f6; */
     transform: translateX(2px);
 }
 
@@ -950,6 +957,13 @@ a:hover {
 }
 
 /* Consolidated Base Button Styles */
+.form-buttons{
+    /* border: #0078d4 solid ; */
+    width: 100%;
+    display: flex;
+    gap: 20px;
+    align-content: center;
+}
 .button-group button,
 .form-buttons button,
 .edit-btn,
@@ -1048,7 +1062,7 @@ a:hover {
 .edit-form {
     margin-top: 8px;
     padding: 8px;
-    background-color: var(--page-bg);
+    /* background-color: var(--page-bg); */
     border-radius: 6px;
     display: flex;
     flex-direction: column;

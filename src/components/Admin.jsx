@@ -949,7 +949,7 @@ const Admin = () => {
 
       {/* User Management Popup */}
       {showUserPopup && (
-        <div className="popup-overlay">
+        <div className="popup-overlay user-management-popup">
           <div className="popup-content">
             <div className="popup-header">
               <h2>User Management</h2>
