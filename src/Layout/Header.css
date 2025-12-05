@@ -122,7 +122,7 @@
 /* ===== Hover & Active States ===== */
 .header-component-container li:hover {
   border: #0d3c61 1px dashed;
-  background-color: #f5f8fa;
+  /* background-color: #f5f8fa; */
 }
 
 .header-component-container li.active {
@@ -237,11 +237,13 @@
   transition: all 0.3s ease;
   font-family: "Nunito", sans-serif;
 }
-
-.logout-button:hover {
-  background-color: rgba(237, 34, 36, 0.1);
+.LogOut{
+  transition: all 0.3s ease;
 }
-
+.logout-button:hover,.logout-button:hover .LogOut{
+  color: white;
+  background-color: #ed2224;
+}
 /* ===== Ensures Profile li relative ===== */
 .header-component-container li {
   position: relative;

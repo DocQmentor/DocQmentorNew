@@ -75,7 +75,10 @@ body {
   color: #246797;
   background-color: white;
 }
-
+.sidebar h1,
+.sidebar p {
+    margin-left: 40px; /* Adjust as needed */
+}
 .sidebar p {
   font-size: 15px;
   color: #555;

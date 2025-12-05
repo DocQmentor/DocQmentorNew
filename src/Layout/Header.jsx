@@ -152,7 +152,7 @@ const Header = ({ minimal }) => {
                 </div>
                 <div className="profile-footer">
                   <button className="logout-button" onClick={handleLogout}>
-                    <LogOut size={16} className="LogOut-i"/> Sign Out
+                    <LogOut size={16} className="LogOut"/> Sign Out
                   </button>
                 </div>
               </div>
