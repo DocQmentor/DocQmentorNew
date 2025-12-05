@@ -463,7 +463,8 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
 
           
           <div style={{ overflowX: "auto" }}>
-            <table className="ManualReview-Table">
+            <table className={`ManualReview-Table ${selectedModelType}`}>
+
              <thead>
   <tr>
     {modelHeaders[selectedModelType].map((header, idx) => (

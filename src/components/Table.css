@@ -93,7 +93,7 @@
   text-align: left;
   font-size: 13px;
   border-bottom: 1px solid #ddd;
-  white-space: nowrap;
+  white-space: wrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -240,3 +240,64 @@
     padding: 7px 8px;
   }
 }
+/* ===== FIXED COLUMN WIDTHS BY MODEL TYPE ===== */
+
+/* ----- Invoice Table Column Widths ----- */
+.dataview-container table.Invoice th:nth-child(1),
+.dataview-container table.Invoice td:nth-child(1) { width: 160px; } /* Vendor Name */
+.dataview-container table.Invoice th:nth-child(2),
+.dataview-container table.Invoice td:nth-child(2) { width: 120px; } /* Invoice ID */
+.dataview-container table.Invoice th:nth-child(3),
+.dataview-container table.Invoice td:nth-child(3) { width: 130px; } /* Invoice Date */
+.dataview-container table.Invoice th:nth-child(4),
+.dataview-container table.Invoice td:nth-child(4) { width: 120px; } /* LPO No */
+.dataview-container table.Invoice th:nth-child(5),
+.dataview-container table.Invoice td:nth-child(5) { width: 100px; } /* Sub Total */
+.dataview-container table.Invoice th:nth-child(6),
+.dataview-container table.Invoice td:nth-child(6) { width: 100px; } /* VAT */
+.dataview-container table.Invoice th:nth-child(7),
+.dataview-container table.Invoice td:nth-child(7) { width: 110px; } /* Invoice Total */
+.dataview-container table.Invoice th:nth-child(8),
+.dataview-container table.Invoice td:nth-child(8) { width: 130px; } /* Upload Date */
+.dataview-container table.Invoice th:nth-child(9),
+.dataview-container table.Invoice td:nth-child(9) { width: 140px; } /* Confidence Score */
+.dataview-container table.Invoice th:nth-child(10),
+.dataview-container table.Invoice td:nth-child(10) { width: 90px; } /* Action */
+
+
+/* ----- Bank Statement Table Column Widths ----- */
+.dataview-container table.BankStatement th:nth-child(1),
+.dataview-container table.BankStatement td:nth-child(1) { width: 170px; }
+.dataview-container table.BankStatement th:nth-child(2),
+.dataview-container table.BankStatement td:nth-child(2) { width: 130px; }
+.dataview-container table.BankStatement th:nth-child(3),
+.dataview-container table.BankStatement td:nth-child(3) { width: 150px; }
+.dataview-container table.BankStatement th:nth-child(4),
+.dataview-container table.BankStatement td:nth-child(4) { width: 120px; }
+.dataview-container table.BankStatement th:nth-child(5),
+.dataview-container table.BankStatement td:nth-child(5) { width: 120px; }
+.dataview-container table.BankStatement th:nth-child(6),
+.dataview-container table.BankStatement td:nth-child(6) { width: 130px; }
+.dataview-container table.BankStatement th:nth-child(7),
+.dataview-container table.BankStatement td:nth-child(7) { width: 140px; }
+.dataview-container table.BankStatement th:nth-child(8),
+.dataview-container table.BankStatement td:nth-child(8) { width: 90px; }
+
+
+/* ----- Mortgage Forms Table Column Widths ----- */
+.dataview-container table.MortgageForms th:nth-child(1),
+.dataview-container table.MortgageForms td:nth-child(1) { width: 170px; }
+.dataview-container table.MortgageForms th:nth-child(2),
+.dataview-container table.MortgageForms td:nth-child(2) { width: 170px; }
+.dataview-container table.MortgageForms th:nth-child(3),
+.dataview-container table.MortgageForms td:nth-child(3) { width: 130px; }
+.dataview-container table.MortgageForms th:nth-child(4),
+.dataview-container table.MortgageForms td:nth-child(4) { width: 100px; }
+.dataview-container table.MortgageForms th:nth-child(5),
+.dataview-container table.MortgageForms td:nth-child(5) { width: 110px; }
+.dataview-container table.MortgageForms th:nth-child(6),
+.dataview-container table.MortgageForms td:nth-child(6) { width: 130px; }
+.dataview-container table.MortgageForms th:nth-child(7),
+.dataview-container table.MortgageForms td:nth-child(7) { width: 140px; }
+.dataview-container table.MortgageForms th:nth-child(8),
+.dataview-container table.MortgageForms td:nth-child(8) { width: 90px; }

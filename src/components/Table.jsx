@@ -561,7 +561,8 @@ const filteredData = sortedData.filter((item) => {
         <ErrorBoundary>
           {!loading && !error && (
             <>
-              <table>
+             <table className={selectedModelType}>
+
                 <thead>
                   <tr>
                     {modelTypeHeaders[selectedModelType].map((header, idx) => (
