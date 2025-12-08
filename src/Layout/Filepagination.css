@@ -13,8 +13,8 @@
   padding: 6px 14px;
   border: none;
   border-radius: 6px;
-  background-color: #1a5276;
-  color: white;
+  background-color: #266898;
+  color: rgb(255, 255, 255);
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -37,11 +37,13 @@
 }
 
 .pagination-button:hover:not(:disabled) {
-  background-color: #dcdcdc;
+  background-color: #5182a5;
+  color: white;
+  transform: translateY(-2px);
 }
 
 .pagination-button:disabled {
-  opacity: 0.5;
+  /* opacity: 0.5; */
   cursor: not-allowed;
 }
 
