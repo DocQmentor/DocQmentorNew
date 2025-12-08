@@ -136,12 +136,13 @@ a:hover {
 
 .admin-heading-section h1 {
     font-size: 24px;
+    display: flex;
     font-weight: 700; /* Bold as you selected */
     margin: 0;
     color: #266898;
 }
 
-.admin-heading-section .document-type-badge {
+.document-type-badge {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -153,23 +154,20 @@ a:hover {
     transition: all var(--transition-fast);
     border: 1px solid #e0e0e0;
 }
-.document-type-badge .databaseIcon-admin,
-.document-type-badge span,
+.document-type-badge span{
+    display: flex;
+    gap: 5px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+/* .document-type-badge span,
 .document-type-badge strong{
     transition: all var(--transition-fast);
     background-color: #ffffff;
     color: #266898;
-}
-.admin-heading-section .document-type-badge:hover,
-.admin-heading-section .document-type-badge:hover .databaseIcon-admin,
-.admin-heading-section .document-type-badge:hover span,
-.admin-heading-section .document-type-badge:hover strong{
-    background-color: #eef5fa;
-}
+} */
 
-.admin-heading-section .document-type-badge strong {
-    color: #266898;
-}
 
 /* --- 2. Section 1 (Main Content Area) --- */
 .admin-section-1 {
@@ -467,8 +465,12 @@ a:hover {
 .table-header-title {
     margin: 0;
     color: #266898;
+    background: #f0f8ff;
+    border: #266898 solid 1px;
+    border-radius: 5px;
     font-size: 18px;
     font-weight: 700;
+    padding: 0px 5px 0px 5px;
 }
 
 /* Div 2: Filters and Controls */
@@ -1341,11 +1343,11 @@ a:hover {
         width: 96%;
     }
     
-    .admin-heading-section .document-type-badge {
+    /* .admin-heading-section .document-type-badge {
         font-size: 13px;
         width: 100%;
         justify-content: space-between;
-    }
+    } */
     
     .admin-stats-box li .numberForCout {
         font-size: 18px;
