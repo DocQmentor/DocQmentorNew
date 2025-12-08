@@ -411,7 +411,7 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
                 </label>
               )}
               <label>
-                <strong>From Date:</strong>
+                <strong>{selectedModelType} From Date:</strong>
                 <input
                   type="date"
                   value={fromDate}
@@ -420,7 +420,7 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
                 />
               </label>
               <label>
-                <strong>To Date:</strong>
+                <strong>{selectedModelType} To Date:</strong>
                 <input
                   type="date"
                   value={toDate}

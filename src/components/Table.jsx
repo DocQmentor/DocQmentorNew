@@ -503,7 +503,7 @@ const filteredData = sortedData.filter((item) => {
 
           {/* Date Range Filter */}
           <label>
-            <strong>From Date:</strong>
+            <strong>{selectedModelType} From Date:</strong>
             <input
               type="date"
               value={fromDate}
@@ -512,7 +512,7 @@ const filteredData = sortedData.filter((item) => {
             />
           </label>
           <label>
-            <strong>To Date:</strong>
+            <strong>{selectedModelType} To Date:</strong>
             <input
               type="date"
               value={toDate}

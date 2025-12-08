@@ -78,7 +78,7 @@
   border: 1px solid #266898;
   display: inline-block;
   width: fit-content;
-  background: #f0f8ff; /* Light blue background for labels */
+  background: #f0f8ff;
   color: #266898;
   border-color: #266898;
 }
@@ -209,15 +209,25 @@
 .status-active {
   background: #d4edda;
   color: #1e9b50;
-  border: 1px solid #c3e6cb;
+  border: 1px solid #b0e7bd;
+  transition: 0.3s ease;
 }
-
+.status-active:hover{
+  background: #b4ebc1;
+}
 .status-inactive {
+  transition: 0.3s ease;
   background: #f8d7da;
   color: #ed2224;
   border: 1px solid #f5c6cb;
 }
-
+.status-inactive:hover{
+  background: #fca8af;
+}
+.status-active:hover,
+.status-inactive:hover{
+  transform: translateY(-2px);
+}
 /* ACTIONS BUTTONS - SMALLER */
 .action-buttons {
   display: flex;
@@ -277,6 +287,7 @@
 
 .view-btn:hover {
   background: #1f5d8a;
+  transform: translateY(-1px);
 }
 
 /* PLAN TYPE COLORS */
