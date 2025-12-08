@@ -4,7 +4,7 @@
 
 :root {
     /* Primary Color Scheme */
-    --navy: #0d3c61;             /* Primary Dark Blue */
+    --navy: #266898;             /* Primary Dark Blue */
     --background-light: #ffffff; /* Pure White (Card/Element Background) */
     --page-bg: #f0f3f6;          /* Very Light Grey/Off-White (Page Canvas) */
     --border-light: #e0e0e0;     /* Light Grey for borders/dividers */
@@ -12,8 +12,8 @@
     --text-muted: #666666;       /* Muted Grey for labels/placeholders */
 
     /* Secondary/Action Colors (Kept for UX integrity) */
-    --accent-blue: #0078d4;      /* Microsoft Blue for strong accents */
-    --success: #107c10;          /* Green */
+    --accent-blue: #266898;      /* Microsoft Blue for strong accents */
+    --success: #1e9b50;          /* Green */
     --danger: #dc3545;           /* Red */
     --warning: #ffb900;          /* Yellow/Orange */
 
@@ -138,7 +138,7 @@ a:hover {
     font-size: 24px;
     font-weight: 700; /* Bold as you selected */
     margin: 0;
-    color: #0d3c61;
+    color: #266898;
 }
 
 .admin-heading-section .document-type-badge {
@@ -149,7 +149,7 @@ a:hover {
     background-color: #ffffff;
     border-radius: 6px;
     font-size: 14px;
-    color: #0d3c61;
+    color: #266898;
     transition: all var(--transition-fast);
     border: 1px solid #e0e0e0;
 }
@@ -158,7 +158,7 @@ a:hover {
 .document-type-badge strong{
     transition: all var(--transition-fast);
     background-color: #ffffff;
-    color: #0d3c61;
+    color: #266898;
 }
 .admin-heading-section .document-type-badge:hover,
 .admin-heading-section .document-type-badge:hover .databaseIcon-admin,
@@ -168,7 +168,7 @@ a:hover {
 }
 
 .admin-heading-section .document-type-badge strong {
-    color: #0d3c61;
+    color: #266898;
 }
 
 /* --- 2. Section 1 (Main Content Area) --- */
@@ -209,7 +209,7 @@ a:hover {
 
 .admin-section-2-header h3 {
     margin: 0;
-    color: #0d3c61;
+    color: #266898;
     font-size: 16px;
     font-weight: 700;
     padding-bottom: 8px;
@@ -271,7 +271,7 @@ a:hover {
 /* Icon */
 .iconForCount {
   grid-area: icon;
-  color: #0d3c61;
+  color: #266898;
   font-size: 22px;
 }
 
@@ -288,7 +288,7 @@ a:hover {
   grid-area: number;
   font-size: 26px;
   font-weight: 700;
-  color: #0d3c61;
+  color: #266898;
   margin-top: 2px;
 }
 
@@ -310,7 +310,7 @@ a:hover {
 
 .iconForCount {
     grid-area: icon;
-    color: #0d3c61;
+    color: #266898;
     margin-right: 8px;
     transition: transform var(--transition-medium);
     font-size: 22px;
@@ -332,7 +332,7 @@ a:hover {
     grid-area: number;
     font-size: 22px;
     font-weight: 700;
-    color: #0d3c61;
+    color: #266898;
     margin: 0;
 }
 
@@ -402,7 +402,7 @@ a:hover {
 
 .admin-table-box th {
     color: white;
-    background: #0d3c61;
+    background: #266898;
     font-weight: 600;
     position: sticky;
     top: 0;
@@ -416,7 +416,7 @@ a:hover {
 } */
 
 .admin-table-box td {
-    color: #0d3c61;
+    color: #266898;
     border-bottom: 1px solid var(--border-light);
     background-color: #ffffff;
 }
@@ -435,7 +435,7 @@ a:hover {
     align-items: center;
     gap: 6px;
     color: #ffffff;
-    background-color: #0d3c61;
+    background-color: #266898;
     font-weight: 700;
     white-space: nowrap;
     cursor: pointer;
@@ -466,7 +466,7 @@ a:hover {
 
 .table-header-title {
     margin: 0;
-    color: #0d3c61;
+    color: #266898;
     font-size: 18px;
     font-weight: 700;
 }
@@ -551,7 +551,7 @@ a:hover {
 }
 
 .export-btn:hover:not(:disabled) {
-    background-color: #0b5e0b;
+    background-color: #1e9b50;
     transform: translateY(-1px);
 }
 
@@ -633,7 +633,7 @@ a:hover {
 }
 .cancel-btn{
     color: white;
-    background-color: red;
+    background-color: #ed2224;
 }
 .cancel-btn:hover{
     transform: translateY(-1px);
@@ -676,7 +676,7 @@ a:hover {
 
 .table-selector label {
     font-weight: 700;
-    color: #0d3c61;
+    color: #266898;
     font-size: 14px;
     white-space: nowrap;
 }
@@ -717,7 +717,7 @@ a:hover {
     border-radius: 6px;
     cursor: pointer;
     transition: all var(--transition-medium);
-    color: #0d3c61;
+    color: #266898;
 }
 
 .nav-button:hover:not(:disabled) {
@@ -735,7 +735,7 @@ a:hover {
 .table-counter {
     font-size: 14px;
     font-weight: 600;
-    color: #0d3c61;
+    color: #266898;
     min-width: 50px;
     text-align: center;
     transition: color var(--transition-fast);
@@ -769,7 +769,7 @@ a:hover {
 
 .admin-section-2-pack ul:hover,
 .admin-section-2-usage ul:hover {
-    border-color: #0d3c61;
+    border-color: #266898;
 }
 
 /* Consolidated List/LI styles */
@@ -804,7 +804,7 @@ a:hover {
 
 .admin-section-2-pack ul li:hover,
 .admin-section-2-usage ul li:hover {
-    background: #f0f3f6;
+    /* background: #f0f3f6; */
     border-radius: 4px;
     transform: translateX(2px);
 }
@@ -855,7 +855,7 @@ a:hover {
 
 .popup-header h2 {
     margin: 0;
-    color: #0d3c61;
+    color: #266898;
     font-weight: 700;
     font-size: 18px;
 }
@@ -864,7 +864,7 @@ a:hover {
     background: none;
     border: none;
     cursor: pointer;
-    color: #0d3c61;
+    color: #266898;
     font-size: 24px;
     padding: 5px;
     line-height: 1;
@@ -904,7 +904,7 @@ a:hover {
 .form-group label {
     margin-bottom: 5px;
     font-weight: 600;
-    color: #0d3c61;
+    color: #266898;
     font-size: 14px;
 }
 
@@ -983,7 +983,7 @@ a:hover {
 
 .add-user-btn,
 .submit-btn {
-    background-color: #0d3c61;
+    background-color: #266898;
     color: white;
 }
 
@@ -1083,7 +1083,7 @@ a:hover {
     background-color: var(--success);
 }
 .save-edit:hover {
-    background-color: #0b5e0b;
+    background-color: #157c3f;
     transform: translateY(-1px);
 }
 
@@ -1115,7 +1115,7 @@ a:hover {
 }
 
 .loading {
-    color: #0d3c61;
+    color: #266898;
 }
 
 .error {
@@ -1141,7 +1141,7 @@ a:hover {
 }
 
 .refresh-data-btn:hover {
-    background-color: #106ebe;
+    background-color: #1c547c;
     transform: translateY(-1px);
 }
 

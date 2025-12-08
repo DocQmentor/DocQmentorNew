@@ -572,12 +572,12 @@ const filteredData = sortedData.filter((item) => {
                           toggleSort(modelTypeKeys[selectedModelType][idx])
                         }
                       >
-                        <span className="sortable-header">
+                        {/* <span className="sortable-header"> */}
                           {header}{" "}
                           {renderSortIcon(
                             modelTypeKeys[selectedModelType][idx]
                           )}
-                        </span>
+                        {/* </span> */}
                       </th>
                     ))}
                   </tr>

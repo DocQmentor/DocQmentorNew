@@ -466,19 +466,19 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
             <table className={`ManualReview-Table ${selectedModelType}`}>
 
              <thead>
-  <tr>
-    {modelHeaders[selectedModelType].map((header, idx) => (
-      <th
-        key={idx}
-        onClick={() => toggleSort(modelKeys[selectedModelType][idx])}
-      >
-        <span className="sortable-header">
-          {header} {renderSortIcon(modelKeys[selectedModelType][idx])}
-        </span>
-      </th>
-    ))}
-  </tr>
-</thead>
+                <tr>
+                  {modelHeaders[selectedModelType].map((header, idx) => (
+                    <th
+                      key={idx}
+                      onClick={() => toggleSort(modelKeys[selectedModelType][idx])}
+                    >
+                      {/* <span className="sortable-header"> */}
+                        {header} {renderSortIcon(modelKeys[selectedModelType][idx])}
+                      {/* </span> */}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
 
               <tbody>
                 {paginatedData.length > 0 ? (

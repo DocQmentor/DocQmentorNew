@@ -150,12 +150,12 @@ button {
 }
 
 button.blue {
-  background: #4a90e2;
+  background: #266898;
   color: white;
 }
 
 button.blue:hover {
-  background: #357abd;
+  background: #0e3a5f;
 }
 
 button.green {
@@ -167,7 +167,7 @@ button.green:hover {
   background: #1b5e20;
 }
 .invoice {
-  border: 2px solid #4a90e2;
+  border: 2px solid #266898;
 }
 
 .bank {
@@ -178,8 +178,11 @@ button.green:hover {
   border: 2px solid #ff9800;
 }
 button.orange{
-  background: #ff9800;
   color: white;
+  background: #ff9800;
+}
+button.orange:hover{
+  background: #d48000;
 }
 /* Footer */
 .footer {
