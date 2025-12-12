@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home,Search, LayoutDashboard, FileText, User, LogOut, Building, Crown, Shield } from 'lucide-react';
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
+import docQmentorLogo from '../assets/logo-docqmentor.png';
 import useGroupAccess from "../utils/userGroupAccess";
 const Header = ({ minimal }) => {
   const hasAccess = useGroupAccess();
@@ -62,7 +63,7 @@ const Header = ({ minimal }) => {
     <div className="header-component-container">
       <header>
         <div className="logo-container">
-          <img src="/src/assets/logo-docqmentor.png" alt="DocQmentor Logo" />
+          <img src={docQmentorLogo} alt="DocQmentor Logo" />
         </div>
         <ul>
           {!minimal && (
