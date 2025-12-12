@@ -220,7 +220,7 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
 
   try {
-    // 1️⃣ Upload to Azure Blob
+    // 1️⃣ Upload to Blob
     await blockBlobClient.uploadData(file, {
       blobHTTPHeaders: { blobContentType: file.type },
       onProgress: (ev) => {
@@ -231,45 +231,42 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
       },
     });
 
-    // 2️⃣ Generate SAS-protected URL
+    // 2️⃣ Build SAS URL
     const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
-    const blobUrlWithSAS = blockBlobClient.url.includes("?")
-      ? blockBlobClient.url
-      : `${blockBlobClient.url}?${sasToken}`;
+const blobUrlWithSAS = blockBlobClient.url; // Already includes SAS
 
-    // 3️⃣ Metadata for Cosmos DB
+    // 3️⃣ SQL-COMPATIBLE METADATA
     const metadata = {
-      fileName: file.name,
-      fileSizeKB: file.size,
+      fileSizeKB: Math.round(file.size / 1024),  // ✅ convert bytes → KB
       fileFormat: file.type || "application/pdf",
-      UploadDate: new Date().toISOString(),
-      pageCount: 0, // can be updated later
+      pageCount: 0                               // ✅ backend default
     };
 
-    // 4️⃣ Post to backend
-    const uploadId = uuidv4();
+    // 4️⃣ Send to backend
     await axios.post(AZURE_FUNCTION_URL, {
-      uploadId,
+       headers: {
+    "Content-Type": "application/json"
+  },
       blobUrl: blobUrlWithSAS,
       documentName: file.name,
       modelType,
-      uploadedBy: { id: userId, name: userName },
-      metadata, // ✅ added metadata
-      
+      uploadedBy: { id: userId, name: userName }
+      // uploadedAt: new Date().toISOString(),      // ✔ correct for SQL
+      // metadata                                   // ✔ corrected
     });
 
-    // 5️⃣ Return UI info
+    // 5️⃣ Return
     return {
       fileName: file.name,
       folderName,
       uploadedAt: new Date(),
       status: "In Process",
       url: blobUrlWithSAS,
-      uploadId,
       modelType,
     };
+
   } catch (error) {
-    console.error("Azure upload error:", error.response?.data || error.message);
+    console.error("Azure upload error:", error);
     throw error;
   }
 };
