@@ -86,17 +86,7 @@ const Header = ({ minimal }) => {
                 </NavLink>
               </li>
               
-              {hasAccess === true && (
-                <li className={location.pathname === '/manualreview' ? 'active' : ''}>
-                    <NavLink
-                    to="/manualreview"
-                    className="a"
-                    onClick={(e) => handleNavigationClick(e, '/manualreview')}
-                  >
-                    <Search size={20} className="i" /> Manual Review
-                  </NavLink>
-                </li>
-              )}
+              
               {/* <li className={location.pathname === '/table' ? 'active' : ''}>
                 <NavLink
                   to="/table"
@@ -115,15 +105,18 @@ const Header = ({ minimal }) => {
                   <FileText size={20} className="i" /> Data View
                 </NavLink>
               </li>
-              <li className={location.pathname === '/superadmin' ? 'active' : ''}>
-                <NavLink
-                  to="/superadmin"
-                  className="a"
-                  onClick={(e) => handleNavigationClick(e, '/superadmin')}
-                >
-                  <FileText size={20} className="i" /> Super Admin
-                </NavLink>
-              </li>
+              {hasAccess === true && (
+                <li className={location.pathname === '/manualreview' ? 'active' : ''}>
+                    <NavLink
+                    to="/manualreview"
+                    className="a"
+                    onClick={(e) => handleNavigationClick(e, '/manualreview')}
+                  >
+                    <Search size={20} className="i" /> Manual Review
+                  </NavLink>
+                </li>
+              )}
+              
               <li className={location.pathname === '/admin' ? 'active' : ''}>
                 <NavLink
                   to="/admin"
@@ -131,6 +124,15 @@ const Header = ({ minimal }) => {
                   onClick={(e) => handleNavigationClick(e, '/admin')}
                 >
                   <FileText size={20} className="i" /> Client Admin
+                </NavLink>
+              </li>
+              <li className={location.pathname === '/superadmin' ? 'active' : ''}>
+                <NavLink
+                  to="/superadmin"
+                  className="a"
+                  onClick={(e) => handleNavigationClick(e, '/superadmin')}
+                >
+                  <FileText size={20} className="i" /> Super Admin
                 </NavLink>
               </li>
             </>
