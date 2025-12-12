@@ -165,13 +165,15 @@ const Admin = () => {
         "VendorName",
         "InvoiceId",
         "InvoiceDate",
-        "LPO NO",
+        "LpoNo",
         "SubTotal",
-        "VAT",
+        "Vat",
         "InvoiceTotal",
       ];
       return requiredFields.every((field) => {
-        const value = doc.extractedData[field];
+        let value = doc.extractedData[field];
+        if (field === "LpoNo") value = value || doc.extractedData["LPO NO"] || doc.extractedData["LPONo"];
+        if (field === "Vat") value = value || doc.extractedData["VAT"] || doc.extractedData["Vat"];
         return value !== undefined && value !== null && String(value).trim() !== "";
       });
     };

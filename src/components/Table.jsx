@@ -262,9 +262,9 @@ function Table() {
                 VendorName: getString(extracted.VendorName),
                 InvoiceId: getString(extracted.InvoiceId),
                 InvoiceDate: getString(extracted.InvoiceDate),
-                "LPO NO": getString(extracted["LPO NO"]),
+                "LPO NO": getString(extracted["LPO NO"] || extracted.LPONo || extracted.LpoNo),
                 SubTotal: getString(extracted.SubTotal),
-                VAT: getString(extracted.VAT),
+                VAT: getString(extracted.VAT || extracted.Vat),
                 InvoiceTotal: getString(extracted.InvoiceTotal),
                 ...commonFields,
               };
