@@ -4,6 +4,8 @@ import { Home,Search, LayoutDashboard, FileText, User, LogOut } from 'lucide-rea
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
 import useGroupAccess from "../utils/userGroupAccess";
+import logo from "../assets/logo-docqmentor.png";
+
 const Header = ({ minimal }) => {
   const hasAccess = useGroupAccess();
   const location = useLocation();
@@ -62,7 +64,7 @@ const Header = ({ minimal }) => {
     <div className="header-component-container">
       <header>
         <div className="logo-container">
-          <img src="/src/assets/logo-docqmentor.png" alt="DocQmentor Logo" />
+          <img src={logo} alt="DocQmentor Logo" />
         </div>
         <ul>
           {!minimal && (
