@@ -146,7 +146,7 @@ const Header = ({ minimal }) => {
             {isProfileOpen && (
               <div className="profile-dropdown">
                 <div className="profile-header">
-                  <div className="profile-avatar">
+                  <div className="profile-aVATar">
                     {initials}
                   </div>
                   <div className="profile-info">

@@ -19,7 +19,7 @@ const ManualReview = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [vendorFilter, setVendorFilter] = useState("");
 const [accountHolderFilter, setAccountHolderFilter] = useState("");
-const [lenderNameFilter, setLenderNameFilter] = useState("");
+const [LendernameFilter, setLendernameFilter] = useState("");
 
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -39,7 +39,7 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
       "Vendor Name",
       "Invoice ID",
       "Invoice Date",
-      "LPO No",
+      "LPO NO",
       "Sub Total",
       "VAT",
       "Invoice Total",
@@ -58,11 +58,11 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
       "Action",
     ],
     MortgageForms: [
-      "Lender Name",
-      "Borrower Name",
-      "Loan Amount",
+      "Lendername",
+      "Borrowername",
+      "Loanamount",
       "Interest",
-      "Loan Tenure",
+      "Loantenure",
       "Upload Date",
       "Confidence Score",
       "Action",
@@ -74,7 +74,7 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
       "VendorName",
       "InvoiceId",
       "InvoiceDate",
-      "LPONO",
+      "LPO NO",
       "SubTotal",
       "VAT",
       "InvoiceTotal",
@@ -177,15 +177,20 @@ const [lenderNameFilter, setLenderNameFilter] = useState("");
   if (!model || model !== selected) return false;
 
   // ✅ Skip already reviewed
-  if (doc.wasReviewed === true || doc.wasReviewed === "true") return false;
+  const isReviewed = 
+    doc.wasReviewed === true || 
+    doc.wasReviewed === "true" || 
+    (doc.status && doc.status.toLowerCase() === "reviewed");
 
-  // ✅ Parse confidence safely
+  if (isReviewed) return false;
+
+  // ✅ Parse confidence safely (SQL uses averageConfidenceScore)
   let totalScore = 0;
-  if (typeof doc.totalConfidenceScore === "string") {
-    totalScore =
-      parseFloat(doc.totalConfidenceScore.replace("%", "").trim()) || 0;
-  } else {
-    totalScore = parseFloat(doc.totalConfidenceScore) || 0;
+  const rawScore = doc.averageConfidenceScore || doc.totalConfidenceScore;
+  
+  if (rawScore) {
+     const val = parseFloat(String(rawScore).replace("%", "").trim());
+     totalScore = val <= 1 ? val * 100 : val;
   }
 
   const requiredFieldsByModel = {
@@ -243,6 +248,28 @@ useEffect(() => {
   const mapped = manualReviewDocs.map((doc) => {
     const extracted = doc.extractedData || {};
     const model = doc.modelType?.toLowerCase() || "";
+    
+    // 🔍 DEBUG: Log Mortgage Data
+    if (model === "mortgageforms") {
+         console.log("🔍 ManualReview Mortgage Debug:", doc.id, extracted);
+    }
+    
+    // 🛠️ Normalize Mortgage keys if coming as PascalCase from Backend
+    const normalizedExtracted = { ...extracted };
+    if (model === "mortgageforms") {
+            // Pascal -> Lower
+            if (normalizedExtracted.Lendername) normalizedExtracted.Lendername = normalizedExtracted.Lendername;
+            if (normalizedExtracted.Borrowername) normalizedExtracted.Borrowername = normalizedExtracted.Borrowername;
+            if (normalizedExtracted.Loanamount) normalizedExtracted.Loanamount = normalizedExtracted.Loanamount;
+            if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
+
+            // Lower -> Pascal (Bidirectional safety)
+            if (normalizedExtracted.Lendername) normalizedExtracted.Lendername = normalizedExtracted.Lendername;
+            if (normalizedExtracted.Borrowername) normalizedExtracted.Borrowername = normalizedExtracted.Borrowername;
+            if (normalizedExtracted.Loanamount) normalizedExtracted.Loanamount = normalizedExtracted.Loanamount;
+            if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
+    }
+
     const timestamp = doc.timestamp || doc.uploadDate || null;
 
     let rawDate = null;
@@ -254,9 +281,13 @@ useEffect(() => {
     const common = {
       uploadDate: rawDate ? formatDate(rawDate) : "",
       rawUploadDate: rawDate,
-      confidenceScore: `${(
-        parseFloat(doc.totalConfidenceScore?.replace("%", "")) || 0
-      ).toFixed(2)}%`,
+      confidenceScore: (() => {
+          const val = doc.averageConfidenceScore || doc.totalConfidenceScore;
+          if (!val) return "0.00%";
+          let num = parseFloat(String(val).replace("%", ""));
+          if (num <= 1) num *= 100;
+          return num.toFixed(2) + "%";
+      })(),
       _rawDocument: doc,
     };
 
@@ -266,9 +297,9 @@ useEffect(() => {
         VendorName: getString(extracted.VendorName),
         InvoiceId: getString(extracted.InvoiceId),
         InvoiceDate: formatDate(extracted.InvoiceDate),
-        LPONO: getString(extracted["LPO NO"] || extracted.LPONo || extracted.LpoNo),
+        "LPO NO": getString(extracted["LPO NO"]),
         SubTotal: formatNumber(getString(extracted.SubTotal)),
-        VAT: formatNumber(getString(extracted.VAT || extracted.Vat)),
+        VAT: formatNumber(getString(extracted.VAT || extracted.VAT)),
         InvoiceTotal: formatNumber(getString(extracted.InvoiceTotal)),
       };
     } else if (model === "bankstatement") {
@@ -283,11 +314,11 @@ useEffect(() => {
     } else if (model === "mortgageforms") {
       return {
         ...common,
-        Lendername: getString(extracted.Lendername),
-        Borrowername: getString(extracted.Borrowername),
-        Loanamount: formatNumber(getString(extracted.Loanamount)),
+        Lendername: getString(extracted.Lendername || extracted.Lendername),
+        Borrowername: getString(extracted.Borrowername || extracted.Borrowername),
+        Loanamount: formatNumber(getString(extracted.Loanamount || extracted.Loanamount)),
         Interest: getString(extracted.Interest),
-        Loantenure: getString(extracted.Loantenure),
+        Loantenure: getString(extracted.Loantenure || extracted.Loantenure),
       };
     }
     return common;
@@ -404,8 +435,8 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
                   <strong>Lender Name:</strong>
                   <input
                     type="text"
-                    value={lenderNameFilter}
-                    onChange={(e) => setLenderNameFilter(e.target.value)}
+                    value={LendernameFilter}
+                    onChange={(e) => setLendernameFilter(e.target.value)}
                     placeholder="Enter lender name"
                   />
                 </label>

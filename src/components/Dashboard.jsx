@@ -16,7 +16,7 @@ import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getVendorFolders } from "../utils/blobService";
+import { getVendorFolders, checkFileExists } from "../utils/blobService";
 import { useMsal } from "@azure/msal-react";
 import { useUser } from "../context/UserContext";
 import { sasToken } from "../sasToken";
@@ -81,9 +81,9 @@ const Dashboard = () => {
         "VendorName",
         "InvoiceId",
         "InvoiceDate",
-        "LpoNo",
+        "LPO NO",
         "SubTotal",
-        "Vat",
+        "VAT",
         "InvoiceTotal",
       ],
       bankstatement: [
@@ -94,10 +94,10 @@ const Dashboard = () => {
         "ClosingBalance",
       ],
       mortgageforms: [
-        "LenderName",
-        "BorrowerName",
-        "LoanAmount",
-        "LoanTenure",
+        "Lendername",
+        "Borrowername",
+        "Loanamount",
+        "Loantenure",
         "Interest",
       ],
     };
@@ -108,10 +108,10 @@ const Dashboard = () => {
       let value = doc.extractedData[key];
       
       // key aliases for SQL vs Analyzer formats
-      if (key === "LpoNo") value = value || doc.extractedData["LPO NO"] || doc.extractedData["LPONo"];
-      if (key === "Vat") value = value || doc.extractedData["VAT"] || doc.extractedData["Vat"];
-      if (key === "LenderName") value = value || doc.extractedData["Lendername"];
-      if (key === "BorrowerName") value = value || doc.extractedData["Borrowername"];
+      if (key === "LPO NO") value = value || doc.extractedData["LPO NO"];
+      if (key === "VAT") value = value || doc.extractedData["VAT"] || doc.extractedData["VAT"];
+      if (key === "Lendername") value = value || doc.extractedData["Lendername"];
+      if (key === "Borrowername") value = value || doc.extractedData["Borrowername"];
 
       return (
         value !== undefined && value !== null && String(value).trim() !== ""
@@ -144,8 +144,10 @@ const Dashboard = () => {
 
     // ✅ Extract total confidence score (handles both 83.24% or 0.83 formats)
     let score = 0;
-    if (doc.totalConfidenceScore) {
-      const raw = String(doc.totalConfidenceScore).replace(/[^\d.]/g, "");
+    const rawScore = doc.averageConfidenceScore || doc.totalConfidenceScore;
+    
+    if (rawScore) {
+      const raw = String(rawScore).replace(/[^\d.]/g, "");
       score = parseFloat(raw);
       if (score <= 1) score *= 100; // handles normalized scores like 0.83
     }
@@ -160,7 +162,7 @@ const Dashboard = () => {
 
   const fetchDocumentsFromBackend = async () => {
     try {
-      // ✅ Fetch data from Cosmos via Function API
+      // ✅ Fetch data from Cosmos/SQL via Function API
       const response = await fetch(
         `https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==`
       );
@@ -183,14 +185,17 @@ const Dashboard = () => {
       }));
 
       // ✅ Separate into all/global & user-specific sets
-      const userEmail = (email || currentUser.id || "").toLowerCase();
+      // ⚠️ Backend stores User Name, not Email. Filter by Name.
+      const currentUserName = (currentUser.name || "").trim().toLowerCase();
 
       const userFilteredDocs = withStatus.filter((doc) => {
-        const uploader =
-          typeof doc.uploadedBy === "string"
-            ? doc.uploadedBy
-            : doc.uploadedBy?.id;
-        return uploader?.toLowerCase() === userEmail;
+        // doc.uploadedBy might be an object { name: "...", id: "..." } or string
+        const uploaderName =
+          typeof doc.uploadedBy === "object" && doc.uploadedBy?.name
+            ? doc.uploadedBy.name
+            : String(doc.uploadedBy || "");
+            
+        return uploaderName.trim().toLowerCase() === currentUserName;
       });
 
       // ✅ Set state
@@ -198,7 +203,7 @@ const Dashboard = () => {
       setAllDocuments(userFilteredDocs);
 
       console.log(
-        `📦 Loaded ${withStatus.length} ${modelType} documents from DB`
+        `📦 Loaded ${withStatus.length} ${modelType} documents from DB. User docs: ${userFilteredDocs.length}`
       );
     } catch (error) {
       console.error("❌ Error loading backend documents:", error);
@@ -216,7 +221,7 @@ const Dashboard = () => {
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, [modelType, email, currentUser.id]);
+  }, [modelType, email, currentUser.name]); // Updated dependency to currentUser.name
 
   // 🧩 Vendor filter
   const handleVendorChange = (e) => {
@@ -225,12 +230,10 @@ const Dashboard = () => {
   };
 
   // 🧩 File upload and processing
-   // FileChange: validate duplicates against DB (globalDocuments) and local queue (localInProcess)
-  const FileChange = (e) => {
+  // FileChange: validate duplicates against DB (globalDocuments) and local queue (localInProcess)
+  const FileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-
-    const validFiles = [];
 
     for (const file of files) {
       const fileName = file.name;
@@ -245,53 +248,30 @@ const Dashboard = () => {
         continue;
       }
 
-      // 2) Check DB / already processed files (globalDocuments)
-      //    We compare by documentName or url/fileName if documentName missing
-     const foundInDB = globalDocuments.some((doc) => {
-  const docName =
-    (doc.documentName || doc.fileName || doc.url || "").toLowerCase();
-
-  // extract name from blobUrl if needed
-  const urlName = doc.blobUrl
-    ? doc.blobUrl.split("/").pop().split("?")[0].toLowerCase()
-    : "";
-
-  return (
-    docName === fileName.toLowerCase() ||
-    urlName === fileName.toLowerCase()
-  );
-});
-
-
-      if (foundInDB) {
+      // 2) Check ACTUAL Blob Storage (async)
+      const existsInStorage = await checkFileExists(modelType, fileName);
+      if (existsInStorage) {
         toast.error(`File "${fileName}" already exists in storage. Please rename and select again.`);
         continue;
       }
-
+      
       // Passed checks -> add to selected files list
-      validFiles.push({
-        file,
-        fileName,
-        uploadId: uuidv4(),
-        uploadedAt: new Date().toISOString(),
-        status: "In Process",
-        url: null,
-        folderName,
-      });
+      setSelectedFiles((prev) => [
+          ...prev, 
+          {
+            file,
+            fileName,
+            uploadId: uuidv4(),
+            folderName,
+            status: "Pending" // Initial status
+          }
+      ]);
     }
-
-    if (validFiles.length > 0) {
-      setSelectedFiles((prev) => [...prev, ...validFiles]);
-      // add them to localInProcess immediately so they are counted and blocked from re-selection
-      const queueItems = validFiles.map((f) => ({
-        id: f.uploadId,
-        documentName: f.fileName,
-        uploadedAt: f.uploadedAt,
-        status: "In Process",
-      }));
-      setLocalInProcess((prev) => [...prev, ...queueItems]);
-    }
+    
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
 
 
   const handleDeleteFile = (index) => {
@@ -374,13 +354,22 @@ const Dashboard = () => {
   // 🧩 Filtered user docs
   const getUserDocuments = () => {
     if (!selectedVendor) return allDocuments;
-    return allDocuments.filter((doc) =>
-      (doc.documentName || "")
-        .toLowerCase()
-        .includes(selectedVendor.toLowerCase())
-    );
+    const lowerVendor = selectedVendor.toLowerCase();
+    
+    return allDocuments.filter((doc) => {
+      // 1. Check extracted VendorName
+      const vendorName = doc.extractedData?.VendorName || "";
+      if (vendorName.toLowerCase().includes(lowerVendor)) return true;
+
+      // 2. Check filename / documentName
+      const docName = doc.documentName || doc.fileName || "";
+      if (docName.toLowerCase().includes(lowerVendor)) return true;
+
+      return false;
+    });
   };
 
+  // Sorting: Newest First
   const userDocs = getUserDocuments().sort(
     (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)
   );
@@ -395,12 +384,20 @@ const Dashboard = () => {
     let filteredDocs = globalDocuments;
 
     // 🔹 If vendor selected, filter documents that match vendor name
+    // NOTE: Stats should reflect the global view for that vendor if selected? 
+    // Usually dashboard stats are for "My View" or "Global View". 
+    // Requirement said: "statistics bar, it should display overall document details for the entire model"
+    // BUT "vendor selection... applied correctly to the displayed data".
+    // Does vendor selection affect stats? Usually yes. If I select "Vendor A", I want stats for "Vendor A".
+    // I will apply the same vendor filter logic to the global stats.
+
     if (selectedVendor) {
-      filteredDocs = filteredDocs.filter((doc) =>
-        (doc.documentName || "")
-          .toLowerCase()
-          .includes(selectedVendor.toLowerCase())
-      );
+      const lowerVendor = selectedVendor.toLowerCase();
+      filteredDocs = filteredDocs.filter((doc) => {
+         const vendorName = doc.extractedData?.VendorName || "";
+         const docName = doc.documentName || doc.fileName || "";
+         return vendorName.toLowerCase().includes(lowerVendor) || docName.toLowerCase().includes(lowerVendor);
+      });
     }
 
     const total = filteredDocs.length;
@@ -552,6 +549,7 @@ const Dashboard = () => {
             <table>
               <thead>
                 <tr>
+                  <th>ID</th>
                   <th>Name</th>
                   <th>Status</th>
                   <th>Uploaded</th>
@@ -563,6 +561,7 @@ const Dashboard = () => {
                 {currentDocs.length > 0 ? (
                   currentDocs.map((file, index) => (
                     <tr key={index}>
+                      <td>{file.id || "-"}</td>
                       <td>{file.documentName || file.fileName}</td>
                       <td>
                         <span

@@ -45,11 +45,11 @@ const documentTypeFields = {
     },
   ],
   MortgageForms: [
-    { key: "LenderName", label: "Lender Name:", type: "text" },
-    { key: "BorrowerName", label: "Borrower Name:", type: "text" },
-    { key: "LoanAmount", label: "Loan Amount:", type: "text", sanitize: true },
+    { key: "Lendername", label: "Lender Name:", type: "text" },
+    { key: "Borrowername", label: "Borrower Name:", type: "text" },
+    { key: "Loanamount", label: "Loan Amount:", type: "text", sanitize: true },
     { key: "Interest", label: "Interest Rate:", type: "text", sanitize: true },
-    { key: "LoanTenure", label: "Loan Tenure:", type: "text" },
+    { key: "Loantenure", label: "Loan Tenure:", type: "text" },
   ],
 };
 
@@ -72,11 +72,11 @@ const fieldMapping = {
     ClosingBalance: "ClosingBalance",
   },
   MortgageForms: {
-    LenderName: "Lendername",
-    BorrowerName: "Borrowername",
-    LoanAmount: "Loanamount",
+    Lendername: "Lendername",
+    Borrowername: "Borrowername",
+    Loanamount: "Loanamount",
     Interest: "Interest",
-    LoanTenure: "Loantenure",
+    Loantenure: "Loantenure",
   },
 };
 
@@ -130,6 +130,8 @@ const EditModal = () => {
       const value =
         initialEditedData?.[field.key] ||
         extracted?.[dbKey] ||
+        extracted?.[dbKey.toLowerCase()] || // 🛡️ Fallback to lowercase
+        extracted?.[dbKey.replace(/\s+/g, "")] || // 🛡️ Fallback to no spaces
         selectedDocument?.[dbKey] ||
         "";
 
@@ -150,24 +152,44 @@ const EditModal = () => {
     }));
   };
 
-  // ✅ Save edited data to DB
+  // ✅ Clean and Robust Save Function
   const handleSave = async () => {
     try {
+      console.log("💾 handleSave STARTED (Clean Version)");
+      
       const fields = documentTypeFields[selectedModelType];
-      const updatedExtractedData = {};
+      
+      // 1. Create a clean copy
+      const updatedExtractedData = { ...selectedDocument.extractedData };
 
       fields.forEach((f) => {
-        const dbKey = fieldMapping[selectedModelType]?.[f.key] || f.key;
-        updatedExtractedData[dbKey] = edited[f.key] || "";
+        // The Key we WANT (PascalCase) matches DB column
+        const correctKey = fieldMapping[selectedModelType]?.[f.key] || f.key; 
+        const newValue = edited[f.key] || "";
+
+        // 2. SAFETY: Remove any "bad" legacy keys that might confuse the backend
+        // e.g. remove "Lendername" if we are setting "Lendername"
+        delete updatedExtractedData[correctKey.toLowerCase()]; 
+        delete updatedExtractedData[correctKey.replace(/\s+/g, "")];
+        delete updatedExtractedData[correctKey.toLowerCase().replace(/\s+/g, "")];
+
+        // 3. Set the Correct Key
+        updatedExtractedData[correctKey] = newValue;
         
-        // 🛡️ Safety: Save both formats to ensure Backend (SqlDbService) finds it
-        if (dbKey === "LPO NO") updatedExtractedData["LpoNo"] = updatedExtractedData[dbKey];
-        if (dbKey === "VAT") updatedExtractedData["Vat"] = updatedExtractedData[dbKey];
-        
-        // Inverse case
-        if (dbKey === "LpoNo") updatedExtractedData["LPO NO"] = updatedExtractedData[dbKey];
-        if (dbKey === "Vat") updatedExtractedData["VAT"] = updatedExtractedData[dbKey];
+        // 4. Special Handling for Invoice (Keep existing safety)
+        if (correctKey === "LPO NO") updatedExtractedData["LPO NO"] = newValue;
+        if (correctKey === "VAT") updatedExtractedData["VAT"] = newValue;
       });
+
+      console.log("FINAL Payload extractedData:", updatedExtractedData);
+
+      // Prepare Version History
+      const newHistoryEntry = {
+          version: (selectedDocument.versionHistory?.length || 0) + 1,
+          action: "Manual Edit Saved",
+          user: currentUser,
+          timestamp: new Date().toISOString()
+      };
 
       const updatedDoc = {
         ...selectedDocument,
@@ -176,6 +198,8 @@ const EditModal = () => {
         reviewedBy: currentUser,
         reviewedAt: new Date().toISOString(),
         status: "Reviewed",
+        // Append history correctly handling potential null
+        versionHistory: [...(selectedDocument.versionHistory || []), newHistoryEntry]
       };
 
       const response = await fetch(

@@ -1,6 +1,6 @@
 {
   "name": "docqmentor",
-  "private": true,
+  "priVATe": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {

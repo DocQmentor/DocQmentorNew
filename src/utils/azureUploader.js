@@ -233,7 +233,7 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
 
     // 2️⃣ Build SAS URL
     const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
-const blobUrlWithSAS = blockBlobClient.url; // Already includes SAS
+    const blobUrlWithSAS = blockBlobClient.url; // Already includes SAS
 
     // 3️⃣ SQL-COMPATIBLE METADATA
     const metadata = {
@@ -243,17 +243,27 @@ const blobUrlWithSAS = blockBlobClient.url; // Already includes SAS
     };
 
     // 4️⃣ Send to backend
-    await axios.post(AZURE_FUNCTION_URL, {
-       headers: {
-    "Content-Type": "application/json"
-  },
-      blobUrl: blobUrlWithSAS,
-      documentName: file.name,
-      modelType,
-      uploadedBy: { id: userId, name: userName }
-      // uploadedAt: new Date().toISOString(),      // ✔ correct for SQL
-      // metadata                                   // ✔ corrected
-    });
+    // 4️⃣ Send to backend
+    await axios.post(
+      AZURE_FUNCTION_URL,
+      {
+        blobUrl: blobUrlWithSAS,
+        documentName: file.name,
+        modelType,
+        uploadedBy: { id: userId, name: userName },
+        uploadedAt: new Date().toISOString(),
+        metadata,
+        extractedData: {},
+        confidenceScores: {},
+        versionHistory: []
+      },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+      
+    );
 
     // 5️⃣ Return
     return {
