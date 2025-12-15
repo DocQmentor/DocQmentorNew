@@ -72,8 +72,8 @@ const fieldMapping = {
     ClosingBalance: "ClosingBalance",
   },
   MortgageForms: {
-    LenderName: "Lendername",
-    BorrowerName: "Borrowername",
+    LenderName: "Lendername", // match DB casing
+    BorrowerName: "Borrowername", // match DB casing
     LoanAmount: "Loanamount",
     Interest: "Interest",
     LoanTenure: "Loantenure",
@@ -159,14 +159,6 @@ const EditModal = () => {
       fields.forEach((f) => {
         const dbKey = fieldMapping[selectedModelType]?.[f.key] || f.key;
         updatedExtractedData[dbKey] = edited[f.key] || "";
-        
-        // 🛡️ Safety: Save both formats to ensure Backend (SqlDbService) finds it
-        if (dbKey === "LPO NO") updatedExtractedData["LpoNo"] = updatedExtractedData[dbKey];
-        if (dbKey === "VAT") updatedExtractedData["Vat"] = updatedExtractedData[dbKey];
-        
-        // Inverse case
-        if (dbKey === "LpoNo") updatedExtractedData["LPO NO"] = updatedExtractedData[dbKey];
-        if (dbKey === "Vat") updatedExtractedData["VAT"] = updatedExtractedData[dbKey];
       });
 
       const updatedDoc = {
