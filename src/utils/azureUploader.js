@@ -233,9 +233,7 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
 
     // 2️⃣ Generate SAS-protected URL
     const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
-    const blobUrlWithSAS = blockBlobClient.url.includes("?")
-      ? blockBlobClient.url
-      : `${blockBlobClient.url}?${sasToken}`;
+    const blobUrlWithSAS = blockBlobClient.url; // Already includes SAS
 
     // 3️⃣ Metadata for Cosmos DB
     const metadata = {
@@ -246,17 +244,28 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
       pageCount: 0, // can be updated later
     };
 
-    // 4️⃣ Post to backend
-    const uploadId = uuidv4();
-    await axios.post(AZURE_FUNCTION_URL, {
-      uploadId,
-      blobUrl: blobUrlWithSAS,
-      documentName: file.name,
-      modelType,
-      uploadedBy: { id: userId, name: userName },
-      metadata, // ✅ added metadata
+    // 4️⃣ Send to backend
+    // 4️⃣ Send to backend
+    await axios.post(
+      AZURE_FUNCTION_URL,
+      {
+        blobUrl: blobUrlWithSAS,
+        documentName: file.name,
+        modelType,
+        uploadedBy: { id: userId, name: userName },
+        uploadedAt: new Date().toISOString(),
+        metadata,
+        extractedData: {},
+        confidenceScores: {},
+        versionHistory: []
+      },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
       
-    });
+    );
 
     // 5️⃣ Return UI info
     return {

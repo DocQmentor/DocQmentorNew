@@ -55,7 +55,7 @@ const modelTypeHeaders = {
     "Vendor Name",
     "Invoice ID",
     "Invoice Date",
-    "LPO No",
+    "LPO NO",
     "Sub Total",
     "VAT",
     "Invoice Total",
@@ -74,11 +74,11 @@ const modelTypeHeaders = {
     "Action",
   ],
   MortgageForms: [
-    "LenderName",
-    "BorrowerName",
-    "LoanAmount",
+    "Lendername",
+    "Borrowername",
+    "Loanamount",
     "Interest",
-    "LoanTenure",
+    "Loantenure",
     "Upload Date",
     "Confidence Score",
     "Action",
@@ -161,12 +161,15 @@ function Table() {
   const [uploadDateFilter, setUploadDateFilter] = useState("all");
   const [vendorFilter, setVendorFilter] = useState("");
   const [accountHolderFilter, setAccountHolderFilter] = useState("");
-  const [lenderNameFilter, setLenderNameFilter] = useState("");
+  const [LendernameFilter, setLendernameFilter] = useState("");
 
   const [versionModal, setVersionModal] = useState({
     visible: false,
     history: [],
     docName: "",
+    uploadedBy: "",
+    reviewedBy: "",
+    status: ""
   });
 
   const rowsPerPage = 10;
@@ -185,7 +188,7 @@ function Table() {
     setUploadDateFilter("all");
     setVendorFilter("");
     setAccountHolderFilter("");
-    setLenderNameFilter("");
+    setLendernameFilter("");
     setCurrentPage(1);
   };
 
@@ -207,7 +210,16 @@ function Table() {
             if (model !== selectedModelType.toLowerCase()) return false;
 
             const extracted = doc.extractedData || {};
-            const totalScore = parseFloat(doc.totalConfidenceScore) || 0;
+            
+            // ✅ Fix: use averageConfidenceScore from SQL backend
+            let totalScore = 0;
+            const rawScore = doc.averageConfidenceScore || doc.totalConfidenceScore;
+            
+            if (rawScore) {
+                 // handle "0.85" or "85%"
+                 const val = parseFloat(String(rawScore).replace("%", ""));
+                 totalScore = val <= 1 ? val * 100 : val;
+            }
 
             const requiredFieldsByModel = {
               invoice: [
@@ -241,18 +253,50 @@ function Table() {
             );
 
             // ✅ Show only if: confidence ≥ 85 and fields complete OR already reviewed
-            return (totalScore >= 85 && allFieldsFilled) || doc.wasReviewed;
+            const isReviewed = 
+              doc.wasReviewed === true || 
+              doc.wasReviewed === "true" || 
+              (doc.status && doc.status.toLowerCase() === "reviewed");
+              
+            return (totalScore >= 85 && allFieldsFilled) || isReviewed;
           })
           .map((doc) => {
             const extracted = doc.extractedData || {};
+            
+            // 🔍 DEBUG: Log Mortgage Data to console
+            if ((doc.modelType || "").toLowerCase() === "mortgageforms") {
+                console.log("🔍 Mortgage Doc Debug:", doc.id, extracted);
+            }
+
+            // 🛠️ Normalize Mortgage keys if coming as PascalCase from Backend
+            const normalizedExtracted = { ...extracted };
+            const modelKey = (doc.modelType || "").toLowerCase();
+            if (modelKey === "mortgageforms") {
+                 // Pascal -> Lower
+                 if (normalizedExtracted.Lendername) normalizedExtracted.Lendername = normalizedExtracted.Lendername;
+                 if (normalizedExtracted.Borrowername) normalizedExtracted.Borrowername = normalizedExtracted.Borrowername;
+                 if (normalizedExtracted.Loanamount) normalizedExtracted.Loanamount = normalizedExtracted.Loanamount;
+                 if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
+                 
+                 // Lower -> Pascal (Bidirectional safety)
+                 if (normalizedExtracted.Lendername) normalizedExtracted.Lendername = normalizedExtracted.Lendername;
+                 if (normalizedExtracted.Borrowername) normalizedExtracted.Borrowername = normalizedExtracted.Borrowername;
+                 if (normalizedExtracted.Loanamount) normalizedExtracted.Loanamount = normalizedExtracted.Loanamount;
+                 if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
+            }
+
             const commonFields = {
               uploadDate: doc.timestamp
                 ? new Date(doc.timestamp).toLocaleDateString("en-CA")
                 : "",
               rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
-              confidenceScore: doc.totalConfidenceScore
-                ? parseFloat(doc.totalConfidenceScore) || 0
-                : "N/A",
+              confidenceScore: (() => {
+                  const val = doc.averageConfidenceScore || doc.totalConfidenceScore;
+                  if (!val) return "N/A";
+                  let num = parseFloat(String(val).replace("%", ""));
+                  if (num <= 1) num *= 100;
+                  return num.toFixed(2) + "%";
+              })(),
               _rawDocument: doc,
             };
 
@@ -264,7 +308,7 @@ function Table() {
                 InvoiceDate: getString(extracted.InvoiceDate),
                 "LPO NO": getString(extracted["LPO NO"]),
                 SubTotal: getString(extracted.SubTotal),
-                VAT: getString(extracted.VAT),
+                VAT: getString(extracted.VAT || extracted.VAT),
                 InvoiceTotal: getString(extracted.InvoiceTotal),
                 ...commonFields,
               };
@@ -279,11 +323,11 @@ function Table() {
               };
             } else if (model === "mortgageforms") {
               return {
-                Lendername: getString(extracted.Lendername),
-                Borrowername: getString(extracted.Borrowername),
-                Loanamount: getString(extracted.Loanamount),
-                Interest: getString(extracted.Interest),
-                Loantenure: getString(extracted.Loantenure),
+                Lendername: getString(normalizedExtracted.Lendername || normalizedExtracted.Lendername),
+                Borrowername: getString(normalizedExtracted.Borrowername || normalizedExtracted.Borrowername),
+                Loanamount: getString(normalizedExtracted.Loanamount || normalizedExtracted.Loanamount),
+                Interest: getString(normalizedExtracted.Interest),
+                Loantenure: getString(normalizedExtracted.Loantenure || normalizedExtracted.Loantenure),
                 ...commonFields,
               };
             }
@@ -354,31 +398,52 @@ const filteredData = sortedData.filter((item) => {
       .toLowerCase()
       .includes(accountHolderFilter.toLowerCase());
 
-  const matchesLenderName =
+  const matchesLendername =
     selectedModelType !== "MortgageForms" ||
-    !lenderNameFilter ||
+    !LendernameFilter ||
     (item.Lendername || "")
       .toLowerCase()
-      .includes(lenderNameFilter.toLowerCase());
+      .includes(LendernameFilter.toLowerCase());
 
   return (
     matchesSearch &&
     matchesVendor &&
     matchesAccountHolder &&
-    matchesLenderName
+    matchesLendername
   );
 });
 
   const handleInfoClick = (file) => {
-    if (file.versionHistory && Array.isArray(file.versionHistory)) {
+      // Show modal even if history empty, so we can show Uploaded/Reviewed By
+      let history = (file.versionHistory && Array.isArray(file.versionHistory)) ? file.versionHistory : [];
+      
+      // Filter out duplicate or empty logs if any
+      history = history.filter(h => h.action || h.Action);
+      
+      const uploader = (typeof file.uploadedBy === "object") ? file.uploadedBy?.name : file.uploadedBy;
+      
+      // Derive Reviewer from history if not on file
+      let reviewer = (typeof file.reviewedBy === "object") ? file.reviewedBy?.name : file.reviewedBy;
+      if (!reviewer) {
+          // Look for last "Edited" or "Reviewed" action
+          const lastEdit = [...history].reverse().find(h => {
+             const act = (h.action || h.Action || "").toLowerCase();
+             return act.includes("review") || act.includes("edit");
+          });
+          if (lastEdit) {
+              const u = lastEdit.user || lastEdit.ChangedBy || lastEdit.User;
+              reviewer = (typeof u === 'object') ? u.name : u;
+          }
+      }
+
       setVersionModal({
         visible: true,
-        history: file.versionHistory,
+        history: history,
         docName: file.documentName || file.blobUrl || "Document",
+        uploadedBy: uploader,
+        reviewedBy: reviewer,
+        status: file.status || "Completed"
       });
-    } else {
-      toast.info("No version history available.");
-    }
   };
 
   const handleExportCSV = () => {
@@ -436,7 +501,7 @@ const filteredData = sortedData.filter((item) => {
     uploadDateFilter,
     vendorFilter,
     accountHolderFilter,
-    lenderNameFilter,
+    LendernameFilter,
     selectedModelType,
   ]);
 
@@ -494,8 +559,8 @@ const filteredData = sortedData.filter((item) => {
               <strong>Lender Name:</strong>
               <input
                 type="text"
-                value={lenderNameFilter}
-                onChange={(e) => setLenderNameFilter(e.target.value)}
+                value={LendernameFilter}
+                onChange={(e) => setLendernameFilter(e.target.value)}
                 placeholder="Enter lender name"
               />
             </label>
@@ -623,7 +688,9 @@ const filteredData = sortedData.filter((item) => {
 ? (
                             <td key={idx}>{formatDate(item[key])}</td>
                           ) : (
-                            <td key={idx}>{item[key]}</td>
+                            <td key={idx}>
+                                {getString(item[key] || item[key.toLowerCase()] || item[key.replace(/\s+/g, "")])}
+                            </td>
                           )
                         )}
                       </tr>
@@ -645,25 +712,57 @@ const filteredData = sortedData.filter((item) => {
               {versionModal.visible && (
                 <div className="modal-backdrop">
                   <div className="modal">
-                    <h3>Version History - {versionModal.docName}</h3>
+                    <h3>Document Review History</h3>
+                    <div className="modal-doc-info" style={{ marginBottom: "15px", textAlign: "left" }}>
+                        <p><strong>Document:</strong> {versionModal.docName}</p>
+                        <p><strong>Status:</strong> {versionModal.status}</p>
+                        <p><strong>Uploaded By:</strong> {versionModal.uploadedBy || "Unknown"}</p>
+                        <p><strong>Reviewed By:</strong> {versionModal.reviewedBy || "Pending"}</p>
+                    </div>
+
+                    <h4 style={{textAlign:"left"}}>Change Log:</h4>
                     <table className="version-table">
                       <thead>
                         <tr>
-                          <th>Version</th>
+                          <th>Ver</th>
                           <th>Action</th>
                           <th>User</th>
                           <th>Timestamp</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {versionModal.history.map((v, i) => (
-                          <tr key={i}>
-                            <td>{v.version}</td>
-                            <td>{v.action}</td>
-                            <td>{v.user?.name || v.user?.id || "N/A"}</td>
-                            <td>{new Date(v.timestamp).toLocaleString()}</td>
-                          </tr>
-                        ))}
+                        {versionModal.history.length > 0 ? (
+                            versionModal.history.map((v, i) => {
+                                // 🛠️ Handle mismatched keys from SQL backend (ChangedBy/ChangedAt)
+                                // Backend might return { Action: "...", ChangedBy: "...", ChangedAt: "..." }
+                                const action = v.action || v.Action;
+                                
+                                let userName = "N/A";
+                                if (v.user && typeof v.user === "object") userName = v.user.name || v.user.id;
+                                else if (v.ChangedBy) userName = v.ChangedBy;
+                                else if (v.user) userName = v.user;
+                                
+                                const rawTime = v.timestamp || v.ChangedAt;
+                                let timeStr = "N/A";
+                                if (rawTime) {
+                                    const d = new Date(rawTime);
+                                    if (!isNaN(d.getTime()) && d.getFullYear() > 1970) {
+                                        timeStr = d.toLocaleString();
+                                    }
+                                }
+
+                                return (
+                                  <tr key={i}>
+                                    <td>{v.version || v.Version || "-"}</td>
+                                    <td>{action}</td>
+                                    <td>{userName}</td>
+                                    <td>{timeStr}</td>
+                                  </tr>
+                                );
+                            })
+                        ) : (
+                            <tr><td colSpan="4">No detailed history available.</td></tr>
+                        )}
                       </tbody>
                     </table>
                     <button
@@ -672,8 +771,12 @@ const filteredData = sortedData.filter((item) => {
                           visible: false,
                           history: [],
                           docName: "",
+                          uploadedBy: "",
+                          reviewedBy: "",
+                          status: ""
                         })
                       }
+                      style={{marginTop: "15px"}}
                     >
                       Close
                     </button>

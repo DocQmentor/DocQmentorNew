@@ -71,7 +71,7 @@ const SuperAdmin = () => {
     },
     {
       id: 6,
-      companyName: "Innovation Labs",
+      companyName: "InnoVATion Labs",
       plan: "Advanced",
       startDate: "2024-03-01",
       endDate: "2024-09-01",
@@ -79,7 +79,7 @@ const SuperAdmin = () => {
       invoiceStatus: "Active",
       bankStatementStatus: "Active",
       mortgageFormsStatus: "inactive",
-      adminEmail: "admin@innovationlabs.com",
+      adminEmail: "admin@innoVATionlabs.com",
       users: 4
     },
     {

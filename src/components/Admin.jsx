@@ -171,7 +171,9 @@ const Admin = () => {
         "InvoiceTotal",
       ];
       return requiredFields.every((field) => {
-        const value = doc.extractedData[field];
+        let value = doc.extractedData[field];
+        if (field === "LPO NO") value = value || doc.extractedData["LPO NO"] || doc.extractedData["LPO NO"];
+        if (field === "VAT") value = value || doc.extractedData["VAT"] || doc.extractedData["VAT"];
         return value !== undefined && value !== null && String(value).trim() !== "";
       });
     };
