@@ -81,9 +81,9 @@ const Dashboard = () => {
         "VendorName",
         "InvoiceId",
         "InvoiceDate",
-        "LpoNo",
+        "LPO NO",
         "SubTotal",
-        "Vat",
+        "VAT",
         "InvoiceTotal",
       ],
       bankstatement: [
@@ -94,10 +94,10 @@ const Dashboard = () => {
         "ClosingBalance",
       ],
       mortgageforms: [
-        "LenderName",
-        "BorrowerName",
-        "LoanAmount",
-        "LoanTenure",
+        "Lendername",
+        "Borrowername",
+        "Loanamount",
+        "Loantenure",
         "Interest",
       ],
     };
@@ -105,14 +105,7 @@ const Dashboard = () => {
     const required = modelFields[type] || modelFields.invoice;
 
     return required.every((key) => {
-      let value = doc.extractedData[key];
-      
-      // key aliases for SQL vs Analyzer formats
-      if (key === "LpoNo") value = value || doc.extractedData["LPO NO"] || doc.extractedData["LPONo"];
-      if (key === "Vat") value = value || doc.extractedData["VAT"] || doc.extractedData["Vat"];
-      if (key === "LenderName") value = value || doc.extractedData["Lendername"];
-      if (key === "BorrowerName") value = value || doc.extractedData["Borrowername"];
-
+      const value = doc.extractedData[key];
       return (
         value !== undefined && value !== null && String(value).trim() !== ""
       );

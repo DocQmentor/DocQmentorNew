@@ -266,9 +266,9 @@ useEffect(() => {
         VendorName: getString(extracted.VendorName),
         InvoiceId: getString(extracted.InvoiceId),
         InvoiceDate: formatDate(extracted.InvoiceDate),
-        LPONO: getString(extracted["LPO NO"] || extracted.LPONo || extracted.LpoNo),
+        LPONO: getString(extracted["LPO NO"]),
         SubTotal: formatNumber(getString(extracted.SubTotal)),
-        VAT: formatNumber(getString(extracted.VAT || extracted.Vat)),
+        VAT: formatNumber(getString(extracted.VAT)),
         InvoiceTotal: formatNumber(getString(extracted.InvoiceTotal)),
       };
     } else if (model === "bankstatement") {
