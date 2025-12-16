@@ -98,7 +98,7 @@ const Header = ({ minimal }) => {
                 </NavLink>
               </li>
               
-              {/* <li className={location.pathname === '/table' ? 'active' : ''}>
+              <li className={location.pathname === '/table' ? 'active' : ''}>
                 <NavLink
                   to="/table"
                   className="a"
@@ -106,7 +106,7 @@ const Header = ({ minimal }) => {
                 >
                   <FileText size={20} className="i" /> Data View
                 </NavLink>
-              </li> */}
+              </li>
               <li className={location.pathname === '/admin' ? 'active' : ''}>
                 <NavLink
                   to="/admin"
@@ -125,15 +125,6 @@ const Header = ({ minimal }) => {
                   <Crown size={20} className="i" /> Super Admin
                 </NavLink>
               </li>
-              <li className={location.pathname === '/superadmin' ? 'active' : ''}>
-                <NavLink
-                  to="/superadmin"
-                  className="a"
-                  onClick={(e) => handleNavigationClick(e, '/superadmin')}
-                >
-                  <FileText size={20} className="i" /> Super Admin
-                </NavLink>
-              </li>
             </>
           )}
           <li className={location.pathname === '/profile' ? 'active' : ''} onClick={toggleProfile}>
@@ -143,7 +134,6 @@ const Header = ({ minimal }) => {
             {isProfileOpen && (
               <div className="profile-dropdown">
                 <div className="profile-header">
-                  <div className="profile-aVATar">
                   <div className="profile-aVATar">
                     {initials}
                   </div>
@@ -165,5 +155,6 @@ const Header = ({ minimal }) => {
     </div>
   );
 };
+
 
 export default Header;
