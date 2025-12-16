@@ -442,7 +442,7 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
                 </label>
               )}
               <label>
-                <strong>From Date:</strong>
+                <strong>{selectedModelType} From Date:</strong>
                 <input
                   type="date"
                   value={fromDate}
@@ -451,7 +451,7 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
                 />
               </label>
               <label>
-                <strong>To Date:</strong>
+                <strong>{selectedModelType} To Date:</strong>
                 <input
                   type="date"
                   value={toDate}
@@ -494,21 +494,22 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
 
           
           <div style={{ overflowX: "auto" }}>
-            <table className="ManualReview-Table">
+            <table className={`ManualReview-Table ${selectedModelType}`}>
+
              <thead>
-  <tr>
-    {modelHeaders[selectedModelType].map((header, idx) => (
-      <th
-        key={idx}
-        onClick={() => toggleSort(modelKeys[selectedModelType][idx])}
-      >
-        <span className="sortable-header">
-          {header} {renderSortIcon(modelKeys[selectedModelType][idx])}
-        </span>
-      </th>
-    ))}
-  </tr>
-</thead>
+                <tr>
+                  {modelHeaders[selectedModelType].map((header, idx) => (
+                    <th
+                      key={idx}
+                      onClick={() => toggleSort(modelKeys[selectedModelType][idx])}
+                    >
+                      {/* <span className="sortable-header"> */}
+                        {header} {renderSortIcon(modelKeys[selectedModelType][idx])}
+                      {/* </span> */}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
 
               <tbody>
                 {paginatedData.length > 0 ? (

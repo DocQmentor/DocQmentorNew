@@ -31,7 +31,7 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div>
+    <div className="login-page-container">
       <div className='main'>
         <header className='Login-header'>
           <img className='img-doc' src={docQmentorLogo} alt="DocQmentor Logo" />

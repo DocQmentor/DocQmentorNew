@@ -19,7 +19,7 @@
 .ManualReview-Table-header h1{
    font-size: 22px;
   font-weight: 700;
-  color: #0d3c61;
+  color: #266898;
   margin-bottom: 12px;
   padding-bottom: 8px;
   width: 100%;
@@ -30,62 +30,68 @@
   color: #0d3c61;
   margin-bottom: 10px;
 } */
+/* ===== FIXED COLUMN WIDTHS FOR MANUAL REVIEW BY MODEL TYPE ===== */
 
-/* ===== Fixed Column Widths ===== */
-.ManualReview-Table th:nth-child(1),
-.ManualReview-Table td:nth-child(1) {
-  width: 160px; /* Vendor Name */
-  white-space: normal;
-  word-wrap: break-word;
-}
+/* ----- Invoice Table Column Widths ----- */
+.ManualReview-Table.Invoice th:nth-child(1),
+.ManualReview-Table.Invoice td:nth-child(1) { width: 160px; } /* Vendor Name */
+.ManualReview-Table.Invoice th:nth-child(2),
+.ManualReview-Table.Invoice td:nth-child(2) { width: 120px; } /* Invoice ID */
+.ManualReview-Table.Invoice th:nth-child(3),
+.ManualReview-Table.Invoice td:nth-child(3) { width: 130px; } /* Invoice Date */
+.ManualReview-Table.Invoice th:nth-child(4),
+.ManualReview-Table.Invoice td:nth-child(4) { width: 120px; } /* LPO No */
+.ManualReview-Table.Invoice th:nth-child(5),
+.ManualReview-Table.Invoice td:nth-child(5) { width: 100px; } /* Sub Total */
+.ManualReview-Table.Invoice th:nth-child(6),
+.ManualReview-Table.Invoice td:nth-child(6) { width: 100px; } /* VAT */
+.ManualReview-Table.Invoice th:nth-child(7),
+.ManualReview-Table.Invoice td:nth-child(7) { width: 110px; } /* Total */
+.ManualReview-Table.Invoice th:nth-child(8),
+.ManualReview-Table.Invoice td:nth-child(8) { width: 130px; } /* Upload Date */
+.ManualReview-Table.Invoice th:nth-child(9),
+.ManualReview-Table.Invoice td:nth-child(9) { width: 140px; } /* Confidence Score */
+.ManualReview-Table.Invoice th:nth-child(10),
+.ManualReview-Table.Invoice td:nth-child(10) { width: 90px; } /* Action */
 
-.ManualReview-Table th:nth-child(2),
-.ManualReview-Table td:nth-child(2) {
-  width: 120px; /* Invoice ID */
-}
 
-.ManualReview-Table th:nth-child(3),
-.ManualReview-Table td:nth-child(3) {
-  width: 130px; /* Invoice Date */
-}
+/* ----- Bank Statement Table Column Widths ----- */
+.ManualReview-Table.BankStatement th:nth-child(1),
+.ManualReview-Table.BankStatement td:nth-child(1) { width: 170px; }
+.ManualReview-Table.BankStatement th:nth-child(2),
+.ManualReview-Table.BankStatement td:nth-child(2) { width: 130px; }
+.ManualReview-Table.BankStatement th:nth-child(3),
+.ManualReview-Table.BankStatement td:nth-child(3) { width: 150px; }
+.ManualReview-Table.BankStatement th:nth-child(4),
+.ManualReview-Table.BankStatement td:nth-child(4) { width: 120px; }
+.ManualReview-Table.BankStatement th:nth-child(5),
+.ManualReview-Table.BankStatement td:nth-child(5) { width: 120px; }
+.ManualReview-Table.BankStatement th:nth-child(6),
+.ManualReview-Table.BankStatement td:nth-child(6) { width: 130px; }
+.ManualReview-Table.BankStatement th:nth-child(7),
+.ManualReview-Table.BankStatement td:nth-child(7) { width: 140px; }
+.ManualReview-Table.BankStatement th:nth-child(8),
+.ManualReview-Table.BankStatement td:nth-child(8) { width: 90px; }
 
-.ManualReview-Table th:nth-child(4),
-.ManualReview-Table td:nth-child(4) {
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  text-overflow: unset;
-  width: 120px; /* LPO Number */
-}
 
-.ManualReview-Table th:nth-child(5),
-.ManualReview-Table td:nth-child(5) {
-  width: 100px; /* Sub Total */
-}
+/* ----- Mortgage Forms Table Column Widths ----- */
+.ManualReview-Table.MortgageForms th:nth-child(1),
+.ManualReview-Table.MortgageForms td:nth-child(1) { width: 170px; }
+.ManualReview-Table.MortgageForms th:nth-child(2),
+.ManualReview-Table.MortgageForms td:nth-child(2) { width: 170px; }
+.ManualReview-Table.MortgageForms th:nth-child(3),
+.ManualReview-Table.MortgageForms td:nth-child(3) { width: 130px; }
+.ManualReview-Table.MortgageForms th:nth-child(4),
+.ManualReview-Table.MortgageForms td:nth-child(4) { width: 100px; }
+.ManualReview-Table.MortgageForms th:nth-child(5),
+.ManualReview-Table.MortgageForms td:nth-child(5) { width: 110px; }
+.ManualReview-Table.MortgageForms th:nth-child(6),
+.ManualReview-Table.MortgageForms td:nth-child(6) { width: 130px; }
+.ManualReview-Table.MortgageForms th:nth-child(7),
+.ManualReview-Table.MortgageForms td:nth-child(7) { width: 140px; }
+.ManualReview-Table.MortgageForms th:nth-child(8),
+.ManualReview-Table.MortgageForms td:nth-child(8) { width: 90px; }
 
-.ManualReview-Table th:nth-child(6),
-.ManualReview-Table td:nth-child(6) {
-  width: 100px; /* VAT */
-}
-
-.ManualReview-Table th:nth-child(7),
-.ManualReview-Table td:nth-child(7) {
-  width: 110px; /* Total */
-}
-
-.ManualReview-Table th:nth-child(8),
-.ManualReview-Table td:nth-child(8) {
-  width: 130px; /* Upload Date */
-}
-
-.ManualReview-Table th:nth-child(9),
-.ManualReview-Table td:nth-child(9) {
-  width: 140px; /* Confidence Score */
-}
-
-.ManualReview-Table th:nth-child(10),
-.ManualReview-Table td:nth-child(10) {
-  width: 90px; /* Action */
-}
 
 /* ===== Filters Section ===== */
 .filters {
@@ -102,12 +108,12 @@
   flex-direction: column;
   font-weight: 500;
   font-size: 13px;
-  color: #0d3c61;
+  color: #266898;
 }
 
 .filters input,
 .filters select {
-  border: 1.8px solid #0d3c61;
+  border: 1.8px solid #266898;
   border-radius: 5px;
   padding: 4px 8px;
   font-size: 13px;
@@ -119,7 +125,7 @@
 /* ===== Buttons ===== */
 .export-button,
 .reset-button {
-  background-color: #004080;
+  background-color: #266898;
   color: white;
   border: none;
   border-radius: 5px;
@@ -132,7 +138,7 @@
 
 .export-button:hover,
 .reset-button:hover {
-  background-color: red;
+  background-color: #ed2224;
 }
 
 /* ===== Table ===== */
@@ -155,14 +161,17 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  color: #266898;
 }
-
+/* .sortable-header{
+  border: #ed2224 3px solid;
+  background-color: #266898;
+} */
 .ManualReview-Table th {
-  background-color: #0d3c61;
+  background-color: #266898;
   color: white;
   font-weight: 600;
 }
-
 .ManualReview-Table tr:nth-child(even) {
   background-color: #f4f7fa;
 }
@@ -173,7 +182,7 @@
 
 /* ===== Action Button ===== */
 .ManualReview-Table button {
-  background-color: #004080;
+  background-color: #266898;
   color: white;
   border: none;
   padding: 6px 12px;
@@ -185,7 +194,7 @@
 }
 
 .ManualReview-Table button:hover {
-  background-color: red;
+  background-color: #ed2224;
 }
 
 /* ===== Pagination ===== */
@@ -198,7 +207,7 @@
 
 .pagination button {
   background-color: #f8f8f8;
-  color: #0d3c61;
+  color: #266898;
   padding: 5px 10px;
   margin: 0 4px;
   cursor: pointer;
@@ -246,7 +255,7 @@
 }
 
 .modal button {
-  background-color: #007bff;
+  background-color: #266898;
   color: white;
   padding: 10px 20px;
   font-size: 14px;
@@ -258,7 +267,7 @@
 }
 
 .modal button:hover {
-  background-color: #0056b3;
+  background-color: #266898;
 }
 
 /* ===== Responsive ===== */

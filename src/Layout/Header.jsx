@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home,Search, LayoutDashboard, FileText, User, LogOut } from 'lucide-react';
+import { Home,Search, LayoutDashboard, FileText, User, LogOut, Building, Crown, Shield } from 'lucide-react';
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
+import docQmentorLogo from '../assets/logo-docqmentor.png';
 import useGroupAccess from "../utils/userGroupAccess";
 import logo from "../assets/logo-docqmentor.png";
 
@@ -87,7 +88,15 @@ const Header = ({ minimal }) => {
                   <LayoutDashboard size={20} className="i" /> Dashboard
                 </NavLink>
               </li>
-              
+              <li className={location.pathname === '/table' ? 'active' : ''}>
+                <NavLink
+                  to="/table"
+                  className="a"
+                  onClick={(e) => handleNavigationClick(e, '/table')}
+                >
+                  <FileText size={20} className="i" /> Data View
+                </NavLink>
+              </li>
               
               {/* <li className={location.pathname === '/table' ? 'active' : ''}>
                 <NavLink
@@ -98,34 +107,22 @@ const Header = ({ minimal }) => {
                   <FileText size={20} className="i" /> Data View
                 </NavLink>
               </li> */}
-              <li className={location.pathname === '/table' ? 'active' : ''}>
-                <NavLink
-                  to="/table"
-                  className="a"
-                  onClick={(e) => handleNavigationClick(e, '/table')}
-                >
-                  <FileText size={20} className="i" /> Data View
-                </NavLink>
-              </li>
-              {hasAccess === true && (
-                <li className={location.pathname === '/manualreview' ? 'active' : ''}>
-                    <NavLink
-                    to="/manualreview"
-                    className="a"
-                    onClick={(e) => handleNavigationClick(e, '/manualreview')}
-                  >
-                    <Search size={20} className="i" /> Manual Review
-                  </NavLink>
-                </li>
-              )}
-              
               <li className={location.pathname === '/admin' ? 'active' : ''}>
                 <NavLink
                   to="/admin"
                   className="a"
                   onClick={(e) => handleNavigationClick(e, '/admin')}
                 >
-                  <FileText size={20} className="i" /> Client Admin
+                  <Shield size={20} className="i" /> Client Admin
+                </NavLink>
+              </li>
+              <li className={location.pathname === '/superadmin' ? 'active' : ''}>
+                <NavLink
+                  to="/superadmin"
+                  className="a"
+                  onClick={(e) => handleNavigationClick(e, '/superadmin')}
+                >
+                  <Crown size={20} className="i" /> Super Admin
                 </NavLink>
               </li>
               <li className={location.pathname === '/superadmin' ? 'active' : ''}>
@@ -147,6 +144,7 @@ const Header = ({ minimal }) => {
               <div className="profile-dropdown">
                 <div className="profile-header">
                   <div className="profile-aVATar">
+                  <div className="profile-aVATar">
                     {initials}
                   </div>
                   <div className="profile-info">
@@ -156,7 +154,7 @@ const Header = ({ minimal }) => {
                 </div>
                 <div className="profile-footer">
                   <button className="logout-button" onClick={handleLogout}>
-                    <LogOut size={16} className="LogOut-i"/> Sign Out
+                    <LogOut size={16} className="LogOut"/> Sign Out
                   </button>
                 </div>
               </div>

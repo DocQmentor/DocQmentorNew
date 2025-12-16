@@ -4,7 +4,7 @@
 
 :root {
     /* Primary Color Scheme */
-    --navy: #0d3c61;             /* Primary Dark Blue */
+    --navy: #266898;             /* Primary Dark Blue */
     --background-light: #ffffff; /* Pure White (Card/Element Background) */
     --page-bg: #f0f3f6;          /* Very Light Grey/Off-White (Page Canvas) */
     --border-light: #e0e0e0;     /* Light Grey for borders/dividers */
@@ -12,8 +12,8 @@
     --text-muted: #666666;       /* Muted Grey for labels/placeholders */
 
     /* Secondary/Action Colors (Kept for UX integrity) */
-    --accent-blue: #0078d4;      /* Microsoft Blue for strong accents */
-    --success: #107c10;          /* Green */
+    --accent-blue: #266898;      /* Microsoft Blue for strong accents */
+    --success: #1e9b50;          /* Green */
     --danger: #dc3545;           /* Red */
     --warning: #ffb900;          /* Yellow/Orange */
 
@@ -98,11 +98,15 @@ a:hover {
     grid-template-columns: 3fr 1fr;
     grid-template-rows: auto 1fr;
     gap: 12px;
-    margin-top: 65px;
+    margin-top: 55px;
     flex: 1;
-    width: 96%;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
+    
+  padding-left: 12px;
+  padding-right: 12px;
+
     padding: 0 0 var(--spacing-lg) 0;
     animation: fadeIn var(--transition-slow);
 }
@@ -132,12 +136,13 @@ a:hover {
 
 .admin-heading-section h1 {
     font-size: 24px;
+    display: flex;
     font-weight: 700; /* Bold as you selected */
     margin: 0;
-    color: #0d3c61;
+    color: #266898;
 }
 
-.admin-heading-section .document-type-badge {
+.document-type-badge {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -145,27 +150,24 @@ a:hover {
     background-color: #ffffff;
     border-radius: 6px;
     font-size: 14px;
-    color: #0d3c61;
+    color: #266898;
     transition: all var(--transition-fast);
     border: 1px solid #e0e0e0;
 }
-.document-type-badge .databaseIcon-admin,
-.document-type-badge span,
+.document-type-badge span{
+    display: flex;
+    gap: 5px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+/* .document-type-badge span,
 .document-type-badge strong{
     transition: all var(--transition-fast);
     background-color: #ffffff;
-    color: #0d3c61;
-}
-.admin-heading-section .document-type-badge:hover,
-.admin-heading-section .document-type-badge:hover .databaseIcon-admin,
-.admin-heading-section .document-type-badge:hover span,
-.admin-heading-section .document-type-badge:hover strong{
-    background-color: #eef5fa;
-}
+    color: #266898;
+} */
 
-.admin-heading-section .document-type-badge strong {
-    color: #0d3c61;
-}
 
 /* --- 2. Section 1 (Main Content Area) --- */
 .admin-section-1 {
@@ -205,7 +207,7 @@ a:hover {
 
 .admin-section-2-header h3 {
     margin: 0;
-    color: #0d3c61;
+    color: #266898;
     font-size: 16px;
     font-weight: 700;
     padding-bottom: 8px;
@@ -217,46 +219,96 @@ a:hover {
 /* KPI STATS BOXES                                */
 /* ========================================================================= */
 
+/* ===================== */
+/* ADMIN STATS — Improved */
+/* ===================== */
+
 .admin-stats-box {
-    margin-bottom: 0;
-    flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 12px 0 20px 0;
 }
 
 .admin-stats-box ul {
-    display: flex;
-    list-style: none;
-    justify-content: space-between;
-    padding: 0;
-    margin: 0;
-    gap: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  gap: 18px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
 }
 
+/* Each card */
 .admin-stats-box li {
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 14px 10px;
-    display: grid;
-    grid-template-areas:
-        "icon text"
-        "icon number";
-    grid-template-columns: 50px 1fr;
-    align-items: center;
-    background-color: #ffffff;
-    transition: all var(--transition-medium);
-    cursor: default;
-    flex: 1;
-    min-height: 90px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+  flex: 1 1 220px;
+  max-width: 260px;
+  min-width: 220px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 16px 14px;
+  display: grid;
+  grid-template-areas:
+      "icon text"
+      "icon number";
+  grid-template-columns: 45px 1fr;
+  align-items: center;
+  cursor: default;
+  transition: all var(--transition-medium);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
 }
 
 .admin-stats-box li:hover {
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.10);
+}
+
+/* Icon */
+.iconForCount {
+  grid-area: icon;
+  color: #266898;
+  font-size: 22px;
+}
+
+/* Text Label */
+.textForCout {
+  grid-area: text;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Big Number */
+.numberForCout {
+  grid-area: number;
+  font-size: 26px;
+  font-weight: 700;
+  color: #266898;
+  margin-top: 2px;
+}
+
+/* RESPONSIVE FIXES */
+@media (max-width: 992px) {
+  .admin-stats-box ul {
+    gap: 14px;
+  }
+  .admin-stats-box li {
+    flex: 1 1 48%;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-stats-box li {
+    flex: 1 1 100%;
+  }
 }
 
 .iconForCount {
     grid-area: icon;
-    color: #0d3c61;
+    color: #266898;
     margin-right: 8px;
     transition: transform var(--transition-medium);
     font-size: 22px;
@@ -278,7 +330,7 @@ a:hover {
     grid-area: number;
     font-size: 22px;
     font-weight: 700;
-    color: #0d3c61;
+    color: #266898;
     margin: 0;
 }
 
@@ -348,7 +400,7 @@ a:hover {
 
 .admin-table-box th {
     color: white;
-    background: #0d3c61;
+    background: #266898;
     font-weight: 600;
     position: sticky;
     top: 0;
@@ -362,7 +414,7 @@ a:hover {
 } */
 
 .admin-table-box td {
-    color: #0d3c61;
+    color: #266898;
     border-bottom: 1px solid var(--border-light);
     background-color: #ffffff;
 }
@@ -381,7 +433,7 @@ a:hover {
     align-items: center;
     gap: 6px;
     color: #ffffff;
-    background-color: #0d3c61;
+    background-color: #266898;
     font-weight: 700;
     white-space: nowrap;
     cursor: pointer;
@@ -412,9 +464,13 @@ a:hover {
 
 .table-header-title {
     margin: 0;
-    color: #0d3c61;
+    color: #266898;
+    background: #f0f8ff;
+    border: #266898 solid 1px;
+    border-radius: 5px;
     font-size: 18px;
     font-weight: 700;
+    padding: 0px 5px 0px 5px;
 }
 
 /* Div 2: Filters and Controls */
@@ -497,7 +553,7 @@ a:hover {
 }
 
 .export-btn:hover:not(:disabled) {
-    background-color: #0b5e0b;
+    background-color: #1e9b50;
     transform: translateY(-1px);
 }
 
@@ -577,7 +633,13 @@ a:hover {
     cursor: pointer;
     transition: all var(--transition-medium);
 }
-
+.cancel-btn{
+    color: white;
+    background-color: #ed2224;
+}
+.cancel-btn:hover{
+    transform: translateY(-1px);
+}
 .reset-filters-btn:hover,
 .reset-btn:hover,
 .clear-btn:hover,
@@ -597,6 +659,7 @@ a:hover {
     padding: 8px 14px;
     background-color: #ffffff;
     border-radius: 8px;
+    margin :10px;
     margin-bottom: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     border: 1px solid var(--border-light);
@@ -615,7 +678,7 @@ a:hover {
 
 .table-selector label {
     font-weight: 700;
-    color: #0d3c61;
+    color: #266898;
     font-size: 14px;
     white-space: nowrap;
 }
@@ -656,7 +719,7 @@ a:hover {
     border-radius: 6px;
     cursor: pointer;
     transition: all var(--transition-medium);
-    color: #0d3c61;
+    color: #266898;
 }
 
 .nav-button:hover:not(:disabled) {
@@ -674,7 +737,7 @@ a:hover {
 .table-counter {
     font-size: 14px;
     font-weight: 600;
-    color: #0d3c61;
+    color: #266898;
     min-width: 50px;
     text-align: center;
     transition: color var(--transition-fast);
@@ -708,7 +771,7 @@ a:hover {
 
 .admin-section-2-pack ul:hover,
 .admin-section-2-usage ul:hover {
-    border-color: #0d3c61;
+    border-color: #266898;
 }
 
 /* Consolidated List/LI styles */
@@ -743,7 +806,7 @@ a:hover {
 
 .admin-section-2-pack ul li:hover,
 .admin-section-2-usage ul li:hover {
-    background: #f0f3f6;
+    /* background: #f0f3f6; */
     border-radius: 4px;
     transform: translateX(2px);
 }
@@ -794,7 +857,7 @@ a:hover {
 
 .popup-header h2 {
     margin: 0;
-    color: #0d3c61;
+    color: #266898;
     font-weight: 700;
     font-size: 18px;
 }
@@ -803,7 +866,7 @@ a:hover {
     background: none;
     border: none;
     cursor: pointer;
-    color: #0d3c61;
+    color: #266898;
     font-size: 24px;
     padding: 5px;
     line-height: 1;
@@ -818,8 +881,9 @@ a:hover {
 /* Filter and Form Sections */
 .filter-section,
 .add-user-form {
+    margin-top: 10px;
     padding: 12px;
-    background-color: var(--page-bg);
+    /* background-color: var(--page-bg); */
     border: 1px solid var(--border-light);
     border-radius: 8px;
     margin-bottom: 16px;
@@ -842,7 +906,7 @@ a:hover {
 .form-group label {
     margin-bottom: 5px;
     font-weight: 600;
-    color: #0d3c61;
+    color: #266898;
     font-size: 14px;
 }
 
@@ -867,7 +931,7 @@ a:hover {
 }
 
 .user-item:hover {
-    background-color: #f0f3f6;
+    /* background-color: #f0f3f6; */
     transform: translateX(2px);
 }
 
@@ -895,6 +959,13 @@ a:hover {
 }
 
 /* Consolidated Base Button Styles */
+.form-buttons{
+    /* border: #0078d4 solid ; */
+    width: 100%;
+    display: flex;
+    gap: 20px;
+    align-content: center;
+}
 .button-group button,
 .form-buttons button,
 .edit-btn,
@@ -914,7 +985,7 @@ a:hover {
 
 .add-user-btn,
 .submit-btn {
-    background-color: #0d3c61;
+    background-color: #266898;
     color: white;
 }
 
@@ -993,7 +1064,7 @@ a:hover {
 .edit-form {
     margin-top: 8px;
     padding: 8px;
-    background-color: var(--page-bg);
+    /* background-color: var(--page-bg); */
     border-radius: 6px;
     display: flex;
     flex-direction: column;
@@ -1014,7 +1085,7 @@ a:hover {
     background-color: var(--success);
 }
 .save-edit:hover {
-    background-color: #0b5e0b;
+    background-color: #157c3f;
     transform: translateY(-1px);
 }
 
@@ -1046,7 +1117,7 @@ a:hover {
 }
 
 .loading {
-    color: #0d3c61;
+    color: #266898;
 }
 
 .error {
@@ -1072,7 +1143,7 @@ a:hover {
 }
 
 .refresh-data-btn:hover {
-    background-color: #106ebe;
+    background-color: #1c547c;
     transform: translateY(-1px);
 }
 
@@ -1272,11 +1343,11 @@ a:hover {
         width: 96%;
     }
     
-    .admin-heading-section .document-type-badge {
+    /* .admin-heading-section .document-type-badge {
         font-size: 13px;
         width: 100%;
         justify-content: space-between;
-    }
+    } */
     
     .admin-stats-box li .numberForCout {
         font-size: 18px;

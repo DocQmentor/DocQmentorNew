@@ -220,7 +220,7 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
 
   try {
-    // 1️⃣ Upload to Blob
+    // 1️⃣ Upload to Azure Blob
     await blockBlobClient.uploadData(file, {
       blobHTTPHeaders: { blobContentType: file.type },
       onProgress: (ev) => {
@@ -231,15 +231,17 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
       },
     });
 
-    // 2️⃣ Build SAS URL
+    // 2️⃣ Generate SAS-protected URL
     const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
     const blobUrlWithSAS = blockBlobClient.url; // Already includes SAS
 
-    // 3️⃣ SQL-COMPATIBLE METADATA
+    // 3️⃣ Metadata for Cosmos DB
     const metadata = {
-      fileSizeKB: Math.round(file.size / 1024),  // ✅ convert bytes → KB
+      fileName: file.name,
+      fileSizeKB: file.size,
       fileFormat: file.type || "application/pdf",
-      pageCount: 0                               // ✅ backend default
+      UploadDate: new Date().toISOString(),
+      pageCount: 0, // can be updated later
     };
 
     // 4️⃣ Send to backend
@@ -265,18 +267,18 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
       
     );
 
-    // 5️⃣ Return
+    // 5️⃣ Return UI info
     return {
       fileName: file.name,
       folderName,
       uploadedAt: new Date(),
       status: "In Process",
       url: blobUrlWithSAS,
+      uploadId,
       modelType,
     };
-
   } catch (error) {
-    console.error("Azure upload error:", error);
+    console.error("Azure upload error:", error.response?.data || error.message);
     throw error;
   }
 };

@@ -7,7 +7,7 @@ import Header from "../Layout/Header";
 const SelectDocumentType = () => {
   const navigate = useNavigate();
 
- const handleSelectmodelType = (modelType) => {
+  const handleSelectmodelType = (modelType) => {
   console.log("Selected modelType:", modelType); // ✅ Debug: shows in browser console
   localStorage.setItem("selectedModelType", modelType);
 

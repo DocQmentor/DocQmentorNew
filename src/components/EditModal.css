@@ -2,7 +2,7 @@
   width: 100%;
   height: 100vh;
   display: flex;
-  border: #004080 solid;
+  border: #266898 solid;
   flex-direction: column;
 }
 /* ===== Edit Modal Container ===== */
@@ -28,7 +28,7 @@
   border-radius: 10px;
 }
 .ManualReview-Edit-show-file-name{
-  color: #004080;
+  color: #266898;
 }
 .ManualReview-Edit-show-file-pdf-preview {
   width: 100%;
@@ -81,7 +81,7 @@
   cursor: pointer;
   list-style-type: none;
   padding: 5px;
-  color: #47556e;
+  color: #266898;
   border-radius: 10px;
   transition: background-color 0.2s;
 }
@@ -113,7 +113,7 @@
 
 .ManualReview-Edit-editDetails-form h3 {
   font-size: 18px;
-  color: #004080;
+  color: #266898;
   /* margin-bottom: 15px;
   border-bottom: 2px solid #266898;
   padding-bottom: 5px; */
@@ -130,7 +130,7 @@
 }
 
 .ManualReview-Edit-editDetails-form input:focus {
-  border: 1px solid #004080;
+  border: 1px solid #266898;
   outline: none;
 }
 
@@ -159,10 +159,10 @@
   /* border: 1px solid #ccc; */
 }
 .ManualReview-Edit-editDetails-form-ul-Save-Changes-i{
-  background-color: #2e9a55;
+  background-color: #1e9b50;
 }
 .ManualReview-Edit-editDetails-form-ul-Save-Changes {
-  background-color: #2e9a55;
+  background-color: #1e9b50;
   /* border: 1px solid #ccc; */
 }
 
@@ -180,7 +180,7 @@
 
 .ManualReview-Edit-versionHistory h3 {
   font-size: 18px;
-  color: #004080;
+  color: #266898;
   margin-bottom: 15px;
   border-bottom: 2px solid #266898;
   padding-bottom: 5px;
@@ -206,7 +206,7 @@
 }
 
 .ManualReview-Edit-versionHistory li strong {
-  color: #004080;
+  color: #266898;
   font-weight: bold;
   background-color: #f8f9fb;
   margin-right: 4px;
@@ -237,7 +237,7 @@
 }
 .pdf-details-container h3{
   font-size: 18px;
-  color: #004080;
+  color: #266898;
   margin-bottom: 15px;
   border-bottom: 2px solid #266898;
   padding-bottom: 5px;

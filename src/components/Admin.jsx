@@ -840,13 +840,7 @@ const Admin = () => {
     <div className="admin-container">
       <main className="admin-main">
         <section className="admin-heading-section">
-          <Shield className="header-icon" size={32} />
-          <h1>Admin Dashboard</h1>
-          <h1>Fruit Garden</h1>
-          <div className="document-type-badge">
-            <Database className='databaseIcon-admin' size={16} />
-            <span>Document Type: <strong>{selectedDocumentType}</strong></span>
-          </div>
+          <h1><Shield className="header-icon" size={32} /> Client Dashboard</h1>
           <button onClick={fetchData} className="refresh-data-btn">
             <RefreshCw size={16} className='refresh-data-btn-icon' />
             Refresh Data
@@ -920,6 +914,9 @@ const Admin = () => {
             <div className="admin-section-2-header">
               <h3>Plan Details</h3>
             </div>
+            <div className="document-type-badge">
+              <span><Database className='databaseIcon-admin' size={16} />Document Type: <strong>{selectedDocumentType}</strong></span>
+            </div>
             <div className="admin-section-2-pack">
               <ul>
                 <li>
@@ -951,7 +948,7 @@ const Admin = () => {
 
       {/* User Management Popup */}
       {showUserPopup && (
-        <div className="popup-overlay">
+        <div className="popup-overlay user-management-popup">
           <div className="popup-content">
             <div className="popup-header">
               <h2>User Management</h2>

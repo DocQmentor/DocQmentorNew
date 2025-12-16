@@ -568,7 +568,7 @@ const filteredData = sortedData.filter((item) => {
 
           {/* Date Range Filter */}
           <label>
-            <strong>From Date:</strong>
+            <strong>{selectedModelType} From Date:</strong>
             <input
               type="date"
               value={fromDate}
@@ -577,7 +577,7 @@ const filteredData = sortedData.filter((item) => {
             />
           </label>
           <label>
-            <strong>To Date:</strong>
+            <strong>{selectedModelType} To Date:</strong>
             <input
               type="date"
               value={toDate}
@@ -626,7 +626,8 @@ const filteredData = sortedData.filter((item) => {
         <ErrorBoundary>
           {!loading && !error && (
             <>
-              <table>
+             <table className={selectedModelType}>
+
                 <thead>
                   <tr>
                     {modelTypeHeaders[selectedModelType].map((header, idx) => (
@@ -636,12 +637,12 @@ const filteredData = sortedData.filter((item) => {
                           toggleSort(modelTypeKeys[selectedModelType][idx])
                         }
                       >
-                        <span className="sortable-header">
+                        {/* <span className="sortable-header"> */}
                           {header}{" "}
                           {renderSortIcon(
                             modelTypeKeys[selectedModelType][idx]
                           )}
-                        </span>
+                        {/* </span> */}
                       </th>
                     ))}
                   </tr>
