@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home,Search, LayoutDashboard, FileText, User, LogOut, Building, Crown, Shield } from 'lucide-react';
+import { Home,Search, LayoutDashboard, FileText, User, LogOut, Building, Crown, Shield, Brain } from 'lucide-react';
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
 import docQmentorLogo from '../assets/logo-docqmentor.png';
 import useGroupAccess from "../utils/userGroupAccess";
+import logo from "../assets/logo-docqmentor.png";
+
 const Header = ({ minimal }) => {
   const hasAccess = useGroupAccess();
   const location = useLocation();
@@ -63,7 +65,7 @@ const Header = ({ minimal }) => {
     <div className="header-component-container">
       <header>
         <div className="logo-container">
-          <img src={docQmentorLogo} alt="DocQmentor Logo" />
+          <img src={logo} alt="DocQmentor Logo" />
         </div>
         <ul>
           {!minimal && (
@@ -74,7 +76,7 @@ const Header = ({ minimal }) => {
                   className="a"
                   onClick={(e) => handleNavigationClick(e, '/select')}
                 >
-                  <LayoutDashboard size={20} className="i" /> Models
+                  <Brain size={20} className="i" /> Models
                 </NavLink>
               </li>
               <li className={location.pathname === '/dashboard' ? 'active' : ''}>
@@ -83,7 +85,7 @@ const Header = ({ minimal }) => {
                   className="a"
                   onClick={(e) => handleNavigationClick(e, '/dashboard')}
                 >
-                  <LayoutDashboard size={20} className="i" /> Dashboard
+                  <Home size={20} className="i" /> Dashboard
                 </NavLink>
               </li>
               <li className={location.pathname === '/table' ? 'active' : ''}>
@@ -95,6 +97,7 @@ const Header = ({ minimal }) => {
                   <FileText size={20} className="i" /> Data View
                 </NavLink>
               </li>
+              
               {hasAccess === true && (
                 <li className={location.pathname === '/manualreview' ? 'active' : ''}>
                     <NavLink
@@ -106,15 +109,6 @@ const Header = ({ minimal }) => {
                   </NavLink>
                 </li>
               )}
-              {/* <li className={location.pathname === '/table' ? 'active' : ''}>
-                <NavLink
-                  to="/table"
-                  className="a"
-                  onClick={(e) => handleNavigationClick(e, '/table')}
-                >
-                  <FileText size={20} className="i" /> Data View
-                </NavLink>
-              </li> */}
               <li className={location.pathname === '/admin' ? 'active' : ''}>
                 <NavLink
                   to="/admin"
@@ -163,5 +157,6 @@ const Header = ({ minimal }) => {
     </div>
   );
 };
+
 
 export default Header;

@@ -197,8 +197,15 @@ const Admin = () => {
     const dateMap = {};
    
     filteredDocs.forEach(doc => {
-      const uploadDate = doc.timestamp ? new Date(doc.timestamp).toISOString().split('T')[0] :
-                        new Date().toISOString().split('T')[0];
+      // ✅ Prioritize UploadedAt from SQL (PascalCase or camelCase)
+      const rawTimestamp = doc.UploadedAt || doc.uploadedAt || doc.timestamp;
+
+      if (!rawTimestamp) return; // Skip if no valid date found
+
+      const dateObj = new Date(rawTimestamp);
+      if (isNaN(dateObj.getTime())) return; // Skip invalid dates
+
+      const uploadDate = dateObj.toISOString().split('T')[0];
      
       if (!dateMap[uploadDate]) {
         dateMap[uploadDate] = {
@@ -206,7 +213,7 @@ const Admin = () => {
           total: 0,
           completed: 0,
           manualReview: 0,
-          rawDate: new Date(uploadDate),
+          rawDate: dateObj,
           completionRate: 0
         };
       }
@@ -370,18 +377,31 @@ const Admin = () => {
   const filteredDateWiseData = filterDateWiseData();
   const filteredVendorWiseData = filterVendorWiseData();
 
-  // Calculate total documents for the selected type (for summary)
-  const getTotalDocumentsForSelectedType = () => {
-    const filteredDocs = filterDocumentsByType(allDocuments);
-    return filteredDocs.length;
+  // Calculate total documents based on current filters and active table
+  const calculateCurrentTotalDocs = () => {
+    if (selectedTable === 'vendorWise') {
+        const total = filteredVendorWiseData.reduce((sum, item) => sum + item.total, 0);
+        return total;
+    } else {
+        // Default to date-wise (or if dateWise is selected)
+        const total = filteredDateWiseData.reduce((sum, item) => sum + item.total, 0);
+        return total;
+    }
   };
 
-  // Calculate average documents per day for selected type
-  const calculateAvgDocsPerDay = () => {
-    if (filteredDateWiseData.length === 0) return '0';
-    const totalDocs = filteredDateWiseData.reduce((sum, day) => sum + day.total, 0);
-    const avg = totalDocs / Math.min(filteredDateWiseData.length, 30);
-    return avg.toFixed(0);
+  // Calculate average metric based on active table
+  const calculateAverageMetric = () => {
+    if (selectedTable === 'vendorWise') {
+        if (filteredVendorWiseData.length === 0) return '0';
+        const totalDocs = filteredVendorWiseData.reduce((sum, item) => sum + item.total, 0);
+        const avg = totalDocs / filteredVendorWiseData.length;
+        return avg.toFixed(0);
+    } else {
+        if (filteredDateWiseData.length === 0) return '0';
+        const totalDocs = filteredDateWiseData.reduce((sum, day) => sum + day.total, 0);
+        const avg = totalDocs / Math.min(filteredDateWiseData.length, 30);
+        return avg.toFixed(0);
+    }
   };
 
   // Use sortable data hooks for both tables
@@ -853,12 +873,16 @@ const Admin = () => {
               <li>
                 <FileText className="pp iconForCount" size={24}/>
                 <p className='textForCout'>Total {selectedDocumentType} Docs</p>
-                <p className='numberForCout'>{getTotalDocumentsForSelectedType().toLocaleString()}</p>
+                <p className='numberForCout'>{calculateCurrentTotalDocs().toLocaleString()}</p>
               </li>
               <li>
                 <BarChart2 className="pp iconForCount" size={24} />
-                <p className='textForCout'>Avg {selectedDocumentType} Docs / Day</p>
-                <p className='numberForCout'>{calculateAvgDocsPerDay()}</p>
+                <p className='textForCout'>
+                    {selectedTable === 'vendorWise' 
+                        ? `Avg ${selectedDocumentType} / Vendor` 
+                        : `Avg ${selectedDocumentType} / Day`}
+                </p>
+                <p className='numberForCout'>{calculateAverageMetric()}</p>
               </li>
               <li>
                 <Users className="pp iconForCount" size={24} />

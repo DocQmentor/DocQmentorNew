@@ -337,12 +337,22 @@ const Dashboard = () => {
 
 
   // 🧩 Date formatter
+  // 🧩 Date formatter
   const formatDate = (dateString) => {
     if (!dateString) return "Unknown time";
-    const date = new Date(dateString);
+    
+    // Attempt to treat the date as UTC if it lacks timezone info
+    let normalizedDateString = dateString;
+    if (typeof dateString === 'string' && !dateString.endsWith('Z') && !dateString.includes('+')) {
+        normalizedDateString += 'Z';
+    }
+
+    const date = new Date(normalizedDateString);
     if (isNaN(date.getTime())) return "Unknown time";
+    
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
+    
     if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600)
       return `${Math.floor(diffInSeconds / 60)} minutes ago`;
