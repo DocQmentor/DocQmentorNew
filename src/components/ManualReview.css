@@ -142,59 +142,82 @@
 }
 
 /* ===== Table ===== */
+/* ===== Table (Replica of SuperAdmin.css) ===== */
 .ManualReview-Table {
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  border: 1px solid #ccc; /* Solid border */
   table-layout: fixed;
+  font-size: 11px;
 }
 
-.ManualReview-Table th,
-.ManualReview-Table td {
-  padding: 10px 12px;
-  text-align: left;
-  font-size: 13px;
-  border-bottom: 1px solid #ddd;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  color: #266898;
-}
-/* .sortable-header{
-  border: #ed2224 3px solid;
-  background-color: #266898;
-} */
 .ManualReview-Table th {
-  background-color: #266898;
-  color: white;
-  font-weight: 600;
+  background: #266898 !important;
+  color: white !important;
+  padding: 8px 6px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 11px;
+  border: 1px solid #ccc; /* Full grid border */
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.ManualReview-Table tr:nth-child(even) {
-  background-color: #f4f7fa;
+
+.ManualReview-Table th:last-child {
+  border-right: 1px solid #ccc;
+}
+
+.ManualReview-Table td {
+  padding: 6px;
+  color: #000; /* Black text */
+  font-size: 11px;
+  border: 1px solid #ccc; /* Full grid border */
+  vertical-align: middle;
+  line-height: 1.3; /* Increased line-height */
+  white-space: normal; /* Allow wrapping */
+  word-wrap: break-word;
+  font-weight: 600; /* Reduced bold */
+}
+
+.ManualReview-Table tr {
+  transition: background 0.2s;
 }
 
 .ManualReview-Table tr:hover {
-  background-color: #eaf1f5;
+  background: #f5f7fa !important;
 }
 
-/* ===== Action Button ===== */
+.ManualReview-Table tr:nth-child(even) {
+  background: #fcfcfc;
+}
+
+.ManualReview-Table tr:nth-child(even):hover {
+  background: #f5f7fa;
+}
+
+/* ===== Action Button (Compact) ===== */
 .ManualReview-Table button {
-  background-color: #266898;
+  background: #266898;
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 3px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-size: 10px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-weight: 500;
+  min-width: 40px;
 }
 
 .ManualReview-Table button:hover {
-  background-color: #ed2224;
+  background: #1f5d8a;
+  transform: translateY(-1px);
 }
 
 /* ===== Pagination ===== */

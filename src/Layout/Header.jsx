@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home,Search, LayoutDashboard, FileText, User, LogOut, Building, Crown, Shield } from 'lucide-react';
+import { Home,Search, LayoutDashboard, FileText, User, LogOut, Building, Crown, Shield, Brain } from 'lucide-react';
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
 import docQmentorLogo from '../assets/logo-docqmentor.png';
@@ -76,7 +76,7 @@ const Header = ({ minimal }) => {
                   className="a"
                   onClick={(e) => handleNavigationClick(e, '/select')}
                 >
-                  <LayoutDashboard size={20} className="i" /> Models
+                  <Brain size={20} className="i" /> Models
                 </NavLink>
               </li>
               <li className={location.pathname === '/dashboard' ? 'active' : ''}>
@@ -85,7 +85,7 @@ const Header = ({ minimal }) => {
                   className="a"
                   onClick={(e) => handleNavigationClick(e, '/dashboard')}
                 >
-                  <LayoutDashboard size={20} className="i" /> Dashboard
+                  <Home size={20} className="i" /> Dashboard
                 </NavLink>
               </li>
               <li className={location.pathname === '/table' ? 'active' : ''}>
@@ -98,15 +98,17 @@ const Header = ({ minimal }) => {
                 </NavLink>
               </li>
               
-              <li className={location.pathname === '/table' ? 'active' : ''}>
-                <NavLink
-                  to="/table"
-                  className="a"
-                  onClick={(e) => handleNavigationClick(e, '/table')}
-                >
-                  <FileText size={20} className="i" /> Data View
-                </NavLink>
-              </li>
+              {hasAccess === true && (
+                <li className={location.pathname === '/manualreview' ? 'active' : ''}>
+                    <NavLink
+                    to="/manualreview"
+                    className="a"
+                    onClick={(e) => handleNavigationClick(e, '/manualreview')}
+                  >
+                    <Search size={20} className="i" /> Manual Review
+                  </NavLink>
+                </li>
+              )}
               <li className={location.pathname === '/admin' ? 'active' : ''}>
                 <NavLink
                   to="/admin"

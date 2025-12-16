@@ -6,7 +6,7 @@ import { saveAs } from "file-saver";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useSortableData from "../utils/useSortableData";
-import { Info } from "lucide-react";
+import { Info, X } from "lucide-react";
 import FilePagination from "../Layout/FilePagination";
 
 class ErrorBoundary extends React.Component {
@@ -285,11 +285,14 @@ function Table() {
                  if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
             }
 
+            // ✅ Prioritize UploadedAt from SQL (PascalCase or camelCase)
+            const rawTimestamp = doc.UploadedAt || doc.uploadedAt || doc.timestamp;
+            
             const commonFields = {
-              uploadDate: doc.timestamp
-                ? new Date(doc.timestamp).toLocaleDateString("en-CA")
-                : "",
-              rawUploadDate: doc.timestamp ? new Date(doc.timestamp) : null,
+              uploadDate: rawTimestamp
+                ? new Date(rawTimestamp).toLocaleDateString("en-CA")
+                : "", 
+              rawUploadDate: rawTimestamp ? new Date(rawTimestamp) : null,
               confidenceScore: (() => {
                   const val = doc.averageConfidenceScore || doc.totalConfidenceScore;
                   if (!val) return "N/A";
@@ -712,6 +715,24 @@ const filteredData = sortedData.filter((item) => {
               {versionModal.visible && (
                 <div className="modal-backdrop">
                   <div className="modal">
+                    {/* Top Right Close Button */}
+                    <button
+                      className="modal-close-icon-btn"
+                      onClick={() =>
+                        setVersionModal({
+                          visible: false,
+                          history: [],
+                          docName: "",
+                          uploadedBy: "",
+                          reviewedBy: "",
+                          status: ""
+                        })
+                      }
+                      title="Close"
+                    >
+                      <X />
+                    </button>
+
                     <h3>Document Review History</h3>
                     <div className="modal-doc-info" style={{ marginBottom: "15px", textAlign: "left" }}>
                         <p><strong>Document:</strong> {versionModal.docName}</p>
@@ -765,21 +786,6 @@ const filteredData = sortedData.filter((item) => {
                         )}
                       </tbody>
                     </table>
-                    <button
-                      onClick={() =>
-                        setVersionModal({
-                          visible: false,
-                          history: [],
-                          docName: "",
-                          uploadedBy: "",
-                          reviewedBy: "",
-                          status: ""
-                        })
-                      }
-                      style={{marginTop: "15px"}}
-                    >
-                      Close
-                    </button>
                   </div>
                 </div>
               )}

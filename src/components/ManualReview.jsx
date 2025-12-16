@@ -270,7 +270,8 @@ useEffect(() => {
             if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
     }
 
-    const timestamp = doc.timestamp || doc.uploadDate || null;
+    // ✅ Prioritize UploadedAt from SQL
+    const timestamp = doc.UploadedAt || doc.uploadedAt || doc.timestamp || null;
 
     let rawDate = null;
     if (timestamp) {

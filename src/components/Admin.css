@@ -135,9 +135,9 @@ a:hover {
 }
 
 .admin-heading-section h1 {
-    font-size: 24px;
+    font-size: 22px; /* Reduced from 24px to match Table.css */
     display: flex;
-    font-weight: 700; /* Bold as you selected */
+    font-weight: 700;
     margin: 0;
     color: #266898;
 }
@@ -389,13 +389,14 @@ a:hover {
 .admin-table-box th,
 .admin-table-box td {
     text-align: left;
-    padding: 8px 10px;
+    padding: 6px 8px; /* Reduced from 8px 10px */
     border: none;
-    font-size: 13px;
+    font-size: 11px; /* Reduced from 13px */
     vertical-align: middle;
     word-wrap: break-word;
     overflow-wrap: break-word;
     transition: background-color var(--transition-fast);
+    white-space: nowrap; /* Compact rows */
 }
 
 .admin-table-box th {
@@ -406,7 +407,14 @@ a:hover {
     top: 0;
     z-index: 10;
     cursor: pointer;
-    height: 38px;
+    height: 32px; /* Reduced from 38px */
+    text-transform: uppercase; /* Match other tables */
+    letter-spacing: 0.3px;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.admin-table-box th:last-child {
+    border-right: none;
 }
 
 /* .admin-table-box th:hover {
@@ -414,17 +422,18 @@ a:hover {
 } */
 
 .admin-table-box td {
-    color: #266898;
+    color: #333; /* Darker text for readability */
     border-bottom: 1px solid var(--border-light);
     background-color: #ffffff;
+    line-height: 1.2;
 }
 
 .admin-table-box tbody tr:nth-child(even) td {
-    background-color: #f9f9f9;
+    background-color: #fcfcfc; /* Lighter zebra stripe */
 }
 
 .admin-table-box tbody tr:hover td {
-    background-color: #eef5fa;
+    background-color: #f5f7fa; /* Match other tables */
 }
 
 /* Sorting Indicators */
@@ -518,11 +527,11 @@ a:hover {
 .table-filter-group input,
 .table-filter-group select {
     border: 1px solid var(--border-light);
-    height: 35px;
+    height: 28px; /* Reduced from 35px */
     padding: 0 8px;
-    border-radius: 6px;
+    border-radius: 4px;
     width: 100%;
-    font-size: 13px;
+    font-size: 11px; /* Reduced from 13px */
     background-color: #f9fafb;
     color: var(--text-dark);
     transition: all var(--transition-fast);
@@ -583,11 +592,11 @@ a:hover {
 .form-group input,
 .form-group select {
     border: 1px solid var(--border-light);
-    height: 35px;
+    height: 28px; /* Reduced from 35px */
     padding: 0 8px;
-    border-radius: 6px;
+    border-radius: 4px; /* Reduced radius */
     width: 100%;
-    font-size: 13px;
+    font-size: 11px; /* Reduced from 13px */
     background-color: #f9fafb;
     color: var(--text-dark);
     transition: all var(--transition-fast);
@@ -601,7 +610,7 @@ a:hover {
 .form-group select:focus {
     outline: none;
     border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.15); /* Reduced shadow spread */
 }
 
 /* Filter and Export Buttons */
@@ -974,13 +983,13 @@ a:hover {
 .cancel-delete,
 .save-edit,
 .cancel-edit {
-    padding: 8px 14px;
+    padding: 4px 10px; /* Reduced padding */
     border: none;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
     transition: all var(--transition-medium);
-    font-size: 13px;
+    font-size: 11px; /* Reduced from 13px */
 }
 
 .add-user-btn,
