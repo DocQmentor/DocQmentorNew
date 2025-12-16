@@ -382,6 +382,9 @@ const EditModal = () => {
                   {getFileFormat(selectedDocument?.documentName)}
                 </li>
                 <li>
+                  <b>File Size:</b> {selectedDocument?.metadata?.fileSizeKB || "N/A"} KB
+                </li>
+                <li>
                   <b>Document Type:</b> {selectedModelType}
                 </li>
               </ul>
