@@ -211,6 +211,7 @@ const extractFolderName = (filename) => {
 
 // ✅ Enhanced upload with metadata
 export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
+  const uploadId = uuidv4();
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
 
@@ -264,7 +265,7 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
           "Content-Type": "application/json"
         }
       }
-      
+
     );
 
     // 5️⃣ Return UI info

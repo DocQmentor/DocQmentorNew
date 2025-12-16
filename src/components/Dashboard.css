@@ -50,32 +50,41 @@
   align-items: center;
 }
 
-/* ===== Fixed Column Widths ===== */
+/* ===== Fixed Column Widths (Percentages for Full Width) ===== */
 .status-section th:nth-child(1),
 .status-section td:nth-child(1) {
-  width: 300px;  /* Name */
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+  width: 8%;  /* ID */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status-section th:nth-child(2),
 .status-section td:nth-child(2) {
-  width: 150px; /* Status */
+  width: 32%;  /* Name - Increased width */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal !important; /* Force wrap */
+  line-height: 1.3;
 }
 
 .status-section th:nth-child(3),
 .status-section td:nth-child(3) {
-  width: 140px; /* Uploaded */
+  width: 12%; /* Status */
 }
 
 .status-section th:nth-child(4),
 .status-section td:nth-child(4) {
-  width: 140px; /* Date */
+  width: 18%; /* Uploaded (Time Ago) */
 }
 
 .status-section th:nth-child(5),
 .status-section td:nth-child(5) {
-  width: 120px; /* Actions */
+  width: 15%; /* Date */
+}
+
+.status-section th:nth-child(6),
+.status-section td:nth-child(6) {
+  width: 15%; /* Actions */
   text-align: center;
 }
 
@@ -502,11 +511,13 @@
 .file-load-section li {
     list-style-type: none;
     background-color: white;
-    color: #94a3b8;
+    color: #000; /* Black for visibility */
+    font-weight: 600; /* Bold for clarity */
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0; /* Optional separator */
 }
 .file-load-section .Trash2{
     background-color: white;
