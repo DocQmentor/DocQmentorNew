@@ -393,14 +393,21 @@ const Dashboard = () => {
     // 🔹 Start with all global documents
     let filteredDocs = globalDocuments;
 
-    // 🔹 If vendor selected, filter documents that match vendor name
-    // NOTE: Stats should reflect the global view for that vendor if selected? 
-    // Usually dashboard stats are for "My View" or "Global View". 
-    // Requirement said: "statistics bar, it should display overall document details for the entire model"
-    // BUT "vendor selection... applied correctly to the displayed data".
-    // Does vendor selection affect stats? Usually yes. If I select "Vendor A", I want stats for "Vendor A".
-    // I will apply the same vendor filter logic to the global stats.
+    // 🔹 1. Calculate active uploads count (to add to "In Process")
+    let activeUploadsCount = 0;
+    if (isUploading && selectedFiles.length > 0) {
+      if (selectedVendor) {
+        const lowerVendor = selectedVendor.toLowerCase();
+        // Only count uploads that match the filter (by filename)
+        activeUploadsCount = selectedFiles.filter(f => 
+          (f.fileName || "").toLowerCase().includes(lowerVendor)
+        ).length;
+      } else {
+        activeUploadsCount = selectedFiles.length;
+      }
+    }
 
+    // 🔹 2. Filter backend docs by vendor
     if (selectedVendor) {
       const lowerVendor = selectedVendor.toLowerCase();
       filteredDocs = filteredDocs.filter((doc) => {
@@ -410,18 +417,22 @@ const Dashboard = () => {
       });
     }
 
-    const total = filteredDocs.length;
+    const totalBackend = filteredDocs.length;
     let completed = 0,
       manualReview = 0,
       inProcess = 0;
 
-    // 🔹 Count status by category
+    // 🔹 3. Count status from backend docs
     filteredDocs.forEach((doc) => {
       const status = determineStatus(doc);
       if (status === "Completed" || status === "Reviewed") completed++;
       else if (status === "Manual Review") manualReview++;
       else inProcess++;
     });
+
+    // 🔹 4. Add active uploads to "In Process"
+    inProcess += activeUploadsCount;
+    const total = totalBackend + activeUploadsCount;
 
     return { total, completed, inProcess, manualReview };
   })();
