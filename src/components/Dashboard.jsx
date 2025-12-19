@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Dashboard.css";
-import Filepagination from "../Layout/Filepagination.jsx";
+// import Filepagination from "../Layout/Filepagination.jsx";
 import {
   Upload,
   Trash2,
@@ -21,7 +21,8 @@ import { useMsal } from "@azure/msal-react";
 import { useUser } from "../context/UserContext";
 import { sasToken } from "../sasToken";
 import useGroupAccess from "../utils/userGroupAccess";
-import FilePagination from "../Layout/Filepagination.jsx";
+// import FilePagination from "../Layout/Filepagination.jsx";
+import FilePagination from "../Layout/FilePagination";
 const Dashboard = () => {
   const hasAccess = useGroupAccess();
   const { accounts } = useMsal();

@@ -7,7 +7,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useSortableData from "../utils/useSortableData";
 import { Info } from "lucide-react";
-import FilePagination from "../Layout/Filepagination";
+// import FilePagination from "../Layout/Filepagination";
+import FilePagination from "../Layout/FilePagination";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
