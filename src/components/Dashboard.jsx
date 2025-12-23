@@ -166,8 +166,21 @@ const Dashboard = () => {
       const response = await fetch(
         `https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==`
       );
+
+      // 🚨 Check specifically for 503 or generic failure
+      if (response.status === 503) {
+        setBackendError(true);
+        console.warn("Backend 503: Service Unavailable");
+        // We do not throw here if we want to suppress the "Uncaught" noise, 
+        // but we should exit the function since we have no data.
+        return;
+      }
+
       if (!response.ok) throw new Error("Failed to fetch document data");
 
+      // If success, clear error
+      setBackendError(false);
+      
       const documents = await response.json();
 
       // ✅ Normalize modelType (case-insensitive match)
@@ -207,6 +220,10 @@ const Dashboard = () => {
       );
     } catch (error) {
       console.error("❌ Error loading backend documents:", error);
+      // Optional: if network error (fetch failed completely), implies down too
+      if(error.message && (error.message.includes("Failed to fetch") || error.message.includes("NetworkError"))) {
+          setBackendError(true);
+      }
     }
   };
 
@@ -394,13 +411,6 @@ const Dashboard = () => {
     let filteredDocs = globalDocuments;
 
     // 🔹 If vendor selected, filter documents that match vendor name
-    // NOTE: Stats should reflect the global view for that vendor if selected? 
-    // Usually dashboard stats are for "My View" or "Global View". 
-    // Requirement said: "statistics bar, it should display overall document details for the entire model"
-    // BUT "vendor selection... applied correctly to the displayed data".
-    // Does vendor selection affect stats? Usually yes. If I select "Vendor A", I want stats for "Vendor A".
-    // I will apply the same vendor filter logic to the global stats.
-
     if (selectedVendor) {
       const lowerVendor = selectedVendor.toLowerCase();
       filteredDocs = filteredDocs.filter((doc) => {
@@ -438,9 +448,48 @@ const Dashboard = () => {
     window.open(finalUrl, "_blank");
   };
 
+  const [backendError, setBackendError] = useState(false);
+
   return (
     <div className="dashboard-total-container">
-      <div className="Dashboard-main-section">
+      {backendError && (
+        <div className="backend-error-banner" style={{
+          backgroundColor: '#fee2e2',
+          borderBytom: '1px solid #ef4444',
+          color: '#b91c1c',
+          padding: '12px',
+          textAlign: 'center',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <AlertTriangle size={20} />
+          <span>
+            <strong>Service Unavailable:</strong> The backend service is currently down (503). 
+            Please check your Azure Function App status.
+          </span>
+          <button 
+            onClick={() => setBackendError(false)}
+            style={{
+              marginLeft: '16px',
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              color: '#991b1b',
+              fontWeight: 'bold'
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      <div className="Dashboard-main-section" style={{ marginTop: backendError ? '48px' : '0' }}>
         <nav className="vendor-select">
           <div className="vendor-select-details">
             <h2>

@@ -202,6 +202,11 @@ function Table() {
           "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
 
+        if (!response.ok) {
+           const text = await response.text();
+           throw new Error(`Server Error: ${response.status} ${response.statusText} - ${text.substring(0, 50)}...`);
+        }
+
         const fetched = await response.json();
 
         const processed = fetched
@@ -627,7 +632,7 @@ const filteredData = sortedData.filter((item) => {
         {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
         <ErrorBoundary>
-          {!loading && !error && (
+          {!loading && (
             <>
              <table className={selectedModelType}>
 

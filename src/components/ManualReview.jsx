@@ -167,6 +167,11 @@ const [LendernameFilter, setLendernameFilter] = useState("");
         const response = await fetch(
           "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
+
+        if (!response.ok) {
+           throw new Error(`Server Error: ${response.status} ${response.statusText}`);
+        }
+
         const data = await response.json();
 
         const docsNeedingReview = data.filter((doc) => {
