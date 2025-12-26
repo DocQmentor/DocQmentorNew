@@ -146,6 +146,77 @@ const modelTypeSearchFields = {
   ],
 };
 
+// Smart fetch function to handle Azure HTML errors
+const smartFetch = async (url) => {
+  const response = await fetch(url, {
+    headers: {
+      'Accept': 'application/json'
+    }
+  });
+
+  // ALWAYS read as text first (CRITICAL for Azure errors)
+  const responseText = await response.text();
+  
+  // Check if it's an Azure HTML error page
+  const isAzureHtmlError = 
+    !response.ok && (
+      responseText.includes('<!DOCTYPE') ||
+      responseText.includes('<html>') ||
+      responseText.trim().startsWith('The service') ||
+      responseText.includes('Service Unavailable') ||
+      responseText.includes('503') && responseText.includes('Azure')
+    );
+
+  if (isAzureHtmlError) {
+    // This is Azure's cold start HTML page, not your JSON
+    throw {
+      type: 'AZURE_COLD_START',
+      message: 'Azure Functions is starting up. This can take 30-60 seconds.',
+      status: response.status
+    };
+  }
+
+  // Check if response is JSON
+  if (!responseText.trim()) {
+    return []; // Empty response
+  }
+
+  // Try to parse as JSON
+  try {
+    return JSON.parse(responseText);
+  } catch (jsonError) {
+    // If it's not JSON and response was OK, throw parse error
+    if (response.ok) {
+      throw new Error(`Server returned invalid format: ${responseText.substring(0, 100)}`);
+    }
+    
+    // If not JSON and not OK, throw HTTP error
+    throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 100)}`);
+  }
+};
+
+// Fetch with retry logic for cold starts
+const fetchWithRetry = async (url, maxRetries = 3) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await smartFetch(url);
+      return result;
+      
+    } catch (error) {
+      // If it's a cold start error, wait and retry
+      if (error.type === 'AZURE_COLD_START' && attempt < maxRetries) {
+        const delay = attempt * 10000; // 10s, 20s, 30s...
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // Re-throw other errors or if max retries reached
+      throw error;
+    }
+  }
+  throw new Error(`Maximum retries (${maxRetries}) exceeded`);
+};
+
 function Table() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -197,12 +268,12 @@ function Table() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
+      setError(null); // Reset error on new fetch
+      
       try {
-        const response = await fetch(
+        const fetched = await fetchWithRetry(
           "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
-
-        const fetched = await response.json();
 
         const processed = fetched
           .filter((doc) => {
@@ -340,7 +411,24 @@ function Table() {
         setData(processed);
         setError(null);
       } catch (err) {
-        setError(err.message || "Failed to fetch data");
+        // User-friendly error messages
+        let errorMsg = "Failed to fetch data. ";
+        
+        if (err.type === 'AZURE_COLD_START') {
+          errorMsg = "Document service is starting up. This can take 30-60 seconds on first use. Please wait and try again.";
+        } else if (err.message.includes('Unexpected token')) {
+          errorMsg = "Server returned unexpected response. Azure Functions might be starting up.";
+        } else if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
+          errorMsg = "Network connection issue. Please check your internet connection.";
+        } else if (err.message.includes('Maximum retries')) {
+          errorMsg = "Service is taking longer than expected to start. Please refresh the page or try again in a minute.";
+        } else {
+          errorMsg = err.message || "An unexpected error occurred.";
+        }
+        
+        setError(errorMsg);
+        setData([]); // Clear data on error
+        
       } finally {
         setLoading(false);
       }
@@ -514,21 +602,6 @@ const filteredData = sortedData.filter((item) => {
       <div className="dataview-container">
         <h1>{selectedModelType} Data View</h1>
 
-        {/* Model Type Selector */}
-        {/* <div className="model-type-selector">
-          <label>
-            <strong>Document Type:</strong>
-            <select 
-              value={selectedModelType} 
-              onChange={(e) => handleModelTypeChange(e.target.value)}
-            >
-              <option value="Invoice">Invoice</option>
-              <option value="BankStatement">Bank Statement</option>
-              <option value="MortgageForms">Mortgage Forms</option>
-            </select>
-          </label>
-        </div> */}
-
         {/* Filters */}
         <div className="filters">
           {selectedModelType === "Invoice" && (
@@ -640,12 +713,10 @@ const filteredData = sortedData.filter((item) => {
                           toggleSort(modelTypeKeys[selectedModelType][idx])
                         }
                       >
-                        {/* <span className="sortable-header"> */}
-                          {header}{" "}
-                          {renderSortIcon(
-                            modelTypeKeys[selectedModelType][idx]
-                          )}
-                        {/* </span> */}
+                        {header}{" "}
+                        {renderSortIcon(
+                          modelTypeKeys[selectedModelType][idx]
+                        )}
                       </th>
                     ))}
                   </tr>
@@ -754,8 +825,6 @@ const filteredData = sortedData.filter((item) => {
                       <tbody>
                         {versionModal.history.length > 0 ? (
                             versionModal.history.map((v, i) => {
-                                // 🛠️ Handle mismatched keys from SQL backend (ChangedBy/ChangedAt)
-                                // Backend might return { Action: "...", ChangedBy: "...", ChangedAt: "..." }
                                 const action = v.action || v.Action;
                                 
                                 let userName = "N/A";

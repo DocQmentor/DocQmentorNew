@@ -6,6 +6,82 @@ import Footer from "../Layout/Footer";
 import FilePagination from '../Layout/FilePagination';
 import useSortableData from "../utils/useSortableData";
 
+// Smart fetch function to handle Azure HTML errors
+const smartFetch = async (url, options = {}) => {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Accept': 'application/json',
+      ...options.headers
+    }
+  });
+
+  // ALWAYS read as text first (CRITICAL for Azure errors)
+  const responseText = await response.text();
+  
+  // Check if it's an Azure HTML error page
+  const isAzureHtmlError = 
+    !response.ok && (
+      responseText.includes('<!DOCTYPE') ||
+      responseText.includes('<html>') ||
+      responseText.trim().startsWith('The service') ||
+      responseText.includes('Service Unavailable') ||
+      responseText.includes('503') && responseText.includes('Azure')
+    );
+
+  if (isAzureHtmlError) {
+    // This is Azure's cold start HTML page, not your JSON
+    throw {
+      type: 'AZURE_COLD_START',
+      message: 'Azure Functions is starting up. This can take 30-60 seconds.',
+      status: response.status
+    };
+  }
+
+  // Check if response is JSON
+  if (!responseText.trim()) {
+    return []; // Empty response
+  }
+
+  // Try to parse as JSON
+  try {
+    return JSON.parse(responseText);
+  } catch (jsonError) {
+    // If it's not JSON and response was OK, throw parse error
+    if (response.ok) {
+      throw new Error(`Server returned invalid format: ${responseText.substring(0, 100)}`);
+    }
+    
+    // If not JSON and not OK, throw HTTP error
+    throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 100)}`);
+  }
+};
+
+// Fetch with retry logic for cold starts
+const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Admin fetch attempt ${attempt}/${maxRetries}`);
+      const result = await smartFetch(url, options);
+      return result;
+      
+    } catch (error) {
+      // If it's a cold start error, wait and retry
+      if (error.type === 'AZURE_COLD_START' && attempt < maxRetries) {
+        const delay = attempt * 10000; // 10s, 20s, 30s...
+        console.log(`Cold start detected, waiting ${delay/1000} seconds before retry...`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // Re-throw other errors or if max retries reached
+      throw error;
+    }
+  }
+  throw new Error(`Maximum retries (${maxRetries}) exceeded`);
+};
+
 const Admin = () => {
   // Client Admin Data States
   const [dateWiseData, setDateWiseData] = useState([]);
@@ -14,7 +90,7 @@ const Admin = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState('7days');
- 
+
   // Add selected document type state
   const [selectedDocumentType, setSelectedDocumentType] = useState('');
 
@@ -61,7 +137,7 @@ const Admin = () => {
     { id: 3, email: "user1@example.com", role: "Member" },
     { id: 4, email: "user2@example.com", role: "Member" }
   ]);
- 
+
   const [showUserPopup, setShowUserPopup] = useState(false);
   const [showAddUserForm, setShowAddUserForm] = useState(false);
   const [roleFilter, setRoleFilter] = useState('');
@@ -115,26 +191,47 @@ const Admin = () => {
   const fetchData = async () => {
     try {
       setDataLoading(true);
-      const response = await fetch(
+      setDataError(null);
+      
+      const allDocumentsData = await fetchWithRetry(
         "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
       );
-     
-      if (!response.ok) throw new Error('Failed to fetch data');
-     
-      const allDocumentsData = await response.json();
+
       setAllDocuments(allDocumentsData);
-     
+
       // Process data for date-wise statistics (filtered by document type)
       const dateStats = processDateWiseData(allDocumentsData);
       setDateWiseData(dateStats);
-     
+
       // Process data for vendor-wise statistics (filtered by document type)
       const vendorStats = processVendorWiseData(allDocumentsData);
       setVendorWiseData(vendorStats);
-     
+
     } catch (err) {
-      setDataError(err.message);
-      console.error('Error fetching data:', err);
+      console.error('Error fetching admin data:', err);
+      
+      // User-friendly error messages
+      let errorMsg = "Failed to load admin statistics. ";
+      
+      if (err.type === 'AZURE_COLD_START') {
+        errorMsg = "Document service is starting up. This can take 30-60 seconds on first use. Statistics will appear when ready.";
+      } else if (err.message.includes('Unexpected token')) {
+        errorMsg = "Server returned unexpected response. Azure Functions might be starting up.";
+      } else if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
+        errorMsg = "Network connection issue. Please check your internet connection.";
+      } else if (err.message.includes('Maximum retries')) {
+        errorMsg = "Service is taking longer than expected to start. Please refresh the page or try again in a minute.";
+      } else {
+        errorMsg += err.message;
+      }
+      
+      setDataError(errorMsg);
+      
+      // Set empty arrays on error
+      setAllDocuments([]);
+      setDateWiseData([]);
+      setVendorWiseData([]);
+      
     } finally {
       setDataLoading(false);
     }
@@ -143,7 +240,7 @@ const Admin = () => {
   // Filter documents by selected document type
   const filterDocumentsByType = (documents) => {
     if (!selectedDocumentType) return documents;
-   
+
     return documents.filter(doc => {
       const docModelType = doc.modelType || '';
       return docModelType.toLowerCase() === selectedDocumentType.toLowerCase();
@@ -158,7 +255,7 @@ const Admin = () => {
     if (!doc || !doc.extractedData || !doc.confidenceScores) {
       return "Manual Review";
     }
-   
+
     const hasAllMandatoryFields = (doc) => {
       if (!doc || !doc.extractedData) return false;
       const requiredFields = [
@@ -181,10 +278,10 @@ const Admin = () => {
     const scoreStr = String(doc.totalConfidenceScore || "").toLowerCase();
     if (scoreStr.includes("reviewed")) return "Reviewed";
     if (!hasAllMandatoryFields(doc)) return "Manual Review";
-   
+
     const scores = Object.values(doc.confidenceScores || {});
     if (scores.length === 0) return "Manual Review";
-   
+
     const avg = scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
     return avg >= 0.85 ? "Completed" : "Manual Review";
   };
@@ -193,9 +290,9 @@ const Admin = () => {
   const processDateWiseData = (documents) => {
     // Filter documents by selected type first
     const filteredDocs = filterDocumentsByType(documents);
-   
+
     const dateMap = {};
-   
+
     filteredDocs.forEach(doc => {
       // ✅ Prioritize UploadedAt from SQL (PascalCase or camelCase)
       const rawTimestamp = doc.UploadedAt || doc.uploadedAt || doc.timestamp;
@@ -206,7 +303,7 @@ const Admin = () => {
       if (isNaN(dateObj.getTime())) return; // Skip invalid dates
 
       const uploadDate = dateObj.toISOString().split('T')[0];
-     
+
       if (!dateMap[uploadDate]) {
         dateMap[uploadDate] = {
           date: uploadDate,
@@ -217,10 +314,10 @@ const Admin = () => {
           completionRate: 0
         };
       }
-     
+
       dateMap[uploadDate].total++;
       const status = determineStatus(doc);
-     
+
       if (status === "Completed" || status === "Reviewed") {
         dateMap[uploadDate].completed++;
       } else if (status === "Manual Review") {
@@ -231,7 +328,7 @@ const Admin = () => {
       dateMap[uploadDate].completionRate = dateMap[uploadDate].total > 0 ?
         (dateMap[uploadDate].completed / dateMap[uploadDate].total) * 100 : 0;
     });
-   
+
     // Convert to array and sort by date (newest first)
     return Object.values(dateMap)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -242,12 +339,12 @@ const Admin = () => {
   const processVendorWiseData = (documents) => {
     // Filter documents by selected type first
     const filteredDocs = filterDocumentsByType(documents);
-   
+
     const vendorMap = {};
-   
+
     filteredDocs.forEach(doc => {
       const vendorName = doc.extractedData?.VendorName || doc.vendorName || 'Unknown Vendor';
-     
+
       if (!vendorMap[vendorName]) {
         vendorMap[vendorName] = {
           vendor: vendorName,
@@ -257,10 +354,10 @@ const Admin = () => {
           completionRate: 0
         };
       }
-     
+
       vendorMap[vendorName].total++;
       const status = determineStatus(doc);
-     
+
       if (status === "Completed" || status === "Reviewed") {
         vendorMap[vendorName].completed++;
       } else if (status === "Manual Review") {
@@ -271,7 +368,7 @@ const Admin = () => {
       vendorMap[vendorName].completionRate = vendorMap[vendorName].total > 0 ?
         (vendorMap[vendorName].completed / vendorMap[vendorName].total) * 100 : 0;
     });
-   
+
     // Convert to array and sort by total documents (descending)
     return Object.values(vendorMap)
       .sort((a, b) => b.total - a.total);
@@ -288,24 +385,24 @@ const Admin = () => {
   // Filter date-wise data
   const filterDateWiseData = () => {
     let filtered = processDateWiseData(allDocuments);
-   
+
     // Apply date range filter
     if (dateFromFilter) {
       const fromDate = new Date(dateFromFilter);
       filtered = filtered.filter(item => new Date(item.date) >= fromDate);
     }
-   
+
     if (dateToFilter) {
       const toDate = new Date(dateToFilter);
       toDate.setHours(23, 59, 59, 999); // Include entire day
       filtered = filtered.filter(item => new Date(item.date) <= toDate);
     }
-   
+
     // Apply completion rate filter
     if (dateCompletionRateFilter) {
       filtered = filtered.filter(item => {
         const completionRate = item.completionRate;
-       
+
         switch (dateCompletionRateFilter) {
           case '0-10': return completionRate >= 0 && completionRate <= 10;
           case '10-20': return completionRate > 10 && completionRate <= 20;
@@ -321,14 +418,14 @@ const Admin = () => {
         }
       });
     }
-   
+
     return filtered;
   };
 
   // Filter vendor-wise data
   const filterVendorWiseData = () => {
     let filtered = processVendorWiseData(allDocuments);
-   
+
     // Apply vendor select filter (dropdown)
     if (vendorSelectFilter) {
       filtered = filtered.filter(item =>
@@ -342,12 +439,12 @@ const Admin = () => {
         item.vendor.toLowerCase().includes(vendorSearchFilter.toLowerCase())
       );
     }
-   
+
     // Apply completion rate filter
     if (vendorCompletionRateFilter) {
       filtered = filtered.filter(item => {
         const completionRate = item.completionRate;
-       
+
         switch (vendorCompletionRateFilter) {
           case '0-10': return completionRate >= 0 && completionRate <= 10;
           case '10-20': return completionRate > 10 && completionRate <= 20;
@@ -363,7 +460,7 @@ const Admin = () => {
         }
       });
     }
-   
+
     return filtered;
   };
 
@@ -372,7 +469,7 @@ const Admin = () => {
     const vendors = processVendorWiseData(allDocuments).map(item => item.vendor);
     return [...new Set(vendors)].sort();
   };
- 
+
   // Get filtered data
   const filteredDateWiseData = filterDateWiseData();
   const filteredVendorWiseData = filterVendorWiseData();
@@ -449,11 +546,11 @@ const Admin = () => {
   // Export to CSV function
   const exportToCSV = (data, filename) => {
     if (data.length === 0) return;
-   
+
     const headers = Object.keys(data[0]).join(',');
     const rows = data.map(row => Object.values(row).join(','));
     const csvContent = [headers, ...rows].join('\n');
-   
+
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -528,7 +625,7 @@ const Admin = () => {
         email: newUserEmail,
         role: newUserRole
       };
-     
+
       setUsers([...users, newUser]);
       setNewUserEmail('');
       setNewUserRole('');
@@ -624,7 +721,7 @@ const Admin = () => {
         <div className="table-header-top">
           <h3 className="table-header-title">{selectedDocumentType} - Date-wise Statistics</h3>
         </div>
-        
+
         {/* Div 2: Filters and Controls */}
         <div className="table-header-bottom">
           <div className="table-filters-container">
@@ -649,7 +746,7 @@ const Admin = () => {
               />
             </div>
           </div>
-          
+
           <div className="table-actions-container">
             <button
               onClick={() => exportToCSV(filteredDateWiseData, 'date_wise_stats')}
@@ -665,7 +762,7 @@ const Admin = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="table-scroll-wrapper">
         <table>
           <thead>
@@ -702,25 +799,27 @@ const Admin = () => {
                   <td>{day.manualReview}</td>
                 </tr>
               ))
-            ) : (
+            ) : !dataLoading && !dataError ? ( // Only show "no data" if not loading and no error
               <tr>
                 <td colSpan="4" style={{textAlign: 'center', padding: '20px'}}>
                   No {selectedDocumentType} data available for selected filters
                 </td>
               </tr>
-            )}
+            ) : null}
           </tbody>
         </table>
       </div>
-      
+
       {/* Date-wise Pagination */}
-      <FilePagination
-        currentPage={currentDatePage}
-        totalPages={dateTotalPages}
-        onPageChange={setCurrentDatePage}
-        rowsPerPage={dateRowsPerPage}
-        totalItems={sortedDateData.length}
-      />
+      {sortedDateData.length > 0 && (
+        <FilePagination
+          currentPage={currentDatePage}
+          totalPages={dateTotalPages}
+          onPageChange={setCurrentDatePage}
+          rowsPerPage={dateRowsPerPage}
+          totalItems={sortedDateData.length}
+        />
+      )}
     </div>
   );
 
@@ -732,7 +831,7 @@ const Admin = () => {
         <div className="table-header-top">
           <h3 className="table-header-title">{selectedDocumentType} - Vendor-wise Statistics</h3>
         </div>
-        
+
         {/* Div 2: Filters and Controls */}
         <div className="table-header-bottom">
           <div className="table-filters-container">
@@ -762,7 +861,7 @@ const Admin = () => {
               />
             </div>
           </div>
-          
+
           <div className="table-actions-container">
             <button
               onClick={() => exportToCSV(filteredVendorWiseData, 'vendor_wise_stats')}
@@ -778,7 +877,7 @@ const Admin = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="table-scroll-wrapper">
         <table>
           <thead>
@@ -815,25 +914,27 @@ const Admin = () => {
                   <td>{vendor.manualReview}</td>
                 </tr>
               ))
-            ) : (
+            ) : !dataLoading && !dataError ? ( // Only show "no data" if not loading and no error
               <tr>
                 <td colSpan="4" style={{textAlign: 'center', padding: '20px'}}>
                   No {selectedDocumentType} data available for selected filters
                 </td>
               </tr>
-            )}
+            ) : null}
           </tbody>
         </table>
       </div>
 
       {/* Vendor-wise Pagination */}
-      <FilePagination
-        currentPage={currentVendorPage}
-        totalPages={vendorTotalPages}
-        onPageChange={setCurrentVendorPage}
-        rowsPerPage={vendorRowsPerPage}
-        totalItems={sortedVendorData.length}
-      />
+      {sortedVendorData.length > 0 && (
+        <FilePagination
+          currentPage={currentVendorPage}
+          totalPages={vendorTotalPages}
+          onPageChange={setCurrentVendorPage}
+          rowsPerPage={vendorRowsPerPage}
+          totalItems={sortedVendorData.length}
+        />
+      )}
     </div>
   );
 
@@ -853,8 +954,55 @@ const Admin = () => {
     fetchData();
   }, [selectedPeriod]);
 
+  // Show loading or error states
   if (dataLoading) return <div className="loading">Loading admin data...</div>;
-  if (dataError) return <div className="error">Error: {dataError}</div>;
+  
+  // Render error state with retry button
+  if (dataError) {
+    return (
+      <div className="admin-container">
+        <main className="admin-main">
+          <section className="admin-heading-section">
+            <h1><Shield className="header-icon" size={32} /> Client Dashboard</h1>
+            <button onClick={fetchData} className="refresh-data-btn">
+              <RefreshCw size={16} className='refresh-data-btn-icon' />
+              Retry Load
+            </button>
+          </section>
+          
+          <div style={{
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffeaa7',
+            borderRadius: '8px',
+            padding: '25px',
+            margin: '25px',
+            color: '#856404',
+            textAlign: 'center'
+          }}>
+            <h3 style={{ marginTop: 0 }}>⚠️ Connection Issue</h3>
+            <p style={{ marginBottom: '20px' }}>{dataError}</p>
+            <button
+              onClick={fetchData}
+              style={{
+                backgroundColor: '#ffc107',
+                color: '#212529',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '16px'
+              }}
+            >
+              <RefreshCw size={16} style={{ marginRight: '8px' }} />
+              Try Again
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="admin-container">
@@ -866,7 +1014,7 @@ const Admin = () => {
             Refresh Data
           </button>
         </section>
-       
+
         <section className="admin-section-1">
           <div className="admin-stats-box">
             <ul>
@@ -918,11 +1066,11 @@ const Admin = () => {
                  onClick={goToPreviousTable}
                  className="nav-button prev-button"
                  size={20} />
-              
+
               <span className="table-counter">
                 {currentTableIndex + 1} / {tableConfig.length}
               </span>
-              
+
                 <ChevronRight 
                 onClick={goToNextTable}
                 className="nav-button next-button" 
@@ -933,7 +1081,7 @@ const Admin = () => {
           {/* Render Current Table */}
           {renderCurrentTable()}
         </section>
-       
+
         <section className="admin-section-2">
             <div className="admin-section-2-header">
               <h3>Plan Details</h3>
@@ -980,7 +1128,7 @@ const Admin = () => {
                 <X size={24} />
               </button>
             </div>
-           
+
             <div className="filter-section">
               <div className="filter-group">
                 <label htmlFor="role-filter">Filter by Role</label>
@@ -995,7 +1143,7 @@ const Admin = () => {
                   <option value="Member">Member</option>
                 </select>
               </div>
-             
+
               <div className="filter-group">
                 <label htmlFor="name-filter">Filter by Name</label>
                 <input
@@ -1007,7 +1155,7 @@ const Admin = () => {
                 />
               </div>
             </div>
-           
+
             <div className="button-group">
               <button className="reset-btn" onClick={resetFilters}>
                 Reset Filters
@@ -1016,7 +1164,7 @@ const Admin = () => {
                 + Add User
               </button>
             </div>
-           
+
             {showAddUserForm && (
               <div className="add-user-form">
                 <div className="form-group">
@@ -1029,7 +1177,7 @@ const Admin = () => {
                     onChange={(e) => setNewUserEmail(e.target.value)}
                   />
                 </div>
-               
+
                 <div className="form-group">
                   <label htmlFor="user-role">Role</label>
                   <select
@@ -1043,7 +1191,7 @@ const Admin = () => {
                     <option value="Member">Member</option>
                   </select>
                 </div>
-               
+
                 <div className="form-buttons">
                   <button
                     className="submit-btn"
@@ -1062,7 +1210,7 @@ const Admin = () => {
                 </div>
               </div>
             )}
-           
+
             <div className="user-list">
               {filteredUsers.length === 0 ? (
                 <p>No users found.</p>
@@ -1076,7 +1224,7 @@ const Admin = () => {
                       <span>Email: {user.email}</span>
                       <span>Role: {user.role}</span>
                     </div>
-                   
+
                     {activeUserId === user.id && (
                       <div className="user-actions">
                         <button
@@ -1093,7 +1241,7 @@ const Admin = () => {
                         </button>
                       </div>
                     )}
-                   
+
                     {editingUserId === user.id && (
                     <div className="edit-form">
                       <div className="form-group">
@@ -1108,7 +1256,7 @@ const Admin = () => {
                           <option value="Member">Member</option>
                         </select>
                       </div>
-                     
+
                       <div className="form-buttons">
                         <button
                           className="submit-btn save-edit"

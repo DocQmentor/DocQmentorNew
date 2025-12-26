@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Dashboard.css";
-
 import {
   Upload,
   Trash2,
@@ -22,6 +21,91 @@ import { useUser } from "../context/UserContext";
 import { sasToken } from "../sasToken";
 import useGroupAccess from "../utils/userGroupAccess";
 
+// Smart fetch function to handle Azure HTML errors
+const smartFetch = async (url, options = {}) => {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Accept': 'application/json',
+      ...options.headers
+    }
+  });
+
+  // Always read as text first (CRITICAL for Azure errors)
+  const responseText = await response.text();
+  
+  // Check if it's an Azure HTML error page
+  const isAzureHtmlError = 
+    !response.ok && (
+      responseText.includes('<!DOCTYPE') ||
+      responseText.includes('<html>') ||
+      responseText.trim().startsWith('The service') ||
+      responseText.includes('Service Unavailable') ||
+      responseText.includes('503') && responseText.includes('Azure')
+    );
+
+  if (isAzureHtmlError) {
+    // This is Azure's cold start HTML page, not your JSON
+    console.log("Azure HTML error detected:", responseText.substring(0, 200));
+    
+    throw {
+      type: 'AZURE_COLD_START',
+      message: 'Azure Functions is starting up (cold start). This can take 30-60 seconds.',
+      status: response.status,
+      htmlPreview: responseText.substring(0, 100)
+    };
+  }
+
+  // Check if response is JSON
+  if (!responseText.trim()) {
+    return null; // Empty response
+  }
+
+  // Try to parse as JSON
+  try {
+    return JSON.parse(responseText);
+  } catch (jsonError) {
+    // If it's not JSON but response was OK, it might be text
+    if (response.ok) {
+      console.warn("Response was OK but not JSON:", responseText.substring(0, 200));
+      return responseText;
+    }
+    
+    // If not JSON and not OK, throw error
+    throw {
+      type: 'INVALID_RESPONSE',
+      message: `Server returned invalid format (expected JSON): ${responseText.substring(0, 100)}`,
+      status: response.status
+    };
+  }
+};
+
+// Fetch with retry logic for cold starts
+const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Fetch attempt ${attempt}/${maxRetries}`);
+      
+      const result = await smartFetch(url, options);
+      return result;
+      
+    } catch (error) {
+      // If it's a cold start error, wait and retry
+      if (error.type === 'AZURE_COLD_START' && attempt < maxRetries) {
+        const delay = attempt * 10000; // 10s, 20s, 30s...
+        console.log(`Cold start detected, waiting ${delay/1000} seconds before retry...`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // Re-throw other errors or if max retries reached
+      throw error;
+    }
+  }
+  throw new Error(`Maximum retries (${maxRetries}) exceeded`);
+};
+
 const Dashboard = () => {
   const hasAccess = useGroupAccess();
   const { accounts } = useMsal();
@@ -39,8 +123,9 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [modelType, setModelType] = useState("");
   const [localInProcess, setLocalInProcess] = useState([]);
-  const selectedmodelType =
-    localStorage.getItem("selectedModelType") || "Invoice";
+  const [fetchError, setFetchError] = useState(null); // Added error state
+  const [isFetching, setIsFetching] = useState(false); // Added loading state
+  const selectedmodelType = localStorage.getItem("selectedModelType") || "Invoice";
   const documentsPerPage = 10;
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -106,7 +191,7 @@ const Dashboard = () => {
 
     return required.every((key) => {
       let value = doc.extractedData[key];
-      
+     
       // key aliases for SQL vs Analyzer formats
       if (key === "LPO NO") value = value || doc.extractedData["LPO NO"];
       if (key === "VAT") value = value || doc.extractedData["VAT"] || doc.extractedData["VAT"];
@@ -118,7 +203,8 @@ const Dashboard = () => {
       );
     });
   };
- const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
+
+  const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
 
   const extractFolderName = (filename) => {
     const baseName = filename.substring(0, filename.lastIndexOf(".")) || filename;
@@ -129,6 +215,7 @@ const Dashboard = () => {
     cleaned = splitCamelCase(cleaned);
     return cleaned.trim().toUpperCase();
   };
+
   const determineStatus = (doc) => {
     if (!doc) return "Manual Review";
 
@@ -145,7 +232,7 @@ const Dashboard = () => {
     // ✅ Extract total confidence score (handles both 83.24% or 0.83 formats)
     let score = 0;
     const rawScore = doc.averageConfidenceScore || doc.totalConfidenceScore;
-    
+   
     if (rawScore) {
       const raw = String(rawScore).replace(/[^\d.]/g, "");
       score = parseFloat(raw);
@@ -161,19 +248,19 @@ const Dashboard = () => {
   };
 
   const fetchDocumentsFromBackend = async () => {
+    setIsFetching(true);
+    setFetchError(null);
+    
     try {
-      // ✅ Fetch data from Cosmos/SQL via Function API
-      const response = await fetch(
+      // ✅ Fetch data from Cosmos/SQL via Function API with retry logic
+      const documents = await fetchWithRetry(
         `https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==`
       );
-      if (!response.ok) throw new Error("Failed to fetch document data");
-
-      const documents = await response.json();
 
       // ✅ Normalize modelType (case-insensitive match)
       const normalizedModelType = (modelType || "").toLowerCase();
 
-      // ✅ Only keep documents matching current dashboard’s modelType
+      // ✅ Only keep documents matching current dashboard's modelType
       const filteredDocs = documents.filter(
         (doc) => doc.modelType?.toLowerCase() === normalizedModelType
       );
@@ -194,7 +281,7 @@ const Dashboard = () => {
           typeof doc.uploadedBy === "object" && doc.uploadedBy?.name
             ? doc.uploadedBy.name
             : String(doc.uploadedBy || "");
-            
+           
         return uploaderName.trim().toLowerCase() === currentUserName;
       });
 
@@ -205,23 +292,54 @@ const Dashboard = () => {
       console.log(
         `📦 Loaded ${withStatus.length} ${modelType} documents from DB. User docs: ${userFilteredDocs.length}`
       );
+      
     } catch (error) {
       console.error("❌ Error loading backend documents:", error);
+      
+      // User-friendly error messages
+      let errorMsg = "Failed to load documents. ";
+      
+      if (error.type === 'AZURE_COLD_START') {
+        errorMsg = "Document service is starting up. This can take 30-60 seconds on first use. Documents will appear automatically when ready.";
+      } else if (error.message.includes('Unexpected token')) {
+        errorMsg = "Server returned unexpected response. Azure Functions might be starting up.";
+      } else if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+        errorMsg = "Network connection issue. Please check your internet connection.";
+      } else if (error.message.includes('Maximum retries')) {
+        errorMsg = "Service is taking longer than expected to start. Please try again in a minute.";
+      } else {
+        errorMsg = error.message || "An unexpected error occurred.";
+      }
+      
+      setFetchError(errorMsg);
+      
+      // Set empty arrays to prevent crashes
+      setGlobalDocuments([]);
+      setAllDocuments([]);
+      
+    } finally {
+      setIsFetching(false);
     }
   };
 
   useEffect(() => {
     let isMounted = true;
-    if (modelType) fetchDocumentsFromBackend();
+    
+    if (modelType) {
+      fetchDocumentsFromBackend();
+    }
+    
     const intervalId = setInterval(() => {
-      if (modelType) fetchDocumentsFromBackend();
+      if (modelType && isMounted) {
+        fetchDocumentsFromBackend();
+      }
     }, 10000);
 
     return () => {
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, [modelType, email, currentUser.name]); // Updated dependency to currentUser.name
+  }, [modelType, email, currentUser.name]);
 
   // 🧩 Vendor filter
   const handleVendorChange = (e) => {
@@ -230,7 +348,6 @@ const Dashboard = () => {
   };
 
   // 🧩 File upload and processing
-  // FileChange: validate duplicates against DB (globalDocuments) and local queue (localInProcess)
   const FileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -239,7 +356,7 @@ const Dashboard = () => {
       const fileName = file.name;
       const folderName = extractFolderName(fileName);
 
-      // 1) Check local in-process queue first (files just selected or uploading)
+      // 1) Check local in-process queue first
       const foundInLocal = localInProcess.some(
         (item) => item.documentName?.toLowerCase() === fileName.toLowerCase()
       );
@@ -248,31 +365,35 @@ const Dashboard = () => {
         continue;
       }
 
-      // 2) Check ACTUAL Blob Storage (async)
-      const existsInStorage = await checkFileExists(modelType, fileName);
-      if (existsInStorage) {
-        toast.error(`File "${fileName}" already exists in storage. Please rename and select again.`);
+      // 2) Check ACTUAL Blob Storage
+      try {
+        const existsInStorage = await checkFileExists(modelType, fileName);
+        if (existsInStorage) {
+          toast.error(`File "${fileName}" already exists in storage. Please rename and select again.`);
+          continue;
+        }
+      } catch (storageError) {
+        console.error("Error checking blob storage:", storageError);
+        toast.error(`Unable to check if file exists. Please try again.`);
         continue;
       }
-      
+     
       // Passed checks -> add to selected files list
       setSelectedFiles((prev) => [
-          ...prev, 
+          ...prev,
           {
             file,
             fileName,
             uploadId: uuidv4(),
             folderName,
-            status: "Pending" // Initial status
+            status: "Pending"
           }
       ]);
     }
-    
+   
     // Reset input
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
-
-
 
   const handleDeleteFile = (index) => {
     const updated = [...selectedFiles];
@@ -283,64 +404,64 @@ const Dashboard = () => {
   const handleClick = () => fileInputRef.current.click();
 
   const handleProcessFiles = async () => {
-  if (selectedFiles.length === 0) return;
-  setIsUploading(true);
+    if (selectedFiles.length === 0) return;
+    setIsUploading(true);
 
-  // Add selected files to local in-process list
-  const localQueueItems = selectedFiles.map((fileObj) => ({
-    id: fileObj.uploadId,
-    documentName: fileObj.fileName,
-    uploadedAt: new Date().toISOString(),
-    status: "In Process",
-  }));
+    // Add selected files to local in-process list
+    const localQueueItems = selectedFiles.map((fileObj) => ({
+      id: fileObj.uploadId,
+      documentName: fileObj.fileName,
+      uploadedAt: new Date().toISOString(),
+      status: "In Process",
+    }));
 
-  setLocalInProcess((prev) => [...prev, ...localQueueItems]);
+    setLocalInProcess((prev) => [...prev, ...localQueueItems]);
 
-  for (const fileObj of selectedFiles) {
-    const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
-      autoClose: 1000,
-    });
+    for (const fileObj of selectedFiles) {
+      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, {
+        autoClose: 1000,
+      });
 
-    try {
-      const result = await uploadToAzure(
-        fileObj.file,
-        modelType,
-        email || currentUser.id,
-        name || currentUser.name,
-        (percent) => {
-          toast.update(toastId, {
-            render: `${fileObj.fileName} uploading: ${percent}%`,
-            isLoading: percent < 100,
-            autoClose: percent >= 100 ? 2000 : false,
-          });
+      try {
+        const result = await uploadToAzure(
+          fileObj.file,
+          modelType,
+          email || currentUser.id,
+          name || currentUser.name,
+          (percent) => {
+            toast.update(toastId, {
+              render: `${fileObj.fileName} uploading: ${percent}%`,
+              isLoading: percent < 100,
+              autoClose: percent >= 100 ? 2000 : false,
+            });
+          }
+        );
+
+        // Duplicate Error
+        if (result?.error) {
+          toast.error(result.error);
+          continue;
         }
-      );
 
-      // Duplicate Error (no console error)
-      if (result?.error) {
-        toast.error(result.error);
-        continue;
+        toast.success(`${fileObj.fileName} uploaded successfully!`);
+
+      } catch (err) {
+        console.error("Upload error:", err);
+        toast.error(`Upload failed for ${fileObj.fileName}. Please try again.`);
       }
-
-      toast.success(`${fileObj.fileName} uploaded successfully!`);
-
-    } catch (err) {
-      toast.error("Upload failed. Please try again.");
     }
-  }
 
-  setSelectedFiles([]);
-  setIsUploading(false);
+    setSelectedFiles([]);
+    setIsUploading(false);
 
-  await fetchDocumentsFromBackend();
-};
+    // Refresh documents after upload
+    await fetchDocumentsFromBackend();
+  };
 
-
-  // 🧩 Date formatter
   // 🧩 Date formatter
   const formatDate = (dateString) => {
     if (!dateString) return "Unknown time";
-    
+   
     // Attempt to treat the date as UTC if it lacks timezone info
     let normalizedDateString = dateString;
     if (typeof dateString === 'string' && !dateString.endsWith('Z') && !dateString.includes('+')) {
@@ -349,10 +470,10 @@ const Dashboard = () => {
 
     const date = new Date(normalizedDateString);
     if (isNaN(date.getTime())) return "Unknown time";
-    
+   
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-    
+   
     if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600)
       return `${Math.floor(diffInSeconds / 60)} minutes ago`;
@@ -365,7 +486,7 @@ const Dashboard = () => {
   const getUserDocuments = () => {
     if (!selectedVendor) return allDocuments;
     const lowerVendor = selectedVendor.toLowerCase();
-    
+   
     return allDocuments.filter((doc) => {
       // 1. Check extracted VendorName
       const vendorName = doc.extractedData?.VendorName || "";
@@ -393,13 +514,12 @@ const Dashboard = () => {
     // 🔹 Start with all global documents
     let filteredDocs = globalDocuments;
 
-    // 🔹 1. Calculate active uploads count (to add to "In Process")
+    // 🔹 1. Calculate active uploads count
     let activeUploadsCount = 0;
     if (isUploading && selectedFiles.length > 0) {
       if (selectedVendor) {
         const lowerVendor = selectedVendor.toLowerCase();
-        // Only count uploads that match the filter (by filename)
-        activeUploadsCount = selectedFiles.filter(f => 
+        activeUploadsCount = selectedFiles.filter(f =>
           (f.fileName || "").toLowerCase().includes(lowerVendor)
         ).length;
       } else {
@@ -449,6 +569,12 @@ const Dashboard = () => {
     window.open(finalUrl, "_blank");
   };
 
+  // Handle retry for fetch errors
+  const handleRetryFetch = () => {
+    setFetchError(null);
+    fetchDocumentsFromBackend();
+  };
+
   return (
     <div className="dashboard-total-container">
       <div className="Dashboard-main-section">
@@ -480,6 +606,39 @@ const Dashboard = () => {
             </select>
           </div>
         </nav>
+
+        {/* Error Display Section - Add this after the vendor select */}
+        {fetchError && (
+          <div style={{
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffeaa7',
+            borderRadius: '4px',
+            padding: '15px',
+            margin: '15px 0',
+            color: '#856404'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+              <AlertTriangle size={20} style={{ marginRight: '10px' }} />
+              <strong>Connection Issue</strong>
+            </div>
+            <p style={{ marginBottom: '10px' }}>{fetchError}</p>
+            <button
+              onClick={handleRetryFetch}
+              disabled={isFetching}
+              style={{
+                backgroundColor: '#ffc107',
+                color: '#212529',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: isFetching ? 'not-allowed' : 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              {isFetching ? 'Retrying...' : 'Retry Load'}
+            </button>
+          </div>
+        )}
 
         <main className="stats-container">
           <div className="stat-box Total">
@@ -605,17 +764,24 @@ const Dashboard = () => {
                       </td>
                     </tr>
                   ))
-                ) : (
+                ) : !fetchError ? ( // Only show "no documents" if there's no error
                   <tr>
-                    <td colSpan="5" style={{ textAlign: "center" }}>
+                    <td colSpan="6" style={{ textAlign: "center" }}>
                       {selectedVendor
                         ? `No documents found for vendor: ${selectedVendor}`
                         : "No documents uploaded yet"}
                     </td>
                   </tr>
-                )}
+                ) : null}
               </tbody>
             </table>
+
+            {/* Show loading indicator when fetching */}
+            {isFetching && !fetchError && (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                Loading documents...
+              </div>
+            )}
 
             <div className="pagination">
               {Array.from({ length: totalPages }, (_, i) => (

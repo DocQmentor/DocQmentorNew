@@ -9,6 +9,79 @@ import { saveAs } from "file-saver";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// Smart fetch function to handle Azure HTML errors
+const smartFetch = async (url, options = {}) => {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Accept': 'application/json',
+      ...options.headers
+    }
+  });
+
+  // ALWAYS read as text first (CRITICAL for Azure errors)
+  const responseText = await response.text();
+  
+  // Check if it's an Azure HTML error page
+  const isAzureHtmlError = 
+    !response.ok && (
+      responseText.includes('<!DOCTYPE') ||
+      responseText.includes('<html>') ||
+      responseText.trim().startsWith('The service') ||
+      responseText.includes('Service Unavailable') ||
+      responseText.includes('503') && responseText.includes('Azure')
+    );
+
+  if (isAzureHtmlError) {
+    // This is Azure's cold start HTML page, not your JSON
+    throw {
+      type: 'AZURE_COLD_START',
+      message: 'Azure Functions is starting up. This can take 30-60 seconds.',
+      status: response.status
+    };
+  }
+
+  // Check if response is JSON
+  if (!responseText.trim()) {
+    return []; // Empty response
+  }
+
+  // Try to parse as JSON
+  try {
+    return JSON.parse(responseText);
+  } catch (jsonError) {
+    // If it's not JSON and response was OK, throw parse error
+    if (response.ok) {
+      throw new Error(`Server returned invalid format: ${responseText.substring(0, 100)}`);
+    }
+    
+    // If not JSON and not OK, throw HTTP error
+    throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 100)}`);
+  }
+};
+
+// Fetch with retry logic for cold starts
+const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await smartFetch(url, options);
+      return result;
+      
+    } catch (error) {
+      // If it's a cold start error, wait and retry
+      if (error.type === 'AZURE_COLD_START' && attempt < maxRetries) {
+        const delay = attempt * 10000; // 10s, 20s, 30s...
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // Re-throw other errors or if max retries reached
+      throw error;
+    }
+  }
+  throw new Error(`Maximum retries (${maxRetries}) exceeded`);
+};
+
 const ManualReview = () => {
   const [show, setShow] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -18,8 +91,8 @@ const ManualReview = () => {
   const [editedData, setEditedData] = useState({});
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [vendorFilter, setVendorFilter] = useState("");
-const [accountHolderFilter, setAccountHolderFilter] = useState("");
-const [LendernameFilter, setLendernameFilter] = useState("");
+  const [accountHolderFilter, setAccountHolderFilter] = useState("");
+  const [LendernameFilter, setLendernameFilter] = useState("");
 
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -133,6 +206,8 @@ const [LendernameFilter, setLendernameFilter] = useState("");
 
   const handleResetFilters = () => {
     setVendorFilter("");
+    setAccountHolderFilter("");
+    setLendernameFilter("");
     setFromDate("");
     setToDate("");
     setUploadDateFilter("all");
@@ -163,211 +238,238 @@ const [LendernameFilter, setLendernameFilter] = useState("");
   useEffect(() => {
     async function fetchDocsFromCosmos() {
       setLoading(true);
+      setError(null); // Reset error on new fetch
+      
       try {
-        const response = await fetch(
+        const data = await fetchWithRetry(
           "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
         );
-        const data = await response.json();
 
         const docsNeedingReview = data.filter((doc) => {
-  const model = doc.modelType?.toLowerCase()?.trim();
-  const selected = selectedModelType.toLowerCase();
+          const model = doc.modelType?.toLowerCase()?.trim();
+          const selected = selectedModelType.toLowerCase();
 
-  // ✅ Only include docs matching the current selected model type
-  if (!model || model !== selected) return false;
+          // ✅ Only include docs matching the current selected model type
+          if (!model || model !== selected) return false;
 
-  // ✅ Skip already reviewed
-  const isReviewed = 
-    doc.wasReviewed === true || 
-    doc.wasReviewed === "true" || 
-    (doc.status && doc.status.toLowerCase() === "reviewed");
+          // ✅ Skip already reviewed
+          const isReviewed =
+            doc.wasReviewed === true ||
+            doc.wasReviewed === "true" ||
+            (doc.status && doc.status.toLowerCase() === "reviewed");
 
-  if (isReviewed) return false;
+          if (isReviewed) return false;
 
-  // ✅ Parse confidence safely (SQL uses averageConfidenceScore)
-  let totalScore = 0;
-  const rawScore = doc.averageConfidenceScore || doc.totalConfidenceScore;
-  
-  if (rawScore) {
-     const val = parseFloat(String(rawScore).replace("%", "").trim());
-     totalScore = val <= 1 ? val * 100 : val;
-  }
+          // ✅ Parse confidence safely (SQL uses averageConfidenceScore)
+          let totalScore = 0;
+          const rawScore = doc.averageConfidenceScore || doc.totalConfidenceScore;
 
-  const requiredFieldsByModel = {
-    invoice: [
-      "VendorName",
-      "InvoiceId",
-      "InvoiceDate",
-      "LPO NO",
-      "SubTotal",
-      "VAT",
-      "InvoiceTotal",
-    ],
-    bankstatement: [
-      "AccountHolder",
-      "AccountNumber",
-      "StatementPeriod",
-      "OpeningBalance",
-      "ClosingBalance",
-    ],
-    mortgageforms: [
-      "Lendername",
-      "Borrowername",
-      "Loanamount",
-      "Interest",
-      "Loantenure",
-    ],
-  };
+          if (rawScore) {
+            const val = parseFloat(String(rawScore).replace("%", "").trim());
+            totalScore = val <= 1 ? val * 100 : val;
+          }
 
-  const extracted = doc.extractedData || {};
-  const requiredFields = requiredFieldsByModel[model] || [];
-  const hasMissing = requiredFields.some(
-    (field) => !extracted[field] || extracted[field].toString().trim() === ""
-  );
+          const requiredFieldsByModel = {
+            invoice: [
+              "VendorName",
+              "InvoiceId",
+              "InvoiceDate",
+              "LPO NO",
+              "SubTotal",
+              "VAT",
+              "InvoiceTotal",
+            ],
+            bankstatement: [
+              "AccountHolder",
+              "AccountNumber",
+              "StatementPeriod",
+              "OpeningBalance",
+              "ClosingBalance",
+            ],
+            mortgageforms: [
+              "Lendername",
+              "Borrowername",
+              "Loanamount",
+              "Interest",
+              "Loantenure",
+            ],
+          };
 
-  // ✅ Keep only documents with low confidence or missing fields
-  return totalScore < 85 || hasMissing;
-});
+          const extracted = doc.extractedData || {};
+          const requiredFields = requiredFieldsByModel[model] || [];
+          const hasMissing = requiredFields.some(
+            (field) => !extracted[field] || extracted[field].toString().trim() === ""
+          );
 
+          // ✅ Keep only documents with low confidence or missing fields
+          return totalScore < 85 || hasMissing;
+        });
 
         console.log("📊 Docs needing review:", docsNeedingReview);
         setManualReviewDocs(docsNeedingReview);
+        
       } catch (err) {
-        setError(err.message || "Failed to fetch documents");
         console.error("❌ Fetch error:", err);
+        
+        // User-friendly error messages
+        let errorMsg = "Failed to fetch documents. ";
+        
+        if (err.type === 'AZURE_COLD_START') {
+          errorMsg = "Document service is starting up. This can take 30-60 seconds on first use. Please wait and try again.";
+        } else if (err.message.includes('Unexpected token')) {
+          errorMsg = "Server returned unexpected response. Azure Functions might be starting up.";
+        } else if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
+          errorMsg = "Network connection issue. Please check your internet connection.";
+        } else if (err.message.includes('Maximum retries')) {
+          errorMsg = "Service is taking longer than expected to start. Please refresh the page or try again in a minute.";
+        } else {
+          errorMsg += err.message;
+        }
+        
+        setError(errorMsg);
+        setManualReviewDocs([]); // Clear data on error
+        
       } finally {
         setLoading(false);
       }
     }
+    
     fetchDocsFromCosmos();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, selectedModelType]);
 
   // Build & filter docs
-useEffect(() => {
-  const today = new Date();
-  const mapped = manualReviewDocs.map((doc) => {
-    const extracted = doc.extractedData || {};
-    const model = doc.modelType?.toLowerCase() || "";
-    
-    // 🔍 DEBUG: Log Mortgage Data
-    if (model === "mortgageforms") {
-         console.log("🔍 ManualReview Mortgage Debug:", doc.id, extracted);
-    }
-    
-    // 🛠️ Normalize Mortgage keys if coming as PascalCase from Backend
-    const normalizedExtracted = { ...extracted };
-    if (model === "mortgageforms") {
-            // Pascal -> Lower
-            if (normalizedExtracted.Lendername) normalizedExtracted.Lendername = normalizedExtracted.Lendername;
-            if (normalizedExtracted.Borrowername) normalizedExtracted.Borrowername = normalizedExtracted.Borrowername;
-            if (normalizedExtracted.Loanamount) normalizedExtracted.Loanamount = normalizedExtracted.Loanamount;
-            if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
+  useEffect(() => {
+    const today = new Date();
+    const mapped = manualReviewDocs.map((doc) => {
+      const extracted = doc.extractedData || {};
+      const model = doc.modelType?.toLowerCase() || "";
+     
+      // 🔍 DEBUG: Log Mortgage Data
+      if (model === "mortgageforms") {
+        console.log("🔍 ManualReview Mortgage Debug:", doc.id, extracted);
+      }
+     
+      // 🛠️ Normalize Mortgage keys if coming as PascalCase from Backend
+      const normalizedExtracted = { ...extracted };
+      if (model === "mortgageforms") {
+        // Pascal -> Lower
+        if (normalizedExtracted.Lendername) normalizedExtracted.Lendername = normalizedExtracted.Lendername;
+        if (normalizedExtracted.Borrowername) normalizedExtracted.Borrowername = normalizedExtracted.Borrowername;
+        if (normalizedExtracted.Loanamount) normalizedExtracted.Loanamount = normalizedExtracted.Loanamount;
+        if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
 
-            // Lower -> Pascal (Bidirectional safety)
-            if (normalizedExtracted.Lendername) normalizedExtracted.Lendername = normalizedExtracted.Lendername;
-            if (normalizedExtracted.Borrowername) normalizedExtracted.Borrowername = normalizedExtracted.Borrowername;
-            if (normalizedExtracted.Loanamount) normalizedExtracted.Loanamount = normalizedExtracted.Loanamount;
-            if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
-    }
+        // Lower -> Pascal (Bidirectional safety)
+        if (normalizedExtracted.Lendername) normalizedExtracted.Lendername = normalizedExtracted.Lendername;
+        if (normalizedExtracted.Borrowername) normalizedExtracted.Borrowername = normalizedExtracted.Borrowername;
+        if (normalizedExtracted.Loanamount) normalizedExtracted.Loanamount = normalizedExtracted.Loanamount;
+        if (normalizedExtracted.Loantenure) normalizedExtracted.Loantenure = normalizedExtracted.Loantenure;
+      }
 
-    // ✅ Prioritize UploadedAt from SQL
-    const timestamp = doc.UploadedAt || doc.uploadedAt || doc.timestamp || null;
+      // ✅ Prioritize UploadedAt from SQL
+      const timestamp = doc.UploadedAt || doc.uploadedAt || doc.timestamp || null;
 
-    let rawDate = null;
-    if (timestamp) {
-      rawDate = new Date(timestamp);
-      if (isNaN(rawDate.getTime())) rawDate = null;
-    }
+      let rawDate = null;
+      if (timestamp) {
+        rawDate = new Date(timestamp);
+        if (isNaN(rawDate.getTime())) rawDate = null;
+      }
 
-    const common = {
-      uploadDate: rawDate ? formatDate(rawDate) : "",
-      rawUploadDate: rawDate,
-      confidenceScore: (() => {
-          const val = doc.averageConfidenceScore || doc.totalConfidenceScore;
-          if (!val) return "0.00%";
-          let num = parseFloat(String(val).replace("%", ""));
-          if (num <= 1) num *= 100;
-          return num.toFixed(2) + "%";
-      })(),
-      _rawDocument: doc,
-    };
-
-    if (model === "invoice") {
-      return {
-        ...common,
-        VendorName: getString(extracted.VendorName),
-        InvoiceId: getString(extracted.InvoiceId),
-        InvoiceDate: formatDate(extracted.InvoiceDate),
-        "LPO NO": getString(extracted["LPO NO"]),
-        SubTotal: formatNumber(getString(extracted.SubTotal)),
-        VAT: formatNumber(getString(extracted.VAT || extracted.VAT)),
-        InvoiceTotal: formatNumber(getString(extracted.InvoiceTotal)),
+      const common = {
+        uploadDate: rawDate ? formatDate(rawDate) : "",
+        rawUploadDate: rawDate,
+        confidenceScore: (() => {
+            const val = doc.averageConfidenceScore || doc.totalConfidenceScore;
+            if (!val) return "0.00%";
+            let num = parseFloat(String(val).replace("%", ""));
+            if (num <= 1) num *= 100;
+            return num.toFixed(2) + "%";
+        })(),
+        _rawDocument: doc,
       };
-    } else if (model === "bankstatement") {
-      return {
-        ...common,
-        AccountHolder: getString(extracted.AccountHolder),
-        AccountNumber: getString(extracted.AccountNumber),
-        StatementPeriod: getString(extracted.StatementPeriod),
-        OpeningBalance: formatNumber(getString(extracted.OpeningBalance)),
-        ClosingBalance: formatNumber(getString(extracted.ClosingBalance)),
-      };
-    } else if (model === "mortgageforms") {
-      return {
-        ...common,
-        Lendername: getString(extracted.Lendername || extracted.Lendername),
-        Borrowername: getString(extracted.Borrowername || extracted.Borrowername),
-        Loanamount: formatNumber(getString(extracted.Loanamount || extracted.Loanamount)),
-        Interest: getString(extracted.Interest),
-        Loantenure: getString(extracted.Loantenure || extracted.Loantenure),
-      };
-    }
-    return common;
-  });
 
-  const filtered = mapped.filter((item) => {
-    const itemDate = item.rawUploadDate;
+      if (model === "invoice") {
+        return {
+          ...common,
+          VendorName: getString(extracted.VendorName),
+          InvoiceId: getString(extracted.InvoiceId),
+          InvoiceDate: formatDate(extracted.InvoiceDate),
+          "LPO NO": getString(extracted["LPO NO"]),
+          SubTotal: formatNumber(getString(extracted.SubTotal)),
+          VAT: formatNumber(getString(extracted.VAT || extracted.VAT)),
+          InvoiceTotal: formatNumber(getString(extracted.InvoiceTotal)),
+        };
+      } else if (model === "bankstatement") {
+        return {
+          ...common,
+          AccountHolder: getString(extracted.AccountHolder),
+          AccountNumber: getString(extracted.AccountNumber),
+          StatementPeriod: getString(extracted.StatementPeriod),
+          OpeningBalance: formatNumber(getString(extracted.OpeningBalance)),
+          ClosingBalance: formatNumber(getString(extracted.ClosingBalance)),
+        };
+      } else if (model === "mortgageforms") {
+        return {
+          ...common,
+          Lendername: getString(extracted.Lendername || extracted.Lendername),
+          Borrowername: getString(extracted.Borrowername || extracted.Borrowername),
+          Loanamount: formatNumber(getString(extracted.Loanamount || extracted.Loanamount)),
+          Interest: getString(extracted.Interest),
+          Loantenure: getString(extracted.Loantenure || extracted.Loantenure),
+        };
+      }
+      return common;
+    });
 
-    // Upload date window filtering
-    if (uploadDateFilter !== "all" && itemDate) {
-      const last7 = new Date(today);
-      const last30 = new Date(today);
-      last7.setDate(today.getDate() - 7);
-      last30.setDate(today.getDate() - 30);
+    const filtered = mapped.filter((item) => {
+      const itemDate = item.rawUploadDate;
 
-      if (uploadDateFilter === "7days" && itemDate < last7) return false;
-      if (uploadDateFilter === "30days" && itemDate < last30) return false;
-    }
-  if (fromDate) {
-    const from = new Date(fromDate);
-    if (isNaN(from.getTime()) || itemDate < from) return false;
-  }
+      // Upload date window filtering
+      if (uploadDateFilter !== "all" && itemDate) {
+        const last7 = new Date(today);
+        const last30 = new Date(today);
+        last7.setDate(today.getDate() - 7);
+        last30.setDate(today.getDate() - 30);
 
-  if (toDate) {
-    const to = new Date(toDate);
-    to.setHours(23, 59, 59, 999); 
-    if (isNaN(to.getTime()) || itemDate > to) return false;
-  }
-    const matchSearch = Object.values(item)
-      .join(" ")
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+        if (uploadDateFilter === "7days" && itemDate < last7) return false;
+        if (uploadDateFilter === "30days" && itemDate < last30) return false;
+      }
+      
+      if (fromDate) {
+        const from = new Date(fromDate);
+        if (isNaN(from.getTime()) || itemDate < from) return false;
+      }
 
-    const matchVendor =
-      (item.VendorName || item.AccountHolder || item.Lendername || "")
+      if (toDate) {
+        const to = new Date(toDate);
+        to.setHours(23, 59, 59, 999);
+        if (isNaN(to.getTime()) || itemDate > to) return false;
+      }
+      
+      const matchSearch = Object.values(item)
+        .join(" ")
         .toLowerCase()
-        .includes(vendorFilter.toLowerCase());
+        .includes(searchQuery.toLowerCase());
 
-    return matchSearch && matchVendor;
-  });
+      // Model-specific filters
+      let matchFilter = true;
+      
+      if (selectedModelType === "Invoice" && vendorFilter) {
+        matchFilter = (item.VendorName || "").toLowerCase().includes(vendorFilter.toLowerCase());
+      } else if (selectedModelType === "BankStatement" && accountHolderFilter) {
+        matchFilter = (item.AccountHolder || "").toLowerCase().includes(accountHolderFilter.toLowerCase());
+      } else if (selectedModelType === "MortgageForms" && LendernameFilter) {
+        matchFilter = (item.Lendername || "").toLowerCase().includes(LendernameFilter.toLowerCase());
+      }
 
-  setFilteredDocs(filtered);
-  setCurrentPage(1); // reset page on filter changes
+      return matchSearch && matchFilter;
+    });
 
-}, [manualReviewDocs, searchQuery, vendorFilter, uploadDateFilter, fromDate, toDate]);
+    setFilteredDocs(filtered);
+    setCurrentPage(1); // reset page on filter changes
 
-const { sortedData, toggleSort, renderSortIcon } = useSortableData(filteredDocs);
+  }, [manualReviewDocs, searchQuery, vendorFilter, accountHolderFilter, LendernameFilter, uploadDateFilter, fromDate, toDate, selectedModelType]);
 
+  const { sortedData, toggleSort, renderSortIcon } = useSortableData(filteredDocs);
 
   const handleToggle = (doc) => {
     const extracted = doc.extractedData || {};
@@ -386,7 +488,8 @@ const { sortedData, toggleSort, renderSortIcon } = useSortableData(filteredDocs)
       },
     });
   };
-const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+  
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
 
   const paginatedData = sortedData.slice(
     (currentPage - 1) * rowsPerPage,
@@ -399,10 +502,6 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
         <div className="ManualReview-main-container">
           <div className="ManualReview-Table-header">
             <h1> {selectedModelType} Manual Review</h1>
-
-            {/* <p style={{ color: "green" }}>
-              Showing {filteredDocs.length} / {manualReviewDocs.length} documents
-            </p> */}
 
             <div className="filters">
               {selectedModelType === "Invoice" && (
@@ -456,7 +555,7 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
                 <input
                   type="date"
                   value={toDate}
-                   min={fromDate}  
+                  min={fromDate}  
                   max={today}
                   onChange={(e) => setToDate(e.target.value)}
                 />
@@ -491,22 +590,48 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
           </div>
 
           {loading && <p>Loading documents...</p>}
-          {error && <p style={{ color: "red" }}>Error: {error}</p>}
-
           
+          {/* Error Display with retry button */}
+          {error && !loading && (
+            <div style={{
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '4px',
+              padding: '15px',
+              margin: '15px 0',
+              color: '#856404'
+            }}>
+              <p style={{ marginBottom: '10px' }}>{error}</p>
+              <button
+                onClick={() => {
+                  setError(null);
+                  refreshData();
+                }}
+                style={{
+                  backgroundColor: '#ffc107',
+                  color: '#212529',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                Retry Load
+              </button>
+            </div>
+          )}
+
           <div style={{ overflowX: "auto" }}>
             <table className={`ManualReview-Table ${selectedModelType}`}>
-
-             <thead>
+              <thead>
                 <tr>
                   {modelHeaders[selectedModelType].map((header, idx) => (
                     <th
                       key={idx}
                       onClick={() => toggleSort(modelKeys[selectedModelType][idx])}
                     >
-                      {/* <span className="sortable-header"> */}
-                        {header} {renderSortIcon(modelKeys[selectedModelType][idx])}
-                      {/* </span> */}
+                      {header} {renderSortIcon(modelKeys[selectedModelType][idx])}
                     </th>
                   ))}
                 </tr>
@@ -531,30 +656,28 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
                       )}
                     </tr>
                   ))
-                ) : (
+                ) : !loading && !error ? ( // Only show "no documents" if not loading and no error
                   <tr>
                     <td
                       colSpan={modelKeys[selectedModelType].length}
                       style={{ textAlign: "center" }}
                     >
-                      {loading
-                        ? "Loading..."
-                        : "No documents requiring manual review"}
+                      No documents requiring manual review
                     </td>
                   </tr>
-                )}
+                ) : null}
               </tbody>
             </table>
           </div>
+          
           {filteredDocs.length > rowsPerPage && (
             <FilePagination
-  currentPage={currentPage}
-  totalPages={totalPages}
-  onPageChange={setCurrentPage}
-  rowsPerPage={rowsPerPage}
-  totalItems={sortedData.length}
-/>
-
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              rowsPerPage={rowsPerPage}
+              totalItems={sortedData.length}
+            />
           )}
         </div>
       ) : (

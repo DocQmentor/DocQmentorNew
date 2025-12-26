@@ -88,6 +88,83 @@ const getString = (val) => {
   return "";
 };
 
+// Smart fetch function to handle Azure HTML errors
+const smartFetch = async (url, options = {}) => {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  });
+
+  // ALWAYS read as text first (CRITICAL for Azure errors)
+  const responseText = await response.text();
+  
+  // Check if it's an Azure HTML error page
+  const isAzureHtmlError = 
+    !response.ok && (
+      responseText.includes('<!DOCTYPE') ||
+      responseText.includes('<html>') ||
+      responseText.trim().startsWith('The service') ||
+      responseText.includes('Service Unavailable') ||
+      responseText.includes('503') && responseText.includes('Azure')
+    );
+
+  if (isAzureHtmlError) {
+    // This is Azure's cold start HTML page, not your JSON
+    throw {
+      type: 'AZURE_COLD_START',
+      message: 'Azure Functions is starting up. This can take 30-60 seconds.',
+      status: response.status
+    };
+  }
+
+  // Check if response is JSON
+  if (!responseText.trim()) {
+    return null; // Empty response
+  }
+
+  // Try to parse as JSON
+  try {
+    return JSON.parse(responseText);
+  } catch (jsonError) {
+    // If it's not JSON and response was OK, throw parse error
+    if (response.ok) {
+      throw new Error(`Server returned invalid format: ${responseText.substring(0, 100)}`);
+    }
+    
+    // If not JSON and not OK, throw HTTP error
+    throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 100)}`);
+  }
+};
+
+// Fetch with retry logic for cold starts
+const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`PUT attempt ${attempt}/${maxRetries}`);
+      const result = await smartFetch(url, options);
+      return result;
+      
+    } catch (error) {
+      // If it's a cold start error, wait and retry
+      if (error.type === 'AZURE_COLD_START' && attempt < maxRetries) {
+        const delay = attempt * 10000; // 10s, 20s, 30s...
+        console.log(`Cold start detected, waiting ${delay/1000} seconds before retry...`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // Re-throw other errors or if max retries reached
+      throw error;
+    }
+  }
+  throw new Error(`Maximum retries (${maxRetries}) exceeded`);
+};
+
 const EditModal = () => {
   const { state } = useLocation();
   const { accounts } = useMsal();
@@ -116,6 +193,8 @@ const EditModal = () => {
   const [editDetails, setEditDetails] = useState(true);
   const [versionHistory, setVersionHistory] = useState(false);
   const [pdfDetails, setPDFDetails] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // Added saving state
+  const [saveError, setSaveError] = useState(null); // Added error state
 
   // ✅ Initialize field values
   useEffect(() => {
@@ -143,6 +222,7 @@ const EditModal = () => {
 
     setEdited(initialData);
   }, [selectedDocument, initialEditedData, selectedModelType]);
+
   const handleCancel = () => navigate(-1);
 
   const handleFieldChange = (key, value, sanitize) => {
@@ -152,30 +232,32 @@ const EditModal = () => {
     }));
   };
 
-  // ✅ Clean and Robust Save Function
+  // ✅ Clean and Robust Save Function with Azure error handling
   const handleSave = async () => {
     try {
       console.log("💾 handleSave STARTED (Clean Version)");
-      
+      setIsSaving(true);
+      setSaveError(null);
+     
       const fields = documentTypeFields[selectedModelType];
-      
+     
       // 1. Create a clean copy
       const updatedExtractedData = { ...selectedDocument.extractedData };
 
       fields.forEach((f) => {
         // The Key we WANT (PascalCase) matches DB column
-        const correctKey = fieldMapping[selectedModelType]?.[f.key] || f.key; 
+        const correctKey = fieldMapping[selectedModelType]?.[f.key] || f.key;
         const newValue = edited[f.key] || "";
 
         // 2. SAFETY: Remove any "bad" legacy keys that might confuse the backend
         // e.g. remove "Lendername" if we are setting "Lendername"
-        delete updatedExtractedData[correctKey.toLowerCase()]; 
+        delete updatedExtractedData[correctKey.toLowerCase()];
         delete updatedExtractedData[correctKey.replace(/\s+/g, "")];
         delete updatedExtractedData[correctKey.toLowerCase().replace(/\s+/g, "")];
 
         // 3. Set the Correct Key
         updatedExtractedData[correctKey] = newValue;
-        
+       
         // 4. Special Handling for Invoice (Keep existing safety)
         if (correctKey === "LPO NO") updatedExtractedData["LPO NO"] = newValue;
         if (correctKey === "VAT") updatedExtractedData["VAT"] = newValue;
@@ -202,7 +284,8 @@ const EditModal = () => {
         versionHistory: [...(selectedDocument.versionHistory || []), newHistoryEntry]
       };
 
-      const response = await fetch(
+      // Use fetchWithRetry to handle Azure cold starts
+      const response = await fetchWithRetry(
         "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==",
         {
           method: "PUT",
@@ -211,13 +294,35 @@ const EditModal = () => {
         }
       );
 
-      if (!response.ok) throw new Error(await response.text());
+      if (!response || !response.message) {
+        throw new Error("Invalid response from server");
+      }
 
       alert("✅ Document updated successfully!");
       navigate(-1);
+      
     } catch (err) {
-      alert("❌ Save failed: " + err.message);
-      console.error(err);
+      console.error("Save error:", err);
+      
+      // User-friendly error messages
+      let errorMsg = "Save failed: ";
+      
+      if (err.type === 'AZURE_COLD_START') {
+        errorMsg = "Document service is starting up. This can take 30-60 seconds. Please wait and try again.";
+      } else if (err.message.includes('Unexpected token')) {
+        errorMsg = "Server returned unexpected response. Azure Functions might be starting up.";
+      } else if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
+        errorMsg = "Network connection issue. Please check your internet connection.";
+      } else if (err.message.includes('Maximum retries')) {
+        errorMsg = "Service is taking longer than expected to start. Please try again in a minute.";
+      } else {
+        errorMsg += err.message;
+      }
+      
+      setSaveError(errorMsg);
+      
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -233,6 +338,7 @@ const EditModal = () => {
           onChange={(e) =>
             handleFieldChange(field.key, e.target.value, field.sanitize)
           }
+          disabled={isSaving} // Disable fields while saving
         />
       </div>
     ));
@@ -313,11 +419,27 @@ const EditModal = () => {
             <div className="ManualReview-Edit-editDetails">
               <form className="ManualReview-Edit-editDetails-form">
                 <h3>Edit Details - {selectedModelType}</h3>
+                
+                {/* Show save error if any */}
+                {saveError && (
+                  <div style={{
+                    backgroundColor: '#ffebee',
+                    border: '1px solid #ffcdd2',
+                    borderRadius: '4px',
+                    padding: '10px',
+                    marginBottom: '15px',
+                    color: '#c62828'
+                  }}>
+                    <p style={{ margin: 0 }}>{saveError}</p>
+                  </div>
+                )}
+                
                 {renderEditFields()}
                 <ul className="ManualReview-Edit-editDetails-form-ul">
                   <li
                     className="ManualReview-Edit-editDetails-form-ul-Cancel"
                     onClick={handleCancel}
+                    style={{ opacity: isSaving ? 0.6 : 1 }}
                   >
                     <X
                       size={20}
@@ -325,14 +447,16 @@ const EditModal = () => {
                       strokeWidth={2}
                       style={{ background: "transparent", marginRight: 4 }}
                     />
-                    <span color="white"
-                      strokeWidth={2}
-                      style={{ background: "transparent", marginRight: 4 }}>Cancel</span>
+                    <span style={{ background: "transparent", marginRight: 4 }}>Cancel</span>
                   </li>
 
                   <li
                     className="ManualReview-Edit-editDetails-form-ul-Save-Changes"
-                    onClick={handleSave}
+                    onClick={isSaving ? null : handleSave}
+                    style={{ 
+                      opacity: isSaving ? 0.6 : 1,
+                      cursor: isSaving ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     <Save
                       size={20}
@@ -340,9 +464,9 @@ const EditModal = () => {
                       strokeWidth={2}
                       style={{ background: "transparent", marginRight: 4 }}
                     />
-                    <span color="white"
-                      strokeWidth={2}
-                      style={{ background: "transparent", marginRight: 4 }}>Save Changes</span>
+                    <span style={{ background: "transparent", marginRight: 4 }}>
+                      {isSaving ? 'Saving...' : 'Save Changes'}
+                    </span>
                   </li>
                 </ul>
               </form>

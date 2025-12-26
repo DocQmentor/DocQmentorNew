@@ -454,7 +454,7 @@
   margin: 0 auto;
 }
 
-@keyframes spin {
+@keyframes spin {n
   0% {
     transform: rotate(0deg);
   }
