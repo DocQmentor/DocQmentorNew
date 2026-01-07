@@ -22,7 +22,10 @@ import { useUser } from "../context/UserContext";
 import { sasToken } from "../sasToken";
 import useGroupAccess from "../utils/userGroupAccess";
 
+import { useConfig } from "../context/ConfigContext";
+
 const Dashboard = () => {
+  const { config } = useConfig();
   const hasAccess = useGroupAccess();
   const { accounts } = useMsal();
   const currentUser = {
@@ -151,10 +154,26 @@ const Dashboard = () => {
       score = parseFloat(raw);
       if (score <= 1) score *= 100; // handles normalized scores like 0.83
     }
+    
+    // ✅ Retrieve Dynamic Config based on Model (e.g. "Invoice")
+    // We try to match the localStorage key (e.g. "Invoice") or fallback to 85
+    let currentThreshold = 85; 
+    
+    // Attempt to map modelType 'invoice' -> 'Invoice', etc.
+    // The context config keys are PascalCase: Invoice, BankStatement, MortgageForms
+    const typeKey = Object.keys(config || {}).find(
+      k => k.toLowerCase() === (modelType || "").toLowerCase()
+    );
+    
+    if (typeKey && config[typeKey] !== undefined) {
+        currentThreshold = config[typeKey];
+    } else if (config[selectedmodelType]) {
+        currentThreshold = config[selectedmodelType];
+    }
 
-    // ✅ If mandatory fields missing or score < 85 → Manual Review
+    // ✅ If mandatory fields missing or score < threshold → Manual Review
     const hasMissingFields = !hasAllMandatoryFields(doc);
-    if (score < 85 || hasMissingFields) return "Manual Review";
+    if (score < currentThreshold || hasMissingFields) return "Manual Review";
 
     // ✅ Otherwise → Completed
     return "Completed";
@@ -163,8 +182,10 @@ const Dashboard = () => {
   const fetchDocumentsFromBackend = async () => {
     try {
       // ✅ Fetch data from Cosmos/SQL via Function API
+      // Add timestamp to prevent caching
+      const timestamp = new Date().getTime();
       const response = await fetch(
-        `https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==`
+        `https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q==&_t=${timestamp}`
       );
 
       // 🚨 Check specifically for 503 or generic failure
@@ -201,19 +222,18 @@ const Dashboard = () => {
       // ⚠️ Backend stores User Name, not Email. Filter by Name.
       const currentUserName = (currentUser.name || "").trim().toLowerCase();
 
+      // FILTER: Only keep docs for current user (List View)
       const userFilteredDocs = withStatus.filter((doc) => {
-        // doc.uploadedBy might be an object { name: "...", id: "..." } or string
         const uploaderName =
           typeof doc.uploadedBy === "object" && doc.uploadedBy?.name
             ? doc.uploadedBy.name
-            : String(doc.uploadedBy || "");
-            
+            : String(doc.uploadedBy || "");  
         return uploaderName.trim().toLowerCase() === currentUserName;
       });
-
+      
       // ✅ Set state
-      setGlobalDocuments(withStatus);
-      setAllDocuments(userFilteredDocs);
+      setGlobalDocuments(withStatus); // Stats use this (Global)
+      setAllDocuments(userFilteredDocs); // List uses this (User Only)
 
       console.log(
         `📦 Loaded ${withStatus.length} ${modelType} documents from DB. User docs: ${userFilteredDocs.length}`
@@ -355,27 +375,32 @@ const Dashboard = () => {
 
   // 🧩 Date formatter
   // 🧩 Date formatter
+  // 🧩 Date formatter
   const formatDate = (dateString) => {
     if (!dateString) return "Unknown time";
     
-    // Attempt to treat the date as UTC if it lacks timezone info
-    let normalizedDateString = dateString;
-    if (typeof dateString === 'string' && !dateString.endsWith('Z') && !dateString.includes('+')) {
-        normalizedDateString += 'Z';
-    }
-
-    const date = new Date(normalizedDateString);
+    // Check if it's already a valid date object or string
+    const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Unknown time";
+    
+    // For calculating "ago", we need to be careful with timezones.
+    // If the string lacks a 'Z' or offset, browsers might interpret it as local.
+    // However, backend sends 'o' format (ISO) or similar.
+    // We'll trust the browser's parsing of the ISO string.
     
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 0) return "Just now"; // Clock skew or future date handling
     
     if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600)
       return `${Math.floor(diffInSeconds / 60)} minutes ago`;
     if (diffInSeconds < 86400)
       return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    return date.toLocaleString();
+      
+    // Fallback to local string for older dates
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   // 🧩 Filtered user docs
@@ -397,17 +422,34 @@ const Dashboard = () => {
   };
 
   // Sorting: Newest First
-  const userDocs = getUserDocuments().sort(
-    (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)
-  );
+  // Combine local uploads (In Process) with backend docs
+  const userDocs = [
+      ...localInProcess.sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)), 
+      ...getUserDocuments().sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
+  ];
 
   const indexOfLast = currentPage * documentsPerPage;
   const indexOfFirst = indexOfLast - documentsPerPage;
   const currentDocs = userDocs.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(userDocs.length / documentsPerPage);
 
+  // 🧩 Auto-remove localInProcess items when backend documents arrive
+  // This simulates the "Processing... -> Done" flow.
+  const prevDocCountRef = useRef(0);
+  useEffect(() => {
+      if (globalDocuments.length > prevDocCountRef.current) {
+          // New docs arrived! Remove equivalent number of local processing items
+          // simple logic: remove 1 local item for every new DB batch update?
+          // Or just clear one by one.
+          if (localInProcess.length > 0) {
+              setLocalInProcess(prev => prev.slice(1)); // Remove oldest
+          }
+      }
+      prevDocCountRef.current = globalDocuments.length;
+  }, [globalDocuments.length]);
+
   const stats = (() => {
-    // 🔹 Start with all global documents
+    // 🔹 Start with all global documents (from SQL)
     let filteredDocs = globalDocuments;
 
     // 🔹 If vendor selected, filter documents that match vendor name
@@ -420,16 +462,17 @@ const Dashboard = () => {
       });
     }
 
-    const total = filteredDocs.length;
+    // Include local items in Total and InProcess
+    const total = filteredDocs.length + localInProcess.length;
     let completed = 0,
       manualReview = 0,
-      inProcess = 0;
+      inProcess = localInProcess.length; // Start with local queue
 
     // 🔹 Count status by category
     filteredDocs.forEach((doc) => {
       const status = determineStatus(doc);
       if (status === "Completed" || status === "Reviewed") completed++;
-      else if (status === "Manual Review") manualReview++;
+      else if (status === "Manual Review" || status === "Review Required") manualReview++;
       else inProcess++;
     });
 
@@ -618,7 +661,23 @@ const Dashboard = () => {
               </thead>
               <tbody>
                 {currentDocs.length > 0 ? (
-                  currentDocs.map((file, index) => (
+                  currentDocs.map((file, index) => {
+                     // Helper for DD/MM/YYYY
+                     const toLocalDDMMYYYY = (dStr) => {
+                        if (!dStr) return "-";
+                        // If already DD/MM/YYYY, return as is
+                        if (/^\d{2}\/\d{2}\/\d{4}/.test(dStr)) return dStr;
+                        
+                        const dateObj = new Date(dStr);
+                        if (isNaN(dateObj.getTime())) return dStr; // Fallback
+                        
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const year = dateObj.getFullYear();
+                        return `${day}/${month}/${year}`;
+                     };
+
+                     return (
                     <tr key={index}>
                       <td>{file.id || "-"}</td>
                       <td>{file.documentName || file.fileName}</td>
@@ -632,7 +691,7 @@ const Dashboard = () => {
                         </span>
                       </td>
                       <td>{formatDate(file.uploadedAt)}</td>
-                      <td>{new Date(file.uploadedAt).toLocaleDateString()}</td>
+                      <td>{toLocalDDMMYYYY(file.uploadedAt)}</td>
                       <td>
                         <button
                           className="action-btn"
@@ -642,7 +701,7 @@ const Dashboard = () => {
                         </button>
                       </td>
                     </tr>
-                  ))
+                  )})
                 ) : (
                   <tr>
                     <td colSpan="5" style={{ textAlign: "center" }}>

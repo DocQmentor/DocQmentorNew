@@ -203,7 +203,7 @@ const EditModal = () => {
       };
 
       const response = await fetch(
-        "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==",
+        "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q==",
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

@@ -3,7 +3,7 @@ import "./SuperAdmin.css";
 import Footer from "../Layout/Footer";
 import { UserRound } from "lucide-react";
 
-const API_URL = "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/MasterDataFunc?code=mn5GRLPLF9C0oESZfk3jRtxdJUAwSK6QA1mjsud8IwJlAzFup2u9Sw==";
+const API_URL = "https://docqmentorfuncapp.azurewebsites.net/api/MasterDataFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q==";
 
 const SuperAdmin = () => {
   // State Management

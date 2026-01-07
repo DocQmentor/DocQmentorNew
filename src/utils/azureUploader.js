@@ -70,7 +70,7 @@
 //   if (response.status === 201 || response.status === 200) {
 //    // ✅ Send blobUrl and originalFileName to Azure Function
 //    await axios.post(
-//     " https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==",
+//     " https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q==",
 //     {
 //      blobUrl,
 //      documentName: originalFileName, 
@@ -106,7 +106,7 @@
 // // Azure info
 // const BLOB_SERVICE_URL_WITH_SAS = "https://docqmentor2blob.blob.core.windows.net/?sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-05-31T18:29:59Z&st=2025-05-21T09:45:27Z&spr=https&sig=UO0XVGFTlz3IpM6Q5LIkrTkCDQcr3Rx%2FeXn3FEvsQJM%3D";
 // const CONTAINER_NAME = "docqmentor2";
-// const AZURE_FUNCTION_URL = "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==";
+// const AZURE_FUNCTION_URL = "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q==";
 
 // // Folder name helper
 // const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -190,10 +190,10 @@ import axios from "axios";
 
 // Azure info
 const BLOB_SERVICE_URL_WITH_SAS =
-  "https://docqmentor2blob.blob.core.windows.net/?sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-05-31T18:29:59Z&st=2025-05-21T09:45:27Z&spr=https&sig=UO0XVGFTlz3IpM6Q5LIkrTkCDQcr3Rx%2FeXn3FEvsQJM%3D";
+  "https://docqmentor2blob.blob.core.windows.net/?sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2028-12-31T20:46:53Z&st=2026-01-06T12:31:53Z&spr=https&sig=Xt2IQb5TLILeDlatXP9yuswNMUpIzlfNsBTctJ8B12w%3D";
 const CONTAINER_NAME = "docqmentor2";
 const AZURE_FUNCTION_URL =
-  "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA==";
+  "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q==";
 
 // Helpers
 const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -213,17 +213,30 @@ const extractFolderName = (filename) => {
 export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
   const uploadId = uuidv4();
   const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
+  // ✅ User Confirmed: Container = docqmentor2, Folder = rawupload
+  // Backend Trigger: [BlobTrigger("docqmentor2/rawupload/{name}")]
   const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
 
   const folderName = extractFolderName(file.name);
   const uniqueFileName = `${uuidv4()}-${file.name}`;
-  const filePath = `${modelType}/${folderName}/${uniqueFileName}`;
+
+  // Upload to 'rawupload' folder inside 'docqmentor2' container
+  const filePath = `rawupload/${uniqueFileName}`;
   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
 
   try {
-    // 1️⃣ Upload to Azure Blob
+    // 3️⃣ Metadata for Blob (Critical for Backend Trigger)
+    const blobMetadata = {
+      modelType: modelType || "invoice",
+      documentName: file.name,
+      uploadedBy: userName || "Unknown",
+      uploadedByEmail: userId || "unknown@domain.com"
+    };
+
+    // 1️⃣ Upload to Azure Blob with Metadata
     await blockBlobClient.uploadData(file, {
       blobHTTPHeaders: { blobContentType: file.type },
+      metadata: blobMetadata,
       onProgress: (ev) => {
         if (onProgress && ev.loadedBytes && file.size) {
           const percent = Math.round((ev.loadedBytes * 100) / file.size);
@@ -233,20 +246,21 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
     });
 
     // 2️⃣ Generate SAS-protected URL
-    const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
+    // const sasToken = BLOB_SERVICE_URL_WITH_SAS.split("?")[1];
     const blobUrlWithSAS = blockBlobClient.url; // Already includes SAS
 
-    // 3️⃣ Metadata for Cosmos DB
-    const metadata = {
-      fileName: file.name,
-      fileSizeKB: file.size,
-      fileFormat: file.type || "application/pdf",
-      UploadDate: new Date().toISOString(),
-      pageCount: 0, // can be updated later
-    };
+    // 3️⃣ Metadata for Cosmos DB - NOT SAVING HERE ANYMORE
+    // const metadata = {
+    //   fileName: file.name,
+    //   fileSizeKB: file.size,
+    //   fileFormat: file.type || "application/pdf",
+    //   UploadDate: new Date().toISOString(),
+    //   pageCount: 0, // can be updated later
+    // };
 
-    // 4️⃣ Send to backend
-    // 4️⃣ Send to backend
+    // 4️⃣ Send to backend - DISABLED
+    // The backend trigger (BlobTrigger) on 'rawupload' should handle this now.
+    /*
     await axios.post(
       AZURE_FUNCTION_URL,
       {
@@ -265,15 +279,17 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
           "Content-Type": "application/json"
         }
       }
-
     );
+    */
 
     // 5️⃣ Return UI info
+    // We return success so the UI shows "Uploaded". 
+    // The document won't appear in the list until processed by backend.
     return {
       fileName: file.name,
       folderName,
       uploadedAt: new Date(),
-      status: "In Process",
+      status: "Uploaded (Processing)", // specific status
       url: blobUrlWithSAS,
       uploadId,
       modelType,

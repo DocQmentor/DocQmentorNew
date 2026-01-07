@@ -1,12 +1,50 @@
 // Admin.jsx
 import React, { useState, useEffect } from 'react';
-import { FileText, BarChart2, Users, Database, X, Shield, Download, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, BarChart2, Users, Database, X, Shield, Download, RefreshCw, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import './Admin.css';
 import Footer from "../Layout/Footer";
 import FilePagination from '../Layout/FilePagination';
 import useSortableData from "../utils/useSortableData";
+import { useConfig } from "../context/ConfigContext";
 
 const Admin = () => {
+  // Config Context
+  const { config, updateConfig, loading: configLoading } = useConfig();
+  const [localConfig, setLocalConfig] = useState({});
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
+  const [configMessage, setConfigMessage] = useState(null);
+
+  useEffect(() => {
+    if (config) {
+        setLocalConfig(config);
+    }
+  }, [config]);
+
+  const handleConfigChange = (key, value) => {
+    setLocalConfig(prev => ({
+        ...prev,
+        [key]: parseInt(value) || 0
+    }));
+  };
+
+  const saveConfiguration = async () => {
+    setIsSavingConfig(true);
+    setConfigMessage(null);
+    try {
+        const result = await updateConfig(localConfig);
+        if (result.success) {
+            setConfigMessage({ type: 'success', text: 'Configuration saved successfully!' });
+        } else {
+            setConfigMessage({ type: 'error', text: 'Failed to save configuration: ' + result.error });
+        }
+    } catch (e) {
+        setConfigMessage({ type: 'error', text: 'Error saving: ' + e.message });
+    } finally {
+        setIsSavingConfig(false);
+        setTimeout(() => setConfigMessage(null), 3000);
+    }
+  };
+
   // Client Admin Data States
   const [dateWiseData, setDateWiseData] = useState([]);
   const [vendorWiseData, setVendorWiseData] = useState([]);
@@ -51,6 +89,11 @@ const Admin = () => {
       id: 'vendorWise',
       name: 'Vendor-wise Statistics',
       component: 'vendorWise'
+    },
+    {
+      id: 'configuration',
+      name: 'Confidence Configuration',
+      component: 'configuration'
     }
   ];
 
@@ -116,7 +159,7 @@ const Admin = () => {
     try {
       setDataLoading(true);
       const response = await fetch(
-        "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
+        "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q=="
       );
      
       if (!response.ok) throw new Error('Failed to fetch data');
@@ -837,6 +880,54 @@ const Admin = () => {
     </div>
   );
 
+  const renderConfiguration = () => (
+    <div className="admin-table-box config-box">
+        <div className="table-section-header">
+            <h3>Confidence Score Configuration</h3>
+            <p className="config-subtitle">Set the minimum confidence score (%) required for automatic completion.</p>
+        </div>
+        
+        {configLoading ? (
+            <div className="config-loading">Loading configuration...</div>
+        ) : (
+            <div className="config-form">
+                {Object.keys(localConfig).map((key) => (
+                    <div key={key} className="config-item">
+                        <label className="config-label">{key}</label>
+                        <div className="config-input-wrapper">
+                            <input 
+                                type="number" 
+                                min="0" 
+                                max="100" 
+                                value={localConfig[key]} 
+                                onChange={(e) => handleConfigChange(key, e.target.value)}
+                                className="config-input"
+                            />
+                            <span className="config-percent">%</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
+
+        <div className="config-actions">
+            {configMessage && (
+                <div className={`config-message ${configMessage.type}`}>
+                    {configMessage.text}
+                </div>
+            )}
+            <button 
+                className="save-config-btn" 
+                onClick={saveConfiguration} 
+                disabled={isSavingConfig || configLoading}
+            >
+                {isSavingConfig ? 'Saving...' : 'Save Configuration'}
+            </button>
+        </div>
+
+    </div>
+  );
+
   // Render current table based on selection
   const renderCurrentTable = () => {
     switch (selectedTable) {
@@ -844,6 +935,8 @@ const Admin = () => {
         return renderDateWiseTable();
       case 'vendorWise':
         return renderVendorWiseTable();
+      case 'configuration':
+        return renderConfiguration();
       default:
         return renderDateWiseTable();
     }

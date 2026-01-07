@@ -146,7 +146,10 @@ const modelTypeSearchFields = {
   ],
 };
 
+import { useConfig } from "../context/ConfigContext";
+
 function Table() {
+  const { config } = useConfig();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -199,7 +202,7 @@ function Table() {
       setLoading(true);
       try {
         const response = await fetch(
-          "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
+          "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q=="
         );
 
         if (!response.ok) {
@@ -257,13 +260,16 @@ function Table() {
               (f) => extracted[f] && extracted[f].toString().trim() !== ""
             );
 
-            // ✅ Show only if: confidence ≥ 85 and fields complete OR already reviewed
+            // ✅ Show only if: confidence ≥ THRESHOLD and fields complete OR already reviewed
             const isReviewed = 
               doc.wasReviewed === true || 
               doc.wasReviewed === "true" || 
               (doc.status && doc.status.toLowerCase() === "reviewed");
-              
-            return (totalScore >= 85 && allFieldsFilled) || isReviewed;
+            
+            // ✅ Dynamic Threshold
+            const currentThreshold = config[selectedModelType] || 85;
+
+            return (totalScore >= currentThreshold && allFieldsFilled) || isReviewed;
           })
           .map((doc) => {
             const extracted = doc.extractedData || {};

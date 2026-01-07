@@ -99,11 +99,15 @@ const AppRoutes = () => {
   );
 };
  
+import { ConfigProvider } from "./context/ConfigContext";
+
 const App = () => {
   return (
     <MsalProvider instance={pca}>
       <UserProvider>
-        <AppRoutes />
+        <ConfigProvider>
+          <AppRoutes />
+        </ConfigProvider>
       </UserProvider>
     </MsalProvider>
   );

@@ -9,7 +9,10 @@ import { saveAs } from "file-saver";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { useConfig } from "../context/ConfigContext";
+
 const ManualReview = () => {
+  const { config } = useConfig();
   const [show, setShow] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const today = new Date().toISOString().split("T")[0];
@@ -165,7 +168,7 @@ const [LendernameFilter, setLendernameFilter] = useState("");
       setLoading(true);
       try {
         const response = await fetch(
-          "https://docqmentorfuncapp20250915180927.azurewebsites.net/api/DocQmentorFunc?code=KCnfysSwv2U9NKAlRNi0sizWXQGIj_cP6-IY0T_7As9FAzFu35U8qA=="
+          "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q=="
         );
 
         if (!response.ok) {
@@ -229,9 +232,12 @@ const [LendernameFilter, setLendernameFilter] = useState("");
   const hasMissing = requiredFields.some(
     (field) => !extracted[field] || extracted[field].toString().trim() === ""
   );
+  
+  // ✅ Get Threshold
+  const currentThreshold = config[selectedModelType] || 85;
 
   // ✅ Keep only documents with low confidence or missing fields
-  return totalScore < 85 || hasMissing;
+  return totalScore < currentThreshold || hasMissing;
 });
 
 
@@ -496,7 +502,33 @@ const totalPages = Math.ceil(sortedData.length / rowsPerPage);
           </div>
 
           {loading && <p>Loading documents...</p>}
-          {error && <p style={{ color: "red" }}>Error: {error}</p>}
+
+          {error && (
+            <div className="error-message-container" style={{ margin: "10px 0", textAlign: "center" }}>
+               <p style={{ color: "red", fontWeight: "bold" }}>❌ {error}</p>
+               {error.includes("503") && (
+                 <p style={{ fontSize: "0.9em", color: "#666" }}>
+                   (The Azure Function might be cold-starting. Please wait 30s and click Retry.)
+                 </p>
+               )}
+               <button 
+                 onClick={refreshData}
+                 style={{
+                   marginTop: "8px",
+                   padding: "6px 16px",
+                   backgroundColor: "#0078d4",
+                   color: "white",
+                   border: "none",
+                   borderRadius: "4px",
+                   cursor: "pointer",
+                   fontSize: "14px"
+                 }}
+               >
+                 🔄 Retry Fetching
+               </button>
+            </div>
+          )}
+
 
           
           <div style={{ overflowX: "auto" }}>

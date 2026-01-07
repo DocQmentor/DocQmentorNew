@@ -124,6 +124,7 @@
 }
 /* Vendor Select */
 /* Clean and structured Vendor Select Section */
+
 .select {
   color: #266898;
   font-weight: bold;
@@ -148,7 +149,9 @@
   align-items: center;
   margin-bottom: 1rem;
   /* border: #004080 1px solid; */
-  padding: 0 20px;
+      padding-top: 70px;
+
+  padding: 70px 20px 0px 20px;
 }
 .vendor-select-details{
     display: flex;
