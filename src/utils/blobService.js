@@ -1,26 +1,27 @@
-import { BlobServiceClient } from "@azure/storage-blob";
+import { ContainerClient } from "@azure/storage-blob";
 
 const BLOB_SERVICE_URL_WITH_SAS =
-  "https://docqmentor2blob.blob.core.windows.net/?sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2028-12-31T20:46:53Z&st=2026-01-06T12:31:53Z&spr=https&sig=Xt2IQb5TLILeDlatXP9yuswNMUpIzlfNsBTctJ8B12w%3D"
+  "https://docqmentor2blob.blob.core.windows.net/docqmentor2?sp=rcwd&st=2026-01-06T06:48:24Z&se=2027-01-12T15:03:24Z&sv=2024-11-04&sr=c&sig=G53QzDkllWEWfZ6N3gO9sWMD0s%2FsYaFH%2BqbX7m%2Fyspk%3D";
 const CONTAINER_NAME = "docqmentor2";
 
 export const getVendorFolders = async (domain) => {
   if (!domain) return [];
 
-  const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
-  const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
+  try {
+    const containerClient = new ContainerClient(BLOB_SERVICE_URL_WITH_SAS);
+    const vendorFolders = new Set();
 
-  const vendorFolders = new Set();
-
-  for await (const item of containerClient.listBlobsByHierarchy("/", { prefix: `${domain}/` })) {
-    if (item.kind === "prefix") {
-      // remove domain prefix to get only vendor folder name
-      const vendorName = item.name.replace(`${domain}/`, "").replace("/", "");
-      vendorFolders.add(vendorName);
+    for await (const item of containerClient.listBlobsByHierarchy("/", { prefix: `${domain}/` })) {
+      if (item.kind === "prefix") {
+        const vendorName = item.name.replace(`${domain}/`, "").replace("/", "");
+        vendorFolders.add(vendorName);
+      }
     }
+    return Array.from(vendorFolders);
+  } catch (error) {
+    console.error("Error fetching vendor folders (Check SAS permissions):", error);
+    return [];
   }
-
-  return Array.from(vendorFolders);
 };
 
 // Helper: matches azureUploader logic
@@ -43,8 +44,7 @@ const extractFolderName = (filename) => {
 
 export const checkFileExists = async (modelType, fileName) => {
   try {
-    const blobServiceClient = new BlobServiceClient(BLOB_SERVICE_URL_WITH_SAS);
-    const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
+    const containerClient = new ContainerClient(BLOB_SERVICE_URL_WITH_SAS);
 
     const folderName = extractFolderName(fileName);
     const prefix = `${modelType}/${folderName}/`;

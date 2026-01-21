@@ -422,11 +422,11 @@ const Dashboard = () => {
   };
 
   // Sorting: Newest First
-  // Combine local uploads (In Process) with backend docs
-  const userDocs = [
-      ...localInProcess.sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)), 
-      ...getUserDocuments().sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
-  ];
+  // Table List: ONLY show Backend Documents (from SQL)
+  // We do NOT show localInProcess here anymore, as per user request.
+  const userDocs = getUserDocuments().sort(
+    (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)
+  );
 
   const indexOfLast = currentPage * documentsPerPage;
   const indexOfFirst = indexOfLast - documentsPerPage;

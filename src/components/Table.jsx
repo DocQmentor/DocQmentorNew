@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import useSortableData from "../utils/useSortableData";
 import { Info, X } from "lucide-react";
 import FilePagination from "../Layout/FilePagination";
+import { sasToken } from "../sasToken";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -486,7 +487,11 @@ const filteredData = sortedData.filter((item) => {
 
   const handleViewDocument = (doc) => {
     const url = doc?.fileUrl || doc?.blobUrl;
-    if (url) window.open(url, "_blank");
+    if (url) {
+      const baseUrl = url.split("?")[0];
+      const cleanSasToken = sasToken.startsWith("?") ? sasToken : `?${sasToken}`;
+      window.open(`${baseUrl}${cleanSasToken}`, "_blank");
+    }
     else toast.error("File URL not available");
   };
 

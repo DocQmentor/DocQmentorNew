@@ -45,7 +45,7 @@ export const ConfigProvider = ({ children }) => {
 
   const updateConfig = async (newConfig) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/confidence-config?code=${FUNC_KEY}`, {
+      const response = await fetch(`${API_BASE_URL}?code=${FUNC_KEY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Edit, History, File, X, Save } from "lucide-react";
 import "./EditModal.css";
 import Footer from "../Layout/Footer";
+import { sasToken } from "../sasToken";
 
 const sanitizeNumeric = (value) =>
   value ? value.toString().replace(/[^\d.]/g, "") : "";
@@ -250,7 +251,7 @@ const EditModal = () => {
           </header>
           {selectedDocument?.blobUrl ? (
             <iframe
-              src={selectedDocument.blobUrl}
+              src={`${selectedDocument.blobUrl.split("?")[0]}${sasToken.startsWith("?") ? sasToken : "?" + sasToken}`}
               className="ManualReview-Edit-show-file-pdf-preview"
               title="PDF Viewer"
             />

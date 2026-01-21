@@ -28,7 +28,7 @@ const msalConfig = {
   },
 };
 const pca = new PublicClientApplication(msalConfig);
- 
+
  
 const ProtectedLayout = () => {
   const { accounts, inProgress } = useMsal();
@@ -102,6 +102,19 @@ const AppRoutes = () => {
 import { ConfigProvider } from "./context/ConfigContext";
 
 const App = () => {
+  const [isInitialized, setIsInitialized] = React.useState(false);
+
+  useEffect(() => {
+    pca.initialize().then(() => {
+      setIsInitialized(true);
+    }).catch(err => {
+      console.error("MSAL Init Error:", err);
+      setIsInitialized(true); // Proceed anyway, MSAL will fail later
+    });
+  }, []);
+
+  if (!isInitialized) return <div className="loading-screen">Initializing...</div>;
+
   return (
     <MsalProvider instance={pca}>
       <UserProvider>

@@ -1,1 +1,1 @@
-export const sasToken = "sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2028-12-31T20:46:53Z&st=2026-01-06T12:31:53Z&spr=https&sig=Xt2IQb5TLILeDlatXP9yuswNMUpIzlfNsBTctJ8B12w%3D";
+export const sasToken = "sp=rcwd&st=2026-01-06T06:48:24Z&se=2027-01-12T15:03:24Z&sv=2024-11-04&sr=c&sig=G53QzDkllWEWfZ6N3gO9sWMD0s%2FsYaFH%2BqbX7m%2Fyspk%3D";
