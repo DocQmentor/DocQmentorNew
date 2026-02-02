@@ -187,10 +187,11 @@
 import { ContainerClient } from "@azure/storage-blob";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+import { sasToken } from "../sasToken";
 
 // Azure info
-const BLOB_SERVICE_URL_WITH_SAS =
-  "https://docqmentor2blob.blob.core.windows.net/docqmentor2?sp=rcwd&st=2026-01-06T06:48:24Z&se=2027-01-12T15:03:24Z&sv=2024-11-04&sr=c&sig=G53QzDkllWEWfZ6N3gO9sWMD0s%2FsYaFH%2BqbX7m%2Fyspk%3D";
+const CONTAINER_URL = "https://docqmentor2blob.blob.core.windows.net/docqmentor2";
+const BLOB_SERVICE_URL_WITH_SAS = `${CONTAINER_URL}?${sasToken}`;
 const CONTAINER_NAME = "docqmentor2";
 const AZURE_FUNCTION_URL =
   "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q==";
