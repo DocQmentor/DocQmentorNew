@@ -285,11 +285,18 @@
   font-weight: 500;
 }
 
-/* ===== Action Buttons Styling (REVERTED TO ORIGINAL) ===== */
+/* ===== Action Buttons Styling ===== */
+.clients-table th:last-child,
+.clients-table td:last-child {
+  width: 180px;
+  /* Ensure enough space for 3 buttons */
+}
+
 .actions {
   display: flex;
-  gap: 4px;
+  gap: 8px;
   justify-content: center;
+  align-items: center;
 }
 
 .btn-edit,
@@ -297,18 +304,31 @@
   background: #266898;
   color: white;
   border: none;
-  padding: 3px 6px;
-  border-radius: 3px;
+  padding: 6px 12px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 10px;
+  font-size: 11px;
   transition: all 0.2s;
   white-space: nowrap;
-  font-weight: 500;
-  min-width: 40px;
+  font-weight: 600;
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-edit:hover,
+.btn-delete:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-delete {
   background: #dc3545;
+}
+
+.btn-delete:hover {
+  background: #c82333;
 }
 
 /* ===== Professional Modal Overlay (KEPT) ===== */
@@ -468,7 +488,16 @@
   transition: background-color 0.2s;
 }
 
-.permission-accordion-header:hover {
+
+.permission-accordion-header:hover,
+.permission-accordion-header:hover
+.permission-accordion-header-company-name,
+.permission-accordion-header:hover
+.permission-accordion-header-user-count-badge,
+.permission-accordion-header:hover
+.useradmin-Chevronup,
+.permission-accordion-header:hover
+.useradmin-Chevrondown{
   background-color: #f8fafc;
 }
 
@@ -480,7 +509,12 @@
   flex-direction: column;
   gap: 10px;
 }
-
+.permission-user-list{
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 .permission-user-row {
   display: flex;
   justify-content: space-between;
@@ -490,11 +524,13 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
 }
-.user-info{
-  width: 100%;
+
+.user-info {
+  flex: 1;
   display: flex;
   justify-content: space-around;
 }
+
 .user-email {
   font-weight: 600;
   color: var(--text-main);
@@ -515,16 +551,24 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 10px;
 }
 
 .btn-approve,
 .btn-cancel-mini {
-  padding: 6px 12px;
+  width: 120px;
+  padding: 6px 10px;
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
 }
 
 .btn-approve {

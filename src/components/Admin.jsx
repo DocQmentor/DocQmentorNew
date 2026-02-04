@@ -1,50 +1,88 @@
-// Admin.jsx
 import React, { useState, useEffect } from 'react';
-import { FileText, BarChart2, Users, Database, X, Shield, Download, RefreshCw, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { FileText, BarChart2, Users, Database, X, Shield, Download, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate, useLocation } from "react-router-dom";
 import './Admin.css';
 import Footer from "../Layout/Footer";
 import FilePagination from '../Layout/FilePagination';
 import useSortableData from "../utils/useSortableData";
-import { useConfig } from "../context/ConfigContext";
+import './Users';
+// Smart fetch function to handle Azure HTML errors
+const smartFetch = async (url, options = {}) => {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Accept': 'application/json',
+      ...options.headers
+    }
+  });
+
+  // ALWAYS read as text first (CRITICAL for Azure errors)
+  const responseText = await response.text();
+
+  // Check if it's an Azure HTML error page
+  const isAzureHtmlError =
+    !response.ok && (
+      responseText.includes('<!DOCTYPE') ||
+      responseText.includes('<html>') ||
+      responseText.trim().startsWith('The service') ||
+      responseText.includes('Service Unavailable') ||
+      responseText.includes('503') && responseText.includes('Azure')
+    );
+
+  if (isAzureHtmlError) {
+    // This is Azure's cold start HTML page, not your JSON
+    throw {
+      type: 'AZURE_COLD_START',
+      message: 'Azure Functions is starting up. This can take 30-60 seconds.',
+      status: response.status
+    };
+  }
+
+  // Check if response is JSON
+  if (!responseText.trim()) {
+    return []; // Empty response
+  }
+
+  // Try to parse as JSON
+  try {
+    return JSON.parse(responseText);
+  } catch (jsonError) {
+    // If it's not JSON and response was OK, throw parse error
+    if (response.ok) {
+      throw new Error(`Server returned invalid format: ${responseText.substring(0, 100)}`);
+    }
+
+    // If not JSON and not OK, throw HTTP error
+    throw new Error(`HTTP ${response.status}: ${responseText.substring(0, 100)}`);
+  }
+};
+
+// Fetch with retry logic for cold starts
+const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Admin fetch attempt ${attempt}/${maxRetries}`);
+      const result = await smartFetch(url, options);
+      return result;
+
+    } catch (error) {
+      // If it's a cold start error, wait and retry
+      if (error.type === 'AZURE_COLD_START' && attempt < maxRetries) {
+        const delay = attempt * 10000; // 10s, 20s, 30s...
+        console.log(`Cold start detected, waiting ${delay / 1000} seconds before retry...`);
+
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+
+      // Re-throw other errors or if max retries reached
+      throw error;
+    }
+  }
+  throw new Error(`Maximum retries (${maxRetries}) exceeded`);
+};
 
 const Admin = () => {
-  // Config Context
-  const { config, updateConfig, loading: configLoading } = useConfig();
-  const [localConfig, setLocalConfig] = useState({});
-  const [isSavingConfig, setIsSavingConfig] = useState(false);
-  const [configMessage, setConfigMessage] = useState(null);
-
-  useEffect(() => {
-    if (config) {
-        setLocalConfig(config);
-    }
-  }, [config]);
-
-  const handleConfigChange = (key, value) => {
-    setLocalConfig(prev => ({
-        ...prev,
-        [key]: parseInt(value) || 0
-    }));
-  };
-
-  const saveConfiguration = async () => {
-    setIsSavingConfig(true);
-    setConfigMessage(null);
-    try {
-        const result = await updateConfig(localConfig);
-        if (result.success) {
-            setConfigMessage({ type: 'success', text: 'Configuration saved successfully!' });
-        } else {
-            setConfigMessage({ type: 'error', text: 'Failed to save configuration: ' + result.error });
-        }
-    } catch (e) {
-        setConfigMessage({ type: 'error', text: 'Error saving: ' + e.message });
-    } finally {
-        setIsSavingConfig(false);
-        setTimeout(() => setConfigMessage(null), 3000);
-    }
-  };
-
   // Client Admin Data States
   const [dateWiseData, setDateWiseData] = useState([]);
   const [vendorWiseData, setVendorWiseData] = useState([]);
@@ -52,7 +90,7 @@ const Admin = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState('7days');
- 
+
   // Add selected document type state
   const [selectedDocumentType, setSelectedDocumentType] = useState('');
 
@@ -78,6 +116,85 @@ const Admin = () => {
   const [currentTableIndex, setCurrentTableIndex] = useState(0);
   const [selectedTable, setSelectedTable] = useState('dateWise');
 
+
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [clientData, setClientData] = useState(null);
+  const [activeUserCount, setActiveUserCount] = useState(0);
+  const [showPlanPopup, setShowPlanPopup] = useState(false);
+  const [loadingClientDetails, setLoadingClientDetails] = useState(false);
+
+  // Fetch specific client data if navigated from SuperAdmin
+  useEffect(() => {
+    const fetchClientDetails = async () => {
+      const clientName = location.state?.clientName;
+
+      if (clientName) {
+        setLoadingClientDetails(true);
+        try {
+          // 1. Fetch Master Data to find client details
+          const masterResponse = await fetchWithRetry(
+            "https://docqmentorfuncapp.azurewebsites.net/api/MasterDataFunc?code=-naL4WUo1IvQ0tFNiOvKYNQVpFrlEOKr6XoAzDWRIS6HAzFuwFqgTA=="
+          );
+
+          if (Array.isArray(masterResponse)) {
+            const client = masterResponse.find(c => c.Name === clientName);
+            if (client) {
+              setClientData(client);
+
+              // 2. Fetch Active Users count from DynamicTable
+              // Using POST method as per requirement
+              const userResponse = await fetch("https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=hti8hivQlsGePwd1jhdOMmm3cy_28hghWbLdWy2BLx1dAzFuchAdrA==", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  tableName: clientName,
+                  operation: "readall"
+                })
+              });
+
+              const userText = await userResponse.text();
+              let users = [];
+              try {
+                const parsed = JSON.parse(userText);
+                // Handle different response structures
+                if (Array.isArray(parsed)) users = parsed;
+                else if (parsed.data && Array.isArray(parsed.data)) users = parsed.data;
+                else if (parsed.users && Array.isArray(parsed.users)) users = parsed.users;
+              } catch (e) {
+                console.error("Error parsing user data:", e);
+              }
+
+              const approvedCount = users.filter(u =>
+                (u.Permission === "Approve" || u.permission === "Approve")
+              ).length;
+
+              setActiveUserCount(approvedCount);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching client specific data:", error);
+        } finally {
+          setLoadingClientDetails(false);
+        }
+      }
+    };
+
+    fetchClientDetails();
+  }, [location.state]);
+
+  const handleToggle = () => {
+    navigate('/users', {
+      state: {
+        clientName: location.state?.clientName || clientData?.Name,
+        clientData: clientData,
+        userLimit: clientData?.UserLimits || 0
+      }
+    });
+  }
   // Table Configuration
   const tableConfig = [
     {
@@ -89,11 +206,6 @@ const Admin = () => {
       id: 'vendorWise',
       name: 'Vendor-wise Statistics',
       component: 'vendorWise'
-    },
-    {
-      id: 'configuration',
-      name: 'Confidence Configuration',
-      component: 'configuration'
     }
   ];
 
@@ -104,19 +216,12 @@ const Admin = () => {
     { id: 3, email: "user1@example.com", role: "Member" },
     { id: 4, email: "user2@example.com", role: "Member" }
   ]);
- 
+
+  // User Filter and Popup States
   const [showUserPopup, setShowUserPopup] = useState(false);
-  const [showAddUserForm, setShowAddUserForm] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState(users);
   const [roleFilter, setRoleFilter] = useState('');
   const [nameFilter, setNameFilter] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserRole, setNewUserRole] = useState('');
-  const [filteredUsers, setFilteredUsers] = useState(users);
-  const [activeUserId, setActiveUserId] = useState(null);
-  const [editingUserId, setEditingUserId] = useState(null);
-  const [deleteUserId, setDeleteUserId] = useState(null);
-  const [editEmail, setEditEmail] = useState('');
-  const [editRole, setEditRole] = useState('');
 
   // Table Navigation Functions
   const handleTableSelect = (tableId) => {
@@ -158,26 +263,47 @@ const Admin = () => {
   const fetchData = async () => {
     try {
       setDataLoading(true);
-      const response = await fetch(
+      setDataError(null);
+
+      const allDocumentsData = await fetchWithRetry(
         "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q=="
       );
-     
-      if (!response.ok) throw new Error('Failed to fetch data');
-     
-      const allDocumentsData = await response.json();
+
       setAllDocuments(allDocumentsData);
-     
+
       // Process data for date-wise statistics (filtered by document type)
       const dateStats = processDateWiseData(allDocumentsData);
       setDateWiseData(dateStats);
-     
+
       // Process data for vendor-wise statistics (filtered by document type)
       const vendorStats = processVendorWiseData(allDocumentsData);
       setVendorWiseData(vendorStats);
-     
+
     } catch (err) {
-      setDataError(err.message);
-      console.error('Error fetching data:', err);
+      console.error('Error fetching admin data:', err);
+
+      // User-friendly error messages
+      let errorMsg = "Failed to load admin statistics. ";
+
+      if (err.type === 'AZURE_COLD_START') {
+        errorMsg = "Document service is starting up. This can take 30-60 seconds on first use. Statistics will appear when ready.";
+      } else if (err.message.includes('Unexpected token')) {
+        errorMsg = "Server returned unexpected response. Azure Functions might be starting up.";
+      } else if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
+        errorMsg = "Network connection issue. Please check your internet connection.";
+      } else if (err.message.includes('Maximum retries')) {
+        errorMsg = "Service is taking longer than expected to start. Please refresh the page or try again in a minute.";
+      } else {
+        errorMsg += err.message;
+      }
+
+      setDataError(errorMsg);
+
+      // Set empty arrays on error
+      setAllDocuments([]);
+      setDateWiseData([]);
+      setVendorWiseData([]);
+
     } finally {
       setDataLoading(false);
     }
@@ -186,7 +312,7 @@ const Admin = () => {
   // Filter documents by selected document type
   const filterDocumentsByType = (documents) => {
     if (!selectedDocumentType) return documents;
-   
+
     return documents.filter(doc => {
       const docModelType = doc.modelType || '';
       return docModelType.toLowerCase() === selectedDocumentType.toLowerCase();
@@ -201,7 +327,7 @@ const Admin = () => {
     if (!doc || !doc.extractedData || !doc.confidenceScores) {
       return "Manual Review";
     }
-   
+
     const hasAllMandatoryFields = (doc) => {
       if (!doc || !doc.extractedData) return false;
       const requiredFields = [
@@ -224,10 +350,10 @@ const Admin = () => {
     const scoreStr = String(doc.totalConfidenceScore || "").toLowerCase();
     if (scoreStr.includes("reviewed")) return "Reviewed";
     if (!hasAllMandatoryFields(doc)) return "Manual Review";
-   
+
     const scores = Object.values(doc.confidenceScores || {});
     if (scores.length === 0) return "Manual Review";
-   
+
     const avg = scores.reduce((sum, val) => sum + Number(val), 0) / scores.length;
     return avg >= 0.85 ? "Completed" : "Manual Review";
   };
@@ -236,9 +362,9 @@ const Admin = () => {
   const processDateWiseData = (documents) => {
     // Filter documents by selected type first
     const filteredDocs = filterDocumentsByType(documents);
-   
+
     const dateMap = {};
-   
+
     filteredDocs.forEach(doc => {
       // ✅ Prioritize UploadedAt from SQL (PascalCase or camelCase)
       const rawTimestamp = doc.UploadedAt || doc.uploadedAt || doc.timestamp;
@@ -249,7 +375,7 @@ const Admin = () => {
       if (isNaN(dateObj.getTime())) return; // Skip invalid dates
 
       const uploadDate = dateObj.toISOString().split('T')[0];
-     
+
       if (!dateMap[uploadDate]) {
         dateMap[uploadDate] = {
           date: uploadDate,
@@ -260,10 +386,10 @@ const Admin = () => {
           completionRate: 0
         };
       }
-     
+
       dateMap[uploadDate].total++;
       const status = determineStatus(doc);
-     
+
       if (status === "Completed" || status === "Reviewed") {
         dateMap[uploadDate].completed++;
       } else if (status === "Manual Review") {
@@ -274,7 +400,7 @@ const Admin = () => {
       dateMap[uploadDate].completionRate = dateMap[uploadDate].total > 0 ?
         (dateMap[uploadDate].completed / dateMap[uploadDate].total) * 100 : 0;
     });
-   
+
     // Convert to array and sort by date (newest first)
     return Object.values(dateMap)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -285,12 +411,12 @@ const Admin = () => {
   const processVendorWiseData = (documents) => {
     // Filter documents by selected type first
     const filteredDocs = filterDocumentsByType(documents);
-   
+
     const vendorMap = {};
-   
+
     filteredDocs.forEach(doc => {
       const vendorName = doc.extractedData?.VendorName || doc.vendorName || 'Unknown Vendor';
-     
+
       if (!vendorMap[vendorName]) {
         vendorMap[vendorName] = {
           vendor: vendorName,
@@ -300,10 +426,10 @@ const Admin = () => {
           completionRate: 0
         };
       }
-     
+
       vendorMap[vendorName].total++;
       const status = determineStatus(doc);
-     
+
       if (status === "Completed" || status === "Reviewed") {
         vendorMap[vendorName].completed++;
       } else if (status === "Manual Review") {
@@ -314,7 +440,7 @@ const Admin = () => {
       vendorMap[vendorName].completionRate = vendorMap[vendorName].total > 0 ?
         (vendorMap[vendorName].completed / vendorMap[vendorName].total) * 100 : 0;
     });
-   
+
     // Convert to array and sort by total documents (descending)
     return Object.values(vendorMap)
       .sort((a, b) => b.total - a.total);
@@ -331,24 +457,24 @@ const Admin = () => {
   // Filter date-wise data
   const filterDateWiseData = () => {
     let filtered = processDateWiseData(allDocuments);
-   
+
     // Apply date range filter
     if (dateFromFilter) {
       const fromDate = new Date(dateFromFilter);
       filtered = filtered.filter(item => new Date(item.date) >= fromDate);
     }
-   
+
     if (dateToFilter) {
       const toDate = new Date(dateToFilter);
       toDate.setHours(23, 59, 59, 999); // Include entire day
       filtered = filtered.filter(item => new Date(item.date) <= toDate);
     }
-   
+
     // Apply completion rate filter
     if (dateCompletionRateFilter) {
       filtered = filtered.filter(item => {
         const completionRate = item.completionRate;
-       
+
         switch (dateCompletionRateFilter) {
           case '0-10': return completionRate >= 0 && completionRate <= 10;
           case '10-20': return completionRate > 10 && completionRate <= 20;
@@ -364,14 +490,14 @@ const Admin = () => {
         }
       });
     }
-   
+
     return filtered;
   };
 
   // Filter vendor-wise data
   const filterVendorWiseData = () => {
     let filtered = processVendorWiseData(allDocuments);
-   
+
     // Apply vendor select filter (dropdown)
     if (vendorSelectFilter) {
       filtered = filtered.filter(item =>
@@ -385,12 +511,12 @@ const Admin = () => {
         item.vendor.toLowerCase().includes(vendorSearchFilter.toLowerCase())
       );
     }
-   
+
     // Apply completion rate filter
     if (vendorCompletionRateFilter) {
       filtered = filtered.filter(item => {
         const completionRate = item.completionRate;
-       
+
         switch (vendorCompletionRateFilter) {
           case '0-10': return completionRate >= 0 && completionRate <= 10;
           case '10-20': return completionRate > 10 && completionRate <= 20;
@@ -406,7 +532,7 @@ const Admin = () => {
         }
       });
     }
-   
+
     return filtered;
   };
 
@@ -415,7 +541,7 @@ const Admin = () => {
     const vendors = processVendorWiseData(allDocuments).map(item => item.vendor);
     return [...new Set(vendors)].sort();
   };
- 
+
   // Get filtered data
   const filteredDateWiseData = filterDateWiseData();
   const filteredVendorWiseData = filterVendorWiseData();
@@ -423,27 +549,27 @@ const Admin = () => {
   // Calculate total documents based on current filters and active table
   const calculateCurrentTotalDocs = () => {
     if (selectedTable === 'vendorWise') {
-        const total = filteredVendorWiseData.reduce((sum, item) => sum + item.total, 0);
-        return total;
+      const total = filteredVendorWiseData.reduce((sum, item) => sum + item.total, 0);
+      return total;
     } else {
-        // Default to date-wise (or if dateWise is selected)
-        const total = filteredDateWiseData.reduce((sum, item) => sum + item.total, 0);
-        return total;
+      // Default to date-wise (or if dateWise is selected)
+      const total = filteredDateWiseData.reduce((sum, item) => sum + item.total, 0);
+      return total;
     }
   };
 
   // Calculate average metric based on active table
   const calculateAverageMetric = () => {
     if (selectedTable === 'vendorWise') {
-        if (filteredVendorWiseData.length === 0) return '0';
-        const totalDocs = filteredVendorWiseData.reduce((sum, item) => sum + item.total, 0);
-        const avg = totalDocs / filteredVendorWiseData.length;
-        return avg.toFixed(0);
+      if (filteredVendorWiseData.length === 0) return '0';
+      const totalDocs = filteredVendorWiseData.reduce((sum, item) => sum + item.total, 0);
+      const avg = totalDocs / filteredVendorWiseData.length;
+      return avg.toFixed(0);
     } else {
-        if (filteredDateWiseData.length === 0) return '0';
-        const totalDocs = filteredDateWiseData.reduce((sum, day) => sum + day.total, 0);
-        const avg = totalDocs / Math.min(filteredDateWiseData.length, 30);
-        return avg.toFixed(0);
+      if (filteredDateWiseData.length === 0) return '0';
+      const totalDocs = filteredDateWiseData.reduce((sum, day) => sum + day.total, 0);
+      const avg = totalDocs / Math.min(filteredDateWiseData.length, 30);
+      return avg.toFixed(0);
     }
   };
 
@@ -492,11 +618,11 @@ const Admin = () => {
   // Export to CSV function
   const exportToCSV = (data, filename) => {
     if (data.length === 0) return;
-   
+
     const headers = Object.keys(data[0]).join(',');
     const rows = data.map(row => Object.values(row).join(','));
     const csvContent = [headers, ...rows].join('\n');
-   
+
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -538,136 +664,30 @@ const Admin = () => {
     setFilteredUsers(users);
   };
 
-  // Close user popup and reset states
-  const closeUserPopup = () => {
-    setShowUserPopup(false);
-    setShowAddUserForm(false);
-    setRoleFilter('');
-    setNameFilter('');
-    setNewUserEmail('');
-    setNewUserRole('');
-    setActiveUserId(null);
-    setEditingUserId(null);
-  };
 
-  // Reset filters
-  const resetFilters = () => {
-    setRoleFilter('');
-    setNameFilter('');
-  };
-
-  // Toggle add user form
-  const toggleAddUserForm = () => {
-    setShowAddUserForm(!showAddUserForm);
-    setNewUserEmail('');
-    setNewUserRole('');
-  };
-
-  // Add new user
-  const addNewUser = () => {
-    if (newUserEmail && newUserRole) {
-      const newUser = {
-        id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-        email: newUserEmail,
-        role: newUserRole
-      };
-     
-      setUsers([...users, newUser]);
-      setNewUserEmail('');
-      setNewUserRole('');
-      setShowAddUserForm(false);
-    }
-  };
-
-  // Clear add user form
-  const clearAddUserForm = () => {
-    setNewUserEmail('');
-    setNewUserRole('');
-  };
-
-  // Toggle user actions (edit/delete)
-  const toggleUserActions = (userId) => {
-    if (activeUserId === userId) {
-      setActiveUserId(null);
-      setEditingUserId(null);
-    } else {
-      setActiveUserId(userId);
-      setEditingUserId(null);
-    }
-  };
-
-  // Start editing a user
-  const startEditUser = (userId, e) => {
-    e.stopPropagation();
-    const user = users.find(u => u.id === userId);
-    if (user) {
-      setEditingUserId(userId);
-      setEditEmail(user.email);
-      setEditRole(user.role);
-    }
-  };
-
-  // Save user edits
-  const saveUserEdit = (userId, e) => {
-    e.stopPropagation();
-    if (editRole) {
-      const updatedUsers = users.map(user =>
-        user.id === userId ? { ...user, role: editRole } : user
-      );
-      setUsers(updatedUsers);
-      setEditingUserId(null);
-    }
-  };
-
-  // Clear edit form
-  const clearEditForm = (userId, e) => {
-    e.stopPropagation();
-    const user = users.find(u => u.id === userId);
-    if (user) {
-      setEditEmail(user.email);
-      setEditRole(user.role);
-    }
-  };
-
-  // Cancel editing
-  const cancelEdit = (userId, e) => {
-    e.stopPropagation();
-    setEditingUserId(null);
-  };
-
-  // Open delete confirmation
-  const openDeleteConfirmation = (userId, e) => {
-    e.stopPropagation();
-    setDeleteUserId(userId);
-  };
-
-  // Close delete confirmation
-  const closeDeleteConfirmation = () => {
-    setDeleteUserId(null);
-  };
-
-  // Delete user
-  const deleteUser = () => {
-    if (deleteUserId) {
-      const updatedUsers = users.filter(user => user.id !== deleteUserId);
-      setUsers(updatedUsers);
-      setDeleteUserId(null);
-      setActiveUserId(null);
-    }
-  };
-
-  // Check if add user form is valid
-  const isAddUserFormValid = newUserEmail && newUserRole;
 
   // Render Date-wise Table
   const renderDateWiseTable = () => (
     <div className="admin-table-box">
       <div className="table-section-header">
+
         {/* Div 1: Document Type Header */}
         <div className="table-header-top">
           <h3 className="table-header-title">{selectedDocumentType} - Date-wise Statistics</h3>
+          <div className="table-nav-controls">
+            <button className="nav-btn" onClick={goToPreviousTable}>
+              <ChevronLeft className='admin-ChevronLeft' size={20} />
+            </button>
+            <span style={{ fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>
+              {currentTableIndex + 1} / {tableConfig.length}
+            </span>
+            <button className="nav-btn" onClick={goToNextTable}>
+              <ChevronRight className='admin-ChevronRight' size={20} />
+            </button>
+          </div>
         </div>
-        
+
+
         {/* Div 2: Filters and Controls */}
         <div className="table-header-bottom">
           <div className="table-filters-container">
@@ -692,7 +712,7 @@ const Admin = () => {
               />
             </div>
           </div>
-          
+
           <div className="table-actions-container">
             <button
               onClick={() => exportToCSV(filteredDateWiseData, 'date_wise_stats')}
@@ -708,7 +728,7 @@ const Admin = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="table-scroll-wrapper">
         <table>
           <thead>
@@ -745,25 +765,27 @@ const Admin = () => {
                   <td>{day.manualReview}</td>
                 </tr>
               ))
-            ) : (
+            ) : !dataLoading && !dataError ? ( // Only show "no data" if not loading and no error
               <tr>
-                <td colSpan="4" style={{textAlign: 'center', padding: '20px'}}>
+                <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
                   No {selectedDocumentType} data available for selected filters
                 </td>
               </tr>
-            )}
+            ) : null}
           </tbody>
         </table>
       </div>
-      
+
       {/* Date-wise Pagination */}
-      <FilePagination
-        currentPage={currentDatePage}
-        totalPages={dateTotalPages}
-        onPageChange={setCurrentDatePage}
-        rowsPerPage={dateRowsPerPage}
-        totalItems={sortedDateData.length}
-      />
+      {sortedDateData.length > 0 && (
+        <FilePagination
+          currentPage={currentDatePage}
+          totalPages={dateTotalPages}
+          onPageChange={setCurrentDatePage}
+          rowsPerPage={dateRowsPerPage}
+          totalItems={sortedDateData.length}
+        />
+      )}
     </div>
   );
 
@@ -774,8 +796,18 @@ const Admin = () => {
         {/* Div 1: Document Type Header */}
         <div className="table-header-top">
           <h3 className="table-header-title">{selectedDocumentType} - Vendor-wise Statistics</h3>
+          <div className="table-nav-controls">
+            <button className="nav-btn" onClick={goToPreviousTable}>
+              <ChevronLeft className='admin-ChevronLeft' size={20} />
+            </button>
+            <span style={{ fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>
+              {currentTableIndex + 1} / {tableConfig.length}
+            </span>
+            <button className="nav-btn" onClick={goToNextTable}>
+              <ChevronRight className='admin-ChevronRight' size={20} />
+            </button>
+          </div>
         </div>
-        
         {/* Div 2: Filters and Controls */}
         <div className="table-header-bottom">
           <div className="table-filters-container">
@@ -805,7 +837,7 @@ const Admin = () => {
               />
             </div>
           </div>
-          
+
           <div className="table-actions-container">
             <button
               onClick={() => exportToCSV(filteredVendorWiseData, 'vendor_wise_stats')}
@@ -821,7 +853,7 @@ const Admin = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="table-scroll-wrapper">
         <table>
           <thead>
@@ -858,73 +890,27 @@ const Admin = () => {
                   <td>{vendor.manualReview}</td>
                 </tr>
               ))
-            ) : (
+            ) : !dataLoading && !dataError ? ( // Only show "no data" if not loading and no error
               <tr>
-                <td colSpan="4" style={{textAlign: 'center', padding: '20px'}}>
+                <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
                   No {selectedDocumentType} data available for selected filters
                 </td>
               </tr>
-            )}
+            ) : null}
           </tbody>
         </table>
       </div>
 
       {/* Vendor-wise Pagination */}
-      <FilePagination
-        currentPage={currentVendorPage}
-        totalPages={vendorTotalPages}
-        onPageChange={setCurrentVendorPage}
-        rowsPerPage={vendorRowsPerPage}
-        totalItems={sortedVendorData.length}
-      />
-    </div>
-  );
-
-  const renderConfiguration = () => (
-    <div className="admin-table-box config-box">
-        <div className="table-section-header">
-            <h3>Confidence Score Configuration</h3>
-            <p className="config-subtitle">Set the minimum confidence score (%) required for automatic completion.</p>
-        </div>
-        
-        {configLoading ? (
-            <div className="config-loading">Loading configuration...</div>
-        ) : (
-            <div className="config-form">
-                {Object.keys(localConfig).map((key) => (
-                    <div key={key} className="config-item">
-                        <label className="config-label">{key}</label>
-                        <div className="config-input-wrapper">
-                            <input 
-                                type="number" 
-                                min="0" 
-                                max="100" 
-                                value={localConfig[key]} 
-                                onChange={(e) => handleConfigChange(key, e.target.value)}
-                                className="config-input"
-                            />
-                            <span className="config-percent">%</span>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        )}
-
-        <div className="config-actions">
-            {configMessage && (
-                <div className={`config-message ${configMessage.type}`}>
-                    {configMessage.text}
-                </div>
-            )}
-            <button 
-                className="save-config-btn" 
-                onClick={saveConfiguration} 
-                disabled={isSavingConfig || configLoading}
-            >
-                {isSavingConfig ? 'Saving...' : 'Save Configuration'}
-            </button>
-        </div>
-
+      {sortedVendorData.length > 0 && (
+        <FilePagination
+          currentPage={currentVendorPage}
+          totalPages={vendorTotalPages}
+          onPageChange={setCurrentVendorPage}
+          rowsPerPage={vendorRowsPerPage}
+          totalItems={sortedVendorData.length}
+        />
+      )}
     </div>
   );
 
@@ -935,8 +921,6 @@ const Admin = () => {
         return renderDateWiseTable();
       case 'vendorWise':
         return renderVendorWiseTable();
-      case 'configuration':
-        return renderConfiguration();
       default:
         return renderDateWiseTable();
     }
@@ -946,304 +930,200 @@ const Admin = () => {
     fetchData();
   }, [selectedPeriod]);
 
+  // Show loading or error states
   if (dataLoading) return <div className="loading">Loading admin data...</div>;
-  if (dataError) return <div className="error">Error: {dataError}</div>;
+
+  // Render error state with retry button
+  if (dataError) {
+    return (
+      <div className="admin-container">
+        <main className="admin-main">
+          <div className="error-container">
+            <div className="error-card">
+              <h3 className="error-title">⚠️ Connection Issue</h3>
+              <p className="error-message">{dataError}</p>
+              <button
+                onClick={fetchData}
+                className="refresh-data-btn"
+                style={{ margin: '0 auto' }}
+              >
+                <RefreshCw size={18} /> Try Again
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="admin-container">
       <main className="admin-main">
-        <section className="admin-heading-section">
-          <h1><Shield className="header-icon" size={32} /> Client Dashboard</h1>
-          <button onClick={fetchData} className="refresh-data-btn">
-            <RefreshCw size={16} className='refresh-data-btn-icon' />
-            Refresh Data
+        <section className='header-admin'>
+          <p>{clientData ? `${clientData.Name} Dashboard` : "Admin Dashboard"}</p>
+          <button onClick={fetchData}>
+            <RefreshCw className='RefreshCw-admin' size={16} /> Refresh Data
           </button>
         </section>
-       
-        <section className="admin-section-1">
-          <div className="admin-stats-box">
-            <ul>
-              <li>
-                <FileText className="pp iconForCount" size={24}/>
-                <p className='textForCout'>Total {selectedDocumentType} Docs</p>
-                <p className='numberForCout'>{calculateCurrentTotalDocs().toLocaleString()}</p>
-              </li>
-              <li>
-                <BarChart2 className="pp iconForCount" size={24} />
-                <p className='textForCout'>
-                    {selectedTable === 'vendorWise' 
-                        ? `Avg ${selectedDocumentType} / Vendor` 
-                        : `Avg ${selectedDocumentType} / Day`}
-                </p>
-                <p className='numberForCout'>{calculateAverageMetric()}</p>
-              </li>
-              <li>
-                <Users className="pp iconForCount" size={24} />
-                <p className='textForCout'>No. of Users</p>
-                <p className='numberForCout'>{users.length}</p>
-              </li>
-              <li onClick={openUserPopup} style={{cursor: 'pointer'}}>
-                <Users className="pp iconForCount" size={24} />
-                <p className='textForCout'>Users Details</p>
-                <p className='numberForCout'>View</p>
-              </li>
-            </ul>
-          </div>
-          {/* Table Navigation Controls */}
-          <div className="table-navigation-controls">
-            <div className="table-selector">
-              <label htmlFor="table-select">Select Table:</label>
-              <select
-                id="table-select"
-                value={selectedTable}
-                onChange={(e) => handleTableSelect(e.target.value)}
-                className="table-dropdown"
-              >
-                {tableConfig.map(table => (
-                  <option key={table.id} value={table.id}>
-                    {table.name}
-                  </option>
-                ))}
-              </select>
+
+        <section className='summarys-admin'>
+          <div className="summary-card docs-summary">
+            <div className="icon-box docs-icon">
+              <Database className='Database-admin' size={24} />
             </div>
-            <div className="navigation-buttons">
-                <ChevronLeft
-                 onClick={goToPreviousTable}
-                 className="nav-button prev-button"
-                 size={20} />
-              
-              <span className="table-counter">
-                {currentTableIndex + 1} / {tableConfig.length}
-              </span>
-              
-                <ChevronRight 
-                onClick={goToNextTable}
-                className="nav-button next-button" 
-                size={20} />
+            <div className="card-content">
+              <span className="label">Total {selectedDocumentType} Docs</span>
+              <span className="value">{calculateCurrentTotalDocs().toLocaleString()}</span>
             </div>
           </div>
 
-          {/* Render Current Table */}
+          <div className="summary-card stats-summary">
+            <div className="icon-box stats-icon">
+              <BarChart2 className='BarChart2-admin' size={24} />
+            </div>
+            <div className="card-content">
+              <span className="label">
+                {selectedTable === 'vendorWise'
+                  ? `Avg ${selectedDocumentType} / Vendor`
+                  : `Avg ${selectedDocumentType} / Day`}
+              </span>
+              <span className="value">{calculateAverageMetric()}</span>
+            </div>
+          </div>
+
+          <div className="summary-card users-summary" onClick={openUserPopup} style={{ cursor: 'pointer' }}>
+            <div className="icon-box users-icon">
+              <Users className='Users-admin' size={24} />
+            </div>
+            <div className="card-content">
+              <span className="label">Active Users</span>
+              <span className="value">
+                {clientData ? activeUserCount : users.length}
+              </span>
+            </div>
+          </div>
+          <div className="summary-card " onClick={openUserPopup} style={{ cursor: 'pointer' }}>
+            <div className="icon-box users-icon">
+              <Users className='Users-admin' size={24} />
+            </div>
+            <div className="card-content" onClick={handleToggle}>
+              <span className="label">Users Management</span>
+              <span className="value">View</span>
+            </div>
+          </div>
+
+          <div
+            className="summary-card plan-summary"
+            onClick={() => clientData && setShowPlanPopup(true)}
+            style={{ cursor: clientData ? 'pointer' : 'default' }}
+          >
+            <div className="icon-box plan-icon">
+              <Shield className='Shield-admin' size={24} />
+            </div>
+            <div className="card-content">
+              <span className="label">Active Plan</span>
+              <span className="value" style={{ fontSize: '1.25rem' }}>
+                {clientData ? clientData.PlanName : "Enterprise"}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Render Current Table */}
+        <section className="dashboard-content">
           {renderCurrentTable()}
         </section>
-       
-        <section className="admin-section-2">
-            <div className="admin-section-2-header">
-              <h3>Plan Details</h3>
+
+        {/* Plan Summary Popup */}
+        {showPlanPopup && clientData && (
+          <div className="modal-overlay" onClick={() => setShowPlanPopup(false)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>{clientData.Name} Plan Details</h3>
+                <button className="close-btn" onClick={() => setShowPlanPopup(false)}>
+                  <X className='Admin-X' size={24} />
+                </button>
+              </div>
+
+              <div className="modal-details-grid">
+                <div className="detail-item">
+                  <span className="detail-label">Client ID</span>
+                  <span className="detail-value">{clientData.ID || clientData.id}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Name</span>
+                  <span className="detail-value">{clientData.Name}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Plan Name</span>
+                  <span className="detail-value">{clientData.PlanName}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Start Date</span>
+                  <span className="detail-value">
+                    {clientData.StartDate ? new Date(clientData.StartDate).toLocaleDateString() : 'N/A'}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">End Date</span>
+                  <span className="detail-value">
+                    {clientData.EndDate ? new Date(clientData.EndDate).toLocaleDateString() : 'N/A'}
+                  </span>
+                </div>
+
+                {/* User Statistics */}
+                <div className="detail-item">
+                  <span className="detail-label">Active Users</span>
+                  <span className="detail-value" style={{ color: 'var(--success)', fontWeight: 'bold' }}>
+                    {activeUserCount}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">User Limits</span>
+                  <span className="detail-value">{clientData.UserLimits}</span>
+                </div>
+
+                {/* Document Limits */}
+                <div className="detail-item">
+                  <span className="detail-label">Invoice Count</span>
+                  <span className="detail-value">{clientData.InvoiceCount}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Bank Count</span>
+                  <span className="detail-value">{clientData.BankStatementCount}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Mortgage Count</span>
+                  <span className="detail-value">{clientData.MortgageFormsCount}</span>
+                </div>
+
+                {/* Statuses */}
+                <div className="detail-item">
+                  <span className="detail-label">Invoice Status</span>
+                  <span className={`detail-value status-${(clientData.Invoice || 'inactive').toLowerCase()}`}>
+                    {clientData.Invoice || 'Inactive'}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Bank Status</span>
+                  <span className={`detail-value status-${(clientData.BankStatement || 'inactive').toLowerCase()}`}>
+                    {clientData.BankStatement || 'Inactive'}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Mortgage Status</span>
+                  <span className={`detail-value status-${(clientData.MortgageForms || 'inactive').toLowerCase()}`}>
+                    {clientData.MortgageForms || 'Inactive'}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="document-type-badge">
-              <span><Database className='databaseIcon-admin' size={16} />Document Type: <strong>{selectedDocumentType}</strong></span>
-            </div>
-            <div className="admin-section-2-pack">
-              <ul>
-                <li>
-                  <span>Plan :</span><span>Pro</span>
-                </li>
-                <li>
-                  <span>From :</span><span>11/12/2025</span>
-                </li>
-                <li>
-                  <span>To :</span><span>11/12/2026</span>
-                </li>
-              </ul>
-            </div>
-            <div className="admin-section-2-usage">
-              <ul>
-                <li>
-                  <span>Per Day :</span><span>1,000 PDFs</span>
-                </li>
-                <li>
-                  <span>Available PDFs :</span><span>700</span>
-                </li>
-                <li>
-                  <span>Consumed PDFs :</span><span>300</span>
-                </li>
-              </ul>
-            </div>
-        </section>
+          </div>
+        )}
       </main>
-
-      {/* User Management Popup */}
-      {showUserPopup && (
-        <div className="popup-overlay user-management-popup">
-          <div className="popup-content">
-            <div className="popup-header">
-              <h2>User Management</h2>
-              <button className="close-popup" onClick={closeUserPopup}>
-                <X size={24} />
-              </button>
-            </div>
-           
-            <div className="filter-section">
-              <div className="filter-group">
-                <label htmlFor="role-filter">Filter by Role</label>
-                <select
-                  id="role-filter"
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                >
-                  <option value="">All Roles</option>
-                  <option value="Admin">Admin</option>
-                  <option value="Contributor">Contributor</option>
-                  <option value="Member">Member</option>
-                </select>
-              </div>
-             
-              <div className="filter-group">
-                <label htmlFor="name-filter">Filter by Name</label>
-                <input
-                  type="text"
-                  id="name-filter"
-                  placeholder="Search by email"
-                  value={nameFilter}
-                  onChange={(e) => setNameFilter(e.target.value)}
-                />
-              </div>
-            </div>
-           
-            <div className="button-group">
-              <button className="reset-btn" onClick={resetFilters}>
-                Reset Filters
-              </button>
-              <button className="add-user-btn" onClick={toggleAddUserForm}>
-                + Add User
-              </button>
-            </div>
-           
-            {showAddUserForm && (
-              <div className="add-user-form">
-                <div className="form-group">
-                  <label htmlFor="user-email">Email</label>
-                  <input
-                    type="email"
-                    id="user-email"
-                    placeholder="Enter email"
-                    value={newUserEmail}
-                    onChange={(e) => setNewUserEmail(e.target.value)}
-                  />
-                </div>
-               
-                <div className="form-group">
-                  <label htmlFor="user-role">Role</label>
-                  <select
-                    id="user-role"
-                    value={newUserRole}
-                    onChange={(e) => setNewUserRole(e.target.value)}
-                  >
-                    <option value="">Select Role</option>
-                    <option value="Admin">Admin</option>
-                    <option value="Contributor">Contributor</option>
-                    <option value="Member">Member</option>
-                  </select>
-                </div>
-               
-                <div className="form-buttons">
-                  <button
-                    className="submit-btn"
-                    onClick={addNewUser}
-                    disabled={!isAddUserFormValid}
-                  >
-                    Submit
-                  </button>
-                  <button
-                    className="clear-btn"
-                    onClick={clearAddUserForm}
-                  >
-                    Clear
-                  </button>
-                  <button className='cancel-btn' onClick={toggleAddUserForm}>Cancel</button>
-                </div>
-              </div>
-            )}
-           
-            <div className="user-list">
-              {filteredUsers.length === 0 ? (
-                <p>No users found.</p>
-              ) : (
-                filteredUsers.map(user => (
-                  <div key={user.id} className="user-item">
-                    <div
-                      className={`user-info ${activeUserId === user.id ? 'active' : ''}`}
-                      onClick={() => toggleUserActions(user.id)}
-                    >
-                      <span>Email: {user.email}</span>
-                      <span>Role: {user.role}</span>
-                    </div>
-                   
-                    {activeUserId === user.id && (
-                      <div className="user-actions">
-                        <button
-                          className="edit-btn"
-                          onClick={(e) => startEditUser(user.id, e)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="delete-btn"
-                          onClick={(e) => openDeleteConfirmation(user.id, e)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                   
-                    {editingUserId === user.id && (
-                    <div className="edit-form">
-                      <div className="form-group">
-                        <label htmlFor={`edit-role-${user.id}`}>Role</label>
-                        <select
-                          id={`edit-role-${user.id}`}
-                          value={editRole}
-                          onChange={(e) => setEditRole(e.target.value)}
-                        >
-                          <option value="Admin">Admin</option>
-                          <option value="Contributor">Contributor</option>
-                          <option value="Member">Member</option>
-                        </select>
-                      </div>
-                     
-                      <div className="form-buttons">
-                        <button
-                          className="submit-btn save-edit"
-                          onClick={(e) => saveUserEdit(user.id, e)}
-                        >
-                          Save
-                        </button>
-                        <button
-                          className="cancel-btn"
-                          onClick={(e) => cancelEdit(user.id, e)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Popup */}
-      {deleteUserId && (
-        <div className="delete-confirmation">
-          <p>Are you sure you want to delete this user?</p>
-          <div className="confirmation-buttons">
-            <button className="confirm-delete" onClick={deleteUser}>
-              Delete
-            </button>
-            <button className="cancel-delete" onClick={closeDeleteConfirmation}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
       <footer>
-        <Footer/>
+        <Footer />
       </footer>
     </div>
   );

@@ -16,6 +16,7 @@ import ManualReview from "./components/ManualReview";
 import EditModal from "./components/EditModal";
 import Header from "./Layout/Header";
 import Admin from "./components/Admin";
+import Users from "./components/Users";
 import SuperAdmin from "./components/SuperAdmin";
 import SelectDocumentType from "./components/SelectDocumentType";
 import { UserProvider, useUser } from "./context/UserContext";
@@ -93,6 +94,7 @@ const AppRoutes = () => {
         <Route path="/editmodal" element={<EditModal />} />
         <Route path="/superadmin" element={<SuperAdmin/>}/>
         <Route path="/admin" element={<Admin/>}/>
+        <Route path="/users" element={<Users />} />
       </Route>
       <Route path="*" element={<p>Page Not Found</p>} />
     </Routes>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./SuperAdmin.css";
 import Footer from "../Layout/Footer";
 import FilePagination from "../Layout/FilePagination";
@@ -180,7 +181,7 @@ const SuperAdmin = () => {
     InvoiceCount: 0,
     BankStatementCount: 0,
     MortgageFormsCount: 0,
-    UserCount: 0,
+    UserLimits: 0,
     Invoice: "Active",
     BankStatement: "Active",
     MortgageForms: "Active",
@@ -306,7 +307,7 @@ const SuperAdmin = () => {
 
   // Handle approve action
   const handleApprove = async (tableName, user) => {
-    if (!confirm(`Are you sure you want to approve ${user.email}?`)) return;
+    // if (!confirm(`Are you sure you want to approve ${user.email}?`)) return;
 
     try {
       console.log(`Approving user ${user.id} in table ${tableName}`);
@@ -323,7 +324,7 @@ const SuperAdmin = () => {
       console.log("Approve response:", response);
 
       if (response && response.success) {
-        alert("User approved successfully!");
+        // alert("User approved successfully!");
         // Refresh permissions data
         loadPermissions();
       } else {
@@ -331,13 +332,13 @@ const SuperAdmin = () => {
       }
     } catch (error) {
       console.error("Error approving user:", error);
-      alert(`Failed to approve user: ${error.message}`);
+      // alert(`Failed to approve user: ${error.message}`);
     }
   };
 
   // Handle cancel action
   const handleCancel = async (tableName, user) => {
-    if (!confirm(`Are you sure you want to cancel ${user.email}'s request?`)) return;
+    // if (!confirm(`Are you sure you want to cancel ${user.email}'s request?`)) return;
 
     try {
       console.log(`Cancelling user ${user.id} from table ${tableName}`);
@@ -347,7 +348,7 @@ const SuperAdmin = () => {
       console.log("Cancel response:", response);
 
       if (response && response.success) {
-        alert("User request cancelled successfully!");
+        // alert("User request cancelled successfully!");
         // Refresh permissions data
         loadPermissions();
       } else {
@@ -355,7 +356,7 @@ const SuperAdmin = () => {
       }
     } catch (error) {
       console.error("Error cancelling user:", error);
-      alert(`Failed to cancel user: ${error.message}`);
+      // alert(`Failed to cancel user: ${error.message}`);
     }
   };
 
@@ -456,7 +457,7 @@ const SuperAdmin = () => {
       InvoiceCount: 0,
       BankStatementCount: 0,
       MortgageFormsCount: 0,
-      UserCount: 0,
+      UserLimits: 0,
       Invoice: "Active",
       BankStatement: "Active",
       MortgageForms: "Active",
@@ -480,7 +481,7 @@ const SuperAdmin = () => {
       // Ensure count fields are integers
       const createData = {
         ...formData,
-        UserCount: parseInt(formData.UserCount) || 0,
+        UserLimits: parseInt(formData.UserLimits) || 0,
         InvoiceCount: parseInt(formData.InvoiceCount) || 0,
         BankStatementCount: parseInt(formData.BankStatementCount) || 0,
         MortgageFormsCount: parseInt(formData.MortgageFormsCount) || 0,
@@ -492,7 +493,7 @@ const SuperAdmin = () => {
         body: JSON.stringify(createData),
       });
 
-      alert("Client created successfully!");
+      // alert("Client created successfully!");
       await loadData();
       cancelForm();
     } catch (error) {
@@ -504,7 +505,7 @@ const SuperAdmin = () => {
       }
 
       setError(errorMsg);
-      alert(errorMsg);
+      // alert(errorMsg);
     } finally {
       setSubmitting(false);
     }
@@ -521,7 +522,7 @@ const SuperAdmin = () => {
       const updateData = {
         ...formData,
         ID: editingClient.ID,
-        UserCount: parseInt(formData.UserCount) || 0,
+        UserLimits: parseInt(formData.UserLimits) || 0,
         InvoiceCount: parseInt(formData.InvoiceCount) || 0,
         BankStatementCount: parseInt(formData.BankStatementCount) || 0,
         MortgageFormsCount: parseInt(formData.MortgageFormsCount) || 0,
@@ -533,7 +534,7 @@ const SuperAdmin = () => {
         body: JSON.stringify(updateData),
       });
 
-      alert("Client updated successfully!");
+      // alert("Client updated successfully!");
       await loadData();
       cancelForm();
     } catch (error) {
@@ -545,7 +546,7 @@ const SuperAdmin = () => {
       }
 
       setError(errorMsg);
-      alert(errorMsg);
+      // alert(errorMsg);
     } finally {
       setSubmitting(false);
     }
@@ -562,7 +563,7 @@ const SuperAdmin = () => {
         method: "DELETE",
       });
 
-      alert("Client deleted successfully!");
+      // alert("Client deleted successfully!");
       await loadData();
     } catch (error) {
       console.error("Error deleting client:", error);
@@ -573,7 +574,7 @@ const SuperAdmin = () => {
       }
 
       setError(errorMsg);
-      alert(errorMsg);
+      // alert(errorMsg);
     }
   };
 
@@ -585,7 +586,7 @@ const SuperAdmin = () => {
       PlanName: client.PlanName || "",
       StartDate: client.StartDate ? client.StartDate.split('T')[0] : "",
       EndDate: client.EndDate ? client.EndDate.split('T')[0] : "",
-      UserCount: client.UserCount || 0,
+      UserLimits: client.UserLimits || 0,
       InvoiceCount: client.InvoiceCount || 0,
       BankStatementCount: client.BankStatementCount || 0,
       MortgageFormsCount: client.MortgageFormsCount || 0,
@@ -602,6 +603,13 @@ const SuperAdmin = () => {
       ...prev,
       [company]: !prev[company]
     }));
+  };
+
+  const navigate = useNavigate();
+
+  // Navigate to Admin page with client details
+  const handleView = (client) => {
+    navigate('/admin', { state: { clientName: client.Name } });
   };
 
   return (
@@ -645,7 +653,7 @@ const SuperAdmin = () => {
           >
             <p><ShieldCheck className="icon-summary-superadmin Home-superadmin" size={35} /></p>
             <div>
-              <p>Permissions</p>
+              <p>Access Requests</p>
               <p>
                 {loadingPermissions ? "..." : totalPendingUsers}
               </p>
@@ -657,18 +665,18 @@ const SuperAdmin = () => {
         <div className="superAdmin-table-permission">
           <section className="filter-section-superadmin">
             <div>
-              <label htmlFor="nameFilter">Name</label>
+              <label htmlFor="nameFilter">Client Name</label>
               <input
                 type="text"
                 id="nameFilter"
                 name="name"
                 value={filters.name}
                 onChange={handleFilterChange}
-                placeholder="Search client name"
+                placeholder="Search by Client Name"
               />
             </div>
             <div>
-              <label htmlFor="startDateFilter">Start Date</label>
+              <label htmlFor="startDateFilter">Subscription Start Date</label>
               <input
                 type="date"
                 id="startDateFilter"
@@ -678,7 +686,7 @@ const SuperAdmin = () => {
               />
             </div>
             <div>
-              <label htmlFor="endDateFilter">End Date</label>
+              <label htmlFor="endDateFilter">Subscription End Date</label>
               <input
                 type="date"
                 id="endDateFilter"
@@ -687,8 +695,8 @@ const SuperAdmin = () => {
                 onChange={handleFilterChange}
               />
             </div>
-            <button onClick={clearFilters}>Clear Filter</button>
-            <button onClick={() => setShowAddClient(true)}>Add Client</button>
+            <button onClick={clearFilters}>Reset Filter</button>
+            <button onClick={() => setShowAddClient(true)}>Register Client</button>
           </section>
 
           {/* Loading State */}
@@ -740,8 +748,8 @@ const SuperAdmin = () => {
                           >
                             <option value="">Select Plan</option>
                             <option value="Basic">Basic</option>
+                            <option value="Standard">Standard</option>
                             <option value="Pro">Pro</option>
-                            <option value="Pro+">Pro+</option>
                             <option value="Enterprise">Enterprise</option>
                           </select>
                         </div>
@@ -777,8 +785,8 @@ const SuperAdmin = () => {
                           <label>User Limits</label>
                           <input
                             type="number"
-                            name="UserCount"
-                            value={formData.UserCount}
+                            name="UserLimits"
+                            value={formData.UserLimits}
                             onChange={handleInputChange}
                             min="0"
                             disabled={submitting}
@@ -909,9 +917,9 @@ const SuperAdmin = () => {
                               className="permission-accordion-header"
                               onClick={() => toggleCompany(item.company)}
                             >
-                              <span>{item.company}</span>
-                              <span className="user-count-badge">{item.users.length} pending</span>
-                              {expandedCompanies[item.company] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                              <span className="permission-accordion-header-company-name">{item.company}</span>
+                              <span className="permission-accordion-header-user-count-badge">{item.users.length} pending</span>
+                              {expandedCompanies[item.company] ? <ChevronUp className="useradmin-Chevronup" size={20} /> : <ChevronDown className="useradmin-Chevrondown" size={20} />}
                             </div>
                             {expandedCompanies[item.company] && (
                               <div className="permission-accordion-content">
@@ -929,14 +937,14 @@ const SuperAdmin = () => {
                                           onClick={() => handleApprove(item.company, user)}
                                           disabled={loadingPermissions}
                                         >
-                                          Approve
+                                          Grant Access
                                         </button>
                                         <button
                                           className="btn-cancel-mini"
                                           onClick={() => handleCancel(item.company, user)}
                                           disabled={loadingPermissions}
                                         >
-                                          Cancel
+                                          Reject Access
                                         </button>
                                       </div>
                                     </li>
@@ -1005,8 +1013,8 @@ const SuperAdmin = () => {
                         <td>{client.PlanName || 'N/A'}</td>
                         <td>{client.StartDate ? new Date(client.StartDate).toLocaleDateString() : 'N/A'}</td>
                         <td>{client.EndDate ? new Date(client.EndDate).toLocaleDateString() : 'N/A'}</td>
-                        <td>{client.Users ?? 0}</td>
-                        <td>{client.UserCount ?? 0}</td>
+                        <td>{client.ActiveUsers ?? 0}</td>
+                        <td>{client.UserLimits ?? 0}</td>
                         <td>{client.InvoiceCount ?? 0}</td>
                         <td>{client.BankStatementCount ?? 0}</td>
                         <td>{client.MortgageFormsCount ?? 0}</td>
@@ -1022,6 +1030,9 @@ const SuperAdmin = () => {
                         <td className="actions">
                           <button onClick={() => handleEdit(client)} className="btn-edit">
                             Edit
+                          </button>
+                          <button className="btn-edit" onClick={() => handleView(client)}>
+                            View
                           </button>
                           <button onClick={() => deleteClient(client.ID)} className="btn-delete">
                             Delete
