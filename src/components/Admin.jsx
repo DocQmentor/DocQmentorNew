@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, BarChart2, Users, Database, X, Shield, Download, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, BarChart2, Users, Database, X, Shield, Download, RefreshCw, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import { useNavigate, useLocation } from "react-router-dom";
 import './Admin.css';
 import Footer from "../Layout/Footer";
 import FilePagination from '../Layout/FilePagination';
 import useSortableData from "../utils/useSortableData";
 import './Users';
+import { useConfig } from "../context/ConfigContext";
 // Smart fetch function to handle Azure HTML errors
 const smartFetch = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -83,6 +84,43 @@ const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
 };
 
 const Admin = () => {
+  // Config Context
+  const { config, updateConfig, loading: configLoading } = useConfig();
+  const [localConfig, setLocalConfig] = useState({});
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
+  const [configMessage, setConfigMessage] = useState(null);
+
+  useEffect(() => {
+    if (config) {
+      setLocalConfig(config);
+    }
+  }, [config]);
+
+  const handleConfigChange = (key, value) => {
+    setLocalConfig(prev => ({
+      ...prev,
+      [key]: parseInt(value) || 0
+    }));
+  };
+
+  const saveConfiguration = async () => {
+    setIsSavingConfig(true);
+    setConfigMessage(null);
+    try {
+      const result = await updateConfig(localConfig);
+      if (result.success) {
+        setConfigMessage({ type: 'success', text: 'Configuration saved successfully!' });
+      } else {
+        setConfigMessage({ type: 'error', text: 'Failed to save configuration: ' + result.error });
+      }
+    } catch (e) {
+      setConfigMessage({ type: 'error', text: 'Error saving: ' + e.message });
+    } finally {
+      setIsSavingConfig(false);
+      setTimeout(() => setConfigMessage(null), 3000);
+    }
+  };
+
   // Client Admin Data States
   const [dateWiseData, setDateWiseData] = useState([]);
   const [vendorWiseData, setVendorWiseData] = useState([]);
@@ -206,6 +244,11 @@ const Admin = () => {
       id: 'vendorWise',
       name: 'Vendor-wise Statistics',
       component: 'vendorWise'
+    },
+    {
+      id: 'configuration',
+      name: 'Confidence Configuration',
+      component: 'configuration'
     }
   ];
 
@@ -914,6 +957,67 @@ const Admin = () => {
     </div>
   );
 
+  const renderConfiguration = () => (
+    <div className="admin-table-box config-box">
+      <div className="table-section-header ConfidenceScoreConfiguration">
+        <div className="config-header">
+          <h3>Confidence Score Configuration</h3>
+          <p className="config-subtitle">Set the minimum confidence score (%) required for automatic completion.</p>
+        </div>
+        <div className="table-nav-controls">
+            <button className="nav-btn" onClick={goToPreviousTable}>
+              <ChevronLeft className='admin-ChevronLeft' size={20} />
+            </button>
+            <span style={{ fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>
+              {currentTableIndex + 1} / {tableConfig.length}
+            </span>
+            <button className="nav-btn" onClick={goToNextTable}>
+              <ChevronRight className='admin-ChevronRight' size={20} />
+            </button>
+        </div>
+      </div>
+
+      {configLoading ? (
+        <div className="config-loading">Loading configuration...</div>
+      ) : (
+        <div className="config-form">
+          {Object.keys(localConfig).map((key) => (
+            <div key={key} className="config-item">
+              <label className="config-label">{key}</label>
+              <div className="config-input-wrapper">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={localConfig[key]}
+                  onChange={(e) => handleConfigChange(key, e.target.value)}
+                  className="config-input"
+                />
+                <span className="config-percent">%</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="config-actions">
+        {configMessage && (
+          <div className={`config-message ${configMessage.type}`}>
+            {configMessage.text}
+          </div>
+        )}
+        <button
+          className="save-config-btn"
+          onClick={saveConfiguration}
+          disabled={isSavingConfig || configLoading}
+        >
+          {isSavingConfig ? 'Saving...' : 'Save Configuration'}
+        </button>
+      </div>
+
+    </div>
+  );
+
   // Render current table based on selection
   const renderCurrentTable = () => {
     switch (selectedTable) {
@@ -921,6 +1025,8 @@ const Admin = () => {
         return renderDateWiseTable();
       case 'vendorWise':
         return renderVendorWiseTable();
+      case 'configuration':
+        return renderConfiguration();
       default:
         return renderDateWiseTable();
     }

@@ -157,6 +157,8 @@ const SuperAdmin = () => {
   const [permissionData, setPermissionData] = useState([]);
   const [loadingPermissions, setLoadingPermissions] = useState(false);
   const [permissionsLoaded, setPermissionsLoaded] = useState(false);
+  const [selectedBulkActions, setSelectedBulkActions] = useState({}); // { [userId]: { type: 'grant'|'reject', company, user } }
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -285,12 +287,8 @@ const SuperAdmin = () => {
       setPermissionData(allPermissions);
       setPermissionsLoaded(true);
 
-      // Initialize expanded state for companies (only when opening modal)
-      const expandedState = {};
-      allPermissions.forEach(item => {
-        expandedState[item.company] = true;
-      });
-      setExpandedCompanies(expandedState);
+      // Initialize expanded state for companies (all collapsed by default)
+      setExpandedCompanies({});
 
     } catch (error) {
       console.error("Error loading permissions:", error);
@@ -304,6 +302,98 @@ const SuperAdmin = () => {
   useEffect(() => {
     loadPermissions();
   }, []);
+
+  // Handle individual toggle for bulk action
+  const handleToggleBulkAction = (company, user, type) => {
+    setSelectedBulkActions(prev => {
+      const userId = user.id || user.Id;
+      const existingAction = prev[userId];
+
+      // If clicking already selected action, unselect it
+      if (existingAction && existingAction.type === type) {
+        const next = { ...prev };
+        delete next[userId];
+        return next;
+      }
+
+      // Otherwise set the new type
+      return {
+        ...prev,
+        [userId]: { type, company, user }
+      };
+    });
+  };
+
+  // Calculate bulk counts
+  const bulkCounts = {
+    grant: Object.values(selectedBulkActions).filter(a => a.type === 'grant').length,
+    reject: Object.values(selectedBulkActions).filter(a => a.type === 'reject').length,
+    total: Object.keys(selectedBulkActions).length
+  };
+
+  // Bulk action execution
+  const handleBulkProceed = async (targetCompany = null) => {
+    const actionItems = targetCompany
+      ? Object.values(selectedBulkActions).filter(a => a.company === targetCompany)
+      : Object.values(selectedBulkActions);
+
+    const totalToProcess = actionItems.length;
+    if (totalToProcess === 0) return;
+
+    // if (!confirm(`Are you sure you want to proceed with ${totalToProcess} bulk actions?`)) return;
+
+    setIsBulkProcessing(true);
+    setLoadingPermissions(true);
+
+    try {
+      const results = [];
+
+      for (const item of actionItems) {
+        const { type, company, user } = item;
+        const userId = user.id || user.Id;
+
+        try {
+          if (type === 'grant') {
+            const updateData = {
+              Email: user.email,
+              Role: user.role,
+              Permission: "Approve"
+            };
+            const response = await callDynamicTableAPI(company, "update", userId, updateData);
+            results.push({ id: userId, success: response?.success });
+          } else {
+            const response = await callDynamicTableAPI(company, "delete", userId);
+            results.push({ id: userId, success: response?.success });
+          }
+        } catch (err) {
+          console.error(`Error processing bulk action for ${userId}:`, err);
+          results.push({ id: userId, success: false, error: err.message });
+        }
+      }
+
+      const successCount = results.filter(r => r.success).length;
+      // alert(`Successfully processed ${successCount} of ${totalToProcess} actions.`);
+
+      // Cleanup
+      if (targetCompany) {
+        setSelectedBulkActions(prev => {
+          const next = { ...prev };
+          actionItems.forEach(item => delete next[item.user.id || item.user.Id]);
+          return next;
+        });
+      } else {
+        setSelectedBulkActions({});
+      }
+      await loadPermissions();
+
+    } catch (error) {
+      console.error("Bulk action error:", error);
+      // alert("An error occurred during bulk processing.");
+    } finally {
+      setIsBulkProcessing(false);
+      setLoadingPermissions(false);
+    }
+  };
 
   // Handle approve action
   const handleApprove = async (tableName, user) => {
@@ -904,6 +994,7 @@ const SuperAdmin = () => {
                 <div className="modal-overlay">
                   <div className="modal-content permission-modal-content">
                     <h3>Pending User Approvals</h3>
+                    
 
                     {loadingPermissions ? (
                       <p className="loading-text">Loading permissions...</p>
@@ -917,38 +1008,62 @@ const SuperAdmin = () => {
                               className="permission-accordion-header"
                               onClick={() => toggleCompany(item.company)}
                             >
-                              <span className="permission-accordion-header-company-name">{item.company}</span>
-                              <span className="permission-accordion-header-user-count-badge">{item.users.length} pending</span>
+                              <div className="company-header-left">
+                                <span className="permission-accordion-header-company-name">{item.company}</span>
+                              </div>
+
+                              <div className="company-header-actions" onClick={(e) => e.stopPropagation()}>
+                                <div className="bulk-selection-summary">
+                                <span className="permission-accordion-header-user-count-badge"><strong>{item.users.length}</strong> pending</span>
+                                  <span className="summary-item">Grant Selected: <strong>{Object.values(selectedBulkActions).filter(a => a.company === item.company && a.type === 'grant').length}</strong></span>
+                                  <span className="summary-item">Reject Selected: <strong>{Object.values(selectedBulkActions).filter(a => a.company === item.company && a.type === 'reject').length}</strong></span>
+                                </div>
+                                <button
+                                  className="btn-proceed"
+                                  onClick={() => handleBulkProceed(item.company)}
+                                  disabled={Object.values(selectedBulkActions).filter(a => a.company === item.company).length === 0 || isBulkProcessing}
+                                >
+                                  {isBulkProcessing ? "Processing..." : "Proceed"}
+                                </button>
+                              </div>
+
                               {expandedCompanies[item.company] ? <ChevronUp className="useradmin-Chevronup" size={20} /> : <ChevronDown className="useradmin-Chevrondown" size={20} />}
                             </div>
                             {expandedCompanies[item.company] && (
                               <div className="permission-accordion-content">
                                 <ul className="permission-user-list">
-                                  {item.users.map((user, idx) => (
-                                    <li key={`${item.company}-${user.id || idx}`} className="permission-user-row">
-                                      <div className="user-info">
-                                        <span className="user-email">{user.email}</span>
-                                        <span className="user-role">{user.role}</span>
-                                        <span className="user-status">Status: {user.permission}</span>
-                                      </div>
-                                      <div className="user-actions">
-                                        <button
-                                          className="btn-approve"
-                                          onClick={() => handleApprove(item.company, user)}
-                                          disabled={loadingPermissions}
-                                        >
-                                          Grant Access
-                                        </button>
-                                        <button
-                                          className="btn-cancel-mini"
-                                          onClick={() => handleCancel(item.company, user)}
-                                          disabled={loadingPermissions}
-                                        >
-                                          Reject Access
-                                        </button>
-                                      </div>
-                                    </li>
-                                  ))}
+                                  {item.users.map((user, idx) => {
+                                    const userId = user.id || user.Id;
+                                    const currentAction = selectedBulkActions[userId]?.type;
+
+                                    return (
+                                      <li key={`${item.company}-${userId || idx}`} className="permission-user-row">
+                                        <div className="user-info">
+                                          <span className="user-email">{user.email}</span>
+                                          {/* <span className="user-status">Status: {user.permission}</span> */}
+                                        </div>
+                                        <div className="user-actions-row">
+                                          <span className="user-role">{user.role}</span>
+                                          <label className="action-checkbox-item grant-access">
+                                            <input
+                                              type="checkbox"
+                                              checked={currentAction === 'grant'}
+                                              onChange={() => handleToggleBulkAction(item.company, user, 'grant')}
+                                            />
+                                            <span className="grant-access-text">Grant Access</span>
+                                          </label>
+                                          <label className="action-checkbox-item reject-access">
+                                            <input
+                                              type="checkbox"
+                                              checked={currentAction === 'reject'}
+                                              onChange={() => handleToggleBulkAction(item.company, user, 'reject')}
+                                            />
+                                            <span className="reject-access-text">Reject Access</span>
+                                          </label>
+                                        </div>
+                                      </li>
+                                    );
+                                  })}
                                 </ul>
                               </div>
                             )}

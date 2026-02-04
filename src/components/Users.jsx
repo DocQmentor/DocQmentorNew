@@ -292,7 +292,7 @@ const Users = () => {
                 {/* Header */}
                 <section className="users-header">
                     <h2>{clientName} - Users Management</h2>
-                    <button onClick={fetchUsers} className="btn-refresh">
+                    <button onClick={fetchUsers} className="Users-btn-refresh">
                         <RefreshCw className="RefreshCw-Users" size={16} /> Refresh
                     </button>
                 </section>

@@ -108,7 +108,7 @@
   margin: 0;
 }
 
-.btn-refresh {
+.Users-btn-refresh {
   background-color: var(--primary);
   color: white;
   border: none;
@@ -123,14 +123,15 @@
   font-size: 0.875rem;
 }
 .RefreshCw-Users{
+  transition: var(--transition);
   color: white;
   background-color: var(--primary);
 }
-.btn-refresh:hover {
+.Users-btn-refresh:hover {
   background-color: var(--primary-dark);
   transform: translateY(-1px);
 }
-.btn-refresh:hover .RefreshCw-Users{
+.Users-btn-refresh:hover .RefreshCw-Users{
   transform: translateY(-1px);
   background-color: var(--primary-dark);
 }

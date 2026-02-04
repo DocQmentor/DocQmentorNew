@@ -276,7 +276,12 @@
   border-bottom: 1px solid var(--border-color);
   background: #ffffff;
 }
-
+.ConfidenceScoreConfiguration{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
 .table-header-top {
   display: flex;
   justify-content: space-between;
@@ -634,4 +639,139 @@ tr:nth-child(even) {
 .detail-value.status-inactive {
   color: var(--danger);
   font-weight: 600;
+}
+
+/* Configuration Section Styles */
+.config-box {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.config-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 5px 0 0 0;
+  font-weight: 500;
+}
+
+.config-form {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  background: #ffffff;
+}
+
+.config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.config-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.config-input {
+  width: 100%;
+  padding: 10px 35px 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary);
+  transition: all 0.2s;
+}
+
+.config-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.config-percent {
+  position: absolute;
+  right: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.config-actions {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.save-config-btn {
+  background-color: var(--success);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.save-config-btn:hover:not(:disabled) {
+  background-color: #266b2a;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.save-config-btn:disabled {
+  background-color: var(--secondary);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.config-message {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.config-message.success {
+  background-color: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.config-message.error {
+  background-color: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.config-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 }

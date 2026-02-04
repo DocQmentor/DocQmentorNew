@@ -489,17 +489,13 @@
 }
 
 
-.permission-accordion-header:hover,
-.permission-accordion-header:hover
-.permission-accordion-header-company-name,
-.permission-accordion-header:hover
-.permission-accordion-header-user-count-badge,
-.permission-accordion-header:hover
-.useradmin-Chevronup,
-.permission-accordion-header:hover
-.useradmin-Chevrondown{
+/* .permission-accordion-header:hover,
+.permission-accordion-header:hover .permission-accordion-header-company-name,
+.permission-accordion-header:hover .permission-accordion-header-user-count-badge,
+.permission-accordion-header:hover .useradmin-Chevronup,
+.permission-accordion-header:hover .useradmin-Chevrondown {
   background-color: #f8fafc;
-}
+} */
 
 .permission-accordion-content {
   padding: 16px;
@@ -509,12 +505,14 @@
   flex-direction: column;
   gap: 10px;
 }
-.permission-user-list{
+
+.permission-user-list {
   background-color: #f8fafc;
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
+
 .permission-user-row {
   display: flex;
   justify-content: space-between;
@@ -629,4 +627,132 @@
     display: block;
     overflow-x: auto;
   }
+}
+
+/* Bulk Selection Styles */
+.company-header-left {
+  display: flex;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.company-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-left: auto;
+  margin-right: 20px;
+}
+
+.bulk-selection-summary {
+  display: flex;
+  gap: 20px;
+}
+
+.summary-item {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.summary-item strong {
+  color: var(--primary);
+  font-size: 1rem;
+}
+
+.btn-proceed {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 6px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.85rem;
+}
+
+.btn-proceed:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-proceed:disabled {
+  background-color: var(--secondary);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.permission-user-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-actions-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.action-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+}
+.grant-access-text,.reject-access-text{
+  transition: background 0.2s;
+}
+.grant-access,.grant-access-text{
+  background-color: var(--success-light); 
+}
+
+.reject-access,.reject-access-text{
+  background-color: var(--danger-light); 
+}
+.grant-access:hover,.grant-access:hover .grant-access-text {
+  background-color: var(--success); 
+  color: white;
+}
+
+.reject-access:hover,.reject-access:hover .reject-access-text {
+  background-color: var(--danger); 
+  color: white;
+}
+
+.action-checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.btn-refresh {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-refresh:hover {
+  background-color: var(--primary-light);
 }
