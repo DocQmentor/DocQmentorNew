@@ -183,13 +183,18 @@ const Admin = () => {
 
               // 2. Fetch Active Users count from DynamicTable
               // Using POST method as per requirement
+              const sanitizeTableName = (name) => {
+                return name.replace(/[^a-zA-Z0-9_]/g, '');
+              };
+              const tableName = sanitizeTableName(clientName);
+
               const userResponse = await fetch("https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=hti8hivQlsGePwd1jhdOMmm3cy_28hghWbLdWy2BLx1dAzFuchAdrA==", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                  tableName: clientName,
+                  tableName: tableName,
                   operation: "readall"
                 })
               });
@@ -965,15 +970,15 @@ const Admin = () => {
           <p className="config-subtitle">Set the minimum confidence score (%) required for automatic completion.</p>
         </div>
         <div className="table-nav-controls">
-            <button className="nav-btn" onClick={goToPreviousTable}>
-              <ChevronLeft className='admin-ChevronLeft' size={20} />
-            </button>
-            <span style={{ fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>
-              {currentTableIndex + 1} / {tableConfig.length}
-            </span>
-            <button className="nav-btn" onClick={goToNextTable}>
-              <ChevronRight className='admin-ChevronRight' size={20} />
-            </button>
+          <button className="nav-btn" onClick={goToPreviousTable}>
+            <ChevronLeft className='admin-ChevronLeft' size={20} />
+          </button>
+          <span style={{ fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>
+            {currentTableIndex + 1} / {tableConfig.length}
+          </span>
+          <button className="nav-btn" onClick={goToNextTable}>
+            <ChevronRight className='admin-ChevronRight' size={20} />
+          </button>
         </div>
       </div>
 

@@ -47,6 +47,11 @@ const Users = () => {
         }
     }, [location.state]);
 
+    // Helper to sanitize table name
+    const sanitizeTableName = (name) => {
+        return name.replace(/[^a-zA-Z0-9_]/g, '');
+    };
+
     // Fetch users from DynamicTable API
     const fetchUsers = async () => {
         if (!clientName) return;
@@ -55,6 +60,7 @@ const Users = () => {
         setError(null);
 
         try {
+            const tableName = sanitizeTableName(clientName);
             const response = await fetch(
                 "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=hti8hivQlsGePwd1jhdOMmm3cy_28hghWbLdWy2BLx1dAzFuchAdrA==",
                 {
@@ -63,7 +69,7 @@ const Users = () => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        tableName: clientName,
+                        tableName: tableName,
                         operation: "readall"
                     })
                 }
@@ -167,15 +173,40 @@ const Users = () => {
         setCurrentPage(1);
     };
 
+    // Validate email format (spaces and username)
+    const validateEmailFormat = (email) => {
+        // Check if email contains spaces
+        if (email.includes(' ')) {
+            return { valid: false, error: 'Email cannot contain spaces' };
+        }
+
+        // Check if email has username before @
+        const atIndex = email.indexOf('@');
+        if (atIndex <= 0) {
+            return { valid: false, error: 'Email must have a username before @' };
+        }
+
+        // Check if email has @ symbol
+        if (atIndex === -1) {
+            return { valid: false, error: 'Email must contain @ symbol' };
+        }
+
+        return { valid: true };
+    };
+
     // Validate email domain
     const validateEmailDomain = (email) => {
-        const emailDomain = email.split('@')[1];
+        const emailParts = email.split('@');
+        if (emailParts.length !== 2) return false;
+
+        const emailDomain = emailParts[1];
         if (!emailDomain) return false;
 
         const domain = emailDomain.split('.')[0].toLowerCase();
-        const clientNameLower = clientName.toLowerCase();
+        // Normalize client name by removing spaces
+        const normalizedClientName = clientName.replace(/\s+/g, '').toLowerCase();
 
-        return domain === clientNameLower;
+        return domain === normalizedClientName;
     };
 
     // Check if email already exists
@@ -195,11 +226,21 @@ const Users = () => {
             return;
         }
 
-        if (!validateEmailDomain(newUserEmail)) {
-            setModalError(`Email domain must match client name (@${clientName}.com)`);
+        // 1. Check email format (spaces and username)
+        const formatValidation = validateEmailFormat(newUserEmail);
+        if (!formatValidation.valid) {
+            setModalError(formatValidation.error);
             return;
         }
 
+        // 2. Check email domain
+        if (!validateEmailDomain(newUserEmail)) {
+            const normalizedClientName = clientName.replace(/\s+/g, '').toLowerCase();
+            setModalError(`Email domain must match client name (@${normalizedClientName}.com)`);
+            return;
+        }
+
+        // 3. Check for duplicates
         if (emailExists(newUserEmail)) {
             setModalError('Email already exists in this client');
             return;
@@ -208,6 +249,7 @@ const Users = () => {
         setSubmitting(true);
 
         try {
+            const tableName = sanitizeTableName(clientName);
             const response = await fetch(
                 "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=hti8hivQlsGePwd1jhdOMmm3cy_28hghWbLdWy2BLx1dAzFuchAdrA==",
                 {
@@ -216,7 +258,7 @@ const Users = () => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        tableName: clientName,
+                        tableName: tableName,
                         operation: "create",
                         data: {
                             Email: newUserEmail,

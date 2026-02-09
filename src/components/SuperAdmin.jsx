@@ -47,8 +47,32 @@ const smartFetch = async (url, options = {}) => {
 
   // Try to parse as JSON
   try {
-    return JSON.parse(responseText);
+    const jsonData = JSON.parse(responseText);
+
+    // If response is not OK, extract error message from JSON
+    if (!response.ok) {
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+
+      if (jsonData.error) {
+        errorMessage = jsonData.error;
+      } else if (jsonData.message) {
+        errorMessage = jsonData.message;
+      }
+
+      throw {
+        type: 'API_ERROR',
+        message: errorMessage,
+        status: response.status
+      };
+    }
+
+    return jsonData;
   } catch (jsonError) {
+    // If it's already our custom error, re-throw it
+    if (jsonError.type === 'API_ERROR') {
+      throw jsonError;
+    }
+
     // If it's not JSON but response was OK, it might be text
     if (response.ok) {
       return responseText;
@@ -231,12 +255,18 @@ const SuperAdmin = () => {
         return;
       }
 
+      // Helper to sanitize table name
+      const sanitizeTableName = (name) => {
+        return name.replace(/[^a-zA-Z0-9_]/g, '');
+      };
+
       // 2. Fetch users from each client table using DynamicTableFunc
       const allPermissions = [];
 
-      for (const tableName of validTables) {
+      for (const clientName of validTables) {
         try {
-          console.log(`Fetching users from client table: ${tableName}`);
+          const tableName = sanitizeTableName(clientName);
+          console.log(`Fetching users from client table: ${tableName} (Client: ${clientName})`);
           const tableResponse = await callDynamicTableAPI(tableName, "readall");
 
           if (tableResponse && !tableResponse.error) {
@@ -258,11 +288,11 @@ const SuperAdmin = () => {
                 return permission && permission.toString().toLowerCase() === "inprocess";
               });
 
-              console.log(`Found ${pendingUsers.length} pending users in ${tableName}`);
+              console.log(`Found ${pendingUsers.length} pending users in ${clientName}`);
 
               if (pendingUsers.length > 0) {
                 allPermissions.push({
-                  company: tableName,
+                  company: clientName, // Use original name for display
                   users: pendingUsers.map(user => ({
                     id: user.Id || user.id,
                     email: user.Email || user.email || '',
@@ -331,6 +361,11 @@ const SuperAdmin = () => {
     total: Object.keys(selectedBulkActions).length
   };
 
+  // Helper to sanitize table name (duplicated for scope access)
+  const sanitizeTableName = (name) => {
+    return name.replace(/[^a-zA-Z0-9_]/g, '');
+  };
+
   // Bulk action execution
   const handleBulkProceed = async (targetCompany = null) => {
     const actionItems = targetCompany
@@ -351,6 +386,7 @@ const SuperAdmin = () => {
       for (const item of actionItems) {
         const { type, company, user } = item;
         const userId = user.id || user.Id;
+        const tableName = sanitizeTableName(company);
 
         try {
           if (type === 'grant') {
@@ -359,14 +395,14 @@ const SuperAdmin = () => {
               Role: user.role,
               Permission: "Approve"
             };
-            const response = await callDynamicTableAPI(company, "update", userId, updateData);
+            const response = await callDynamicTableAPI(tableName, "update", userId, updateData);
             results.push({ id: userId, success: response?.success });
           } else {
-            const response = await callDynamicTableAPI(company, "delete", userId);
+            const response = await callDynamicTableAPI(tableName, "delete", userId);
             results.push({ id: userId, success: response?.success });
           }
         } catch (err) {
-          console.error(`Error processing bulk action for ${userId}:`, err);
+          console.error(`Error processing bulk action for ${userId} in ${tableName}:`, err);
           results.push({ id: userId, success: false, error: err.message });
         }
       }
@@ -396,11 +432,12 @@ const SuperAdmin = () => {
   };
 
   // Handle approve action
-  const handleApprove = async (tableName, user) => {
+  const handleApprove = async (clientName, user) => {
     // if (!confirm(`Are you sure you want to approve ${user.email}?`)) return;
 
     try {
-      console.log(`Approving user ${user.id} in table ${tableName}`);
+      const tableName = sanitizeTableName(clientName);
+      console.log(`Approving user ${user.id} in table ${tableName} (Client: ${clientName})`);
 
       // Prepare update data - keep all fields as they are, only change permission
       const updateData = {
@@ -427,11 +464,12 @@ const SuperAdmin = () => {
   };
 
   // Handle cancel action
-  const handleCancel = async (tableName, user) => {
+  const handleCancel = async (clientName, user) => {
     // if (!confirm(`Are you sure you want to cancel ${user.email}'s request?`)) return;
 
     try {
-      console.log(`Cancelling user ${user.id} from table ${tableName}`);
+      const tableName = sanitizeTableName(clientName);
+      console.log(`Cancelling user ${user.id} from table ${tableName} (Client: ${clientName})`);
 
       const response = await callDynamicTableAPI(tableName, "delete", user.id);
 
@@ -590,8 +628,13 @@ const SuperAdmin = () => {
       console.error("Error creating client:", error);
 
       let errorMsg = "Failed to create client. ";
+
       if (error.type === 'AZURE_COLD_START') {
         errorMsg = "Service is starting up. Please wait and try again.";
+      } else if (error.message && error.message.includes("Client Name already exists")) {
+        errorMsg = "Client Name already exists. Please use a different name.";
+      } else if (error.message) {
+        errorMsg = error.message;
       }
 
       setError(errorMsg);
@@ -994,7 +1037,7 @@ const SuperAdmin = () => {
                 <div className="modal-overlay">
                   <div className="modal-content permission-modal-content">
                     <h3>Pending User Approvals</h3>
-                    
+
 
                     {loadingPermissions ? (
                       <p className="loading-text">Loading permissions...</p>
@@ -1014,7 +1057,7 @@ const SuperAdmin = () => {
 
                               <div className="company-header-actions" onClick={(e) => e.stopPropagation()}>
                                 <div className="bulk-selection-summary">
-                                <span className="permission-accordion-header-user-count-badge"><strong>{item.users.length}</strong> pending</span>
+                                  <span className="permission-accordion-header-user-count-badge"><strong>{item.users.length}</strong> pending</span>
                                   <span className="summary-item">Grant Selected: <strong>{Object.values(selectedBulkActions).filter(a => a.company === item.company && a.type === 'grant').length}</strong></span>
                                   <span className="summary-item">Reject Selected: <strong>{Object.values(selectedBulkActions).filter(a => a.company === item.company && a.type === 'reject').length}</strong></span>
                                 </div>
