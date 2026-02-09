@@ -9,7 +9,6 @@ import {
 import { PublicClientApplication, InteractionStatus } from "@azure/msal-browser";
  import './styles/theme.css';  
 import Login from "./components/Login";
-import Home from "./components/Home";
 import Table from "./components/Table";
 import Dashboard from "./components/Dashboard";
 import ManualReview from "./components/ManualReview";
@@ -87,7 +86,6 @@ const AppRoutes = () => {
       />
       <Route element={<ProtectedLayout />}>
       <Route path="/select" element={<SelectDocumentType />} />
-        <Route path="/home" element={<Home />} />
         <Route path="/table" element={<Table />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/manualreview" element={<ManualReview />} />
