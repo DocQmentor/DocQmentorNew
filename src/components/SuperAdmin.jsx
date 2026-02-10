@@ -337,19 +337,20 @@ const SuperAdmin = () => {
   const handleToggleBulkAction = (company, user, type) => {
     setSelectedBulkActions(prev => {
       const userId = user.id || user.Id;
-      const existingAction = prev[userId];
+      const compoundKey = `${company}-${userId}`;
+      const existingAction = prev[compoundKey];
 
       // If clicking already selected action, unselect it
       if (existingAction && existingAction.type === type) {
         const next = { ...prev };
-        delete next[userId];
+        delete next[compoundKey];
         return next;
       }
 
       // Otherwise set the new type
       return {
         ...prev,
-        [userId]: { type, company, user }
+        [compoundKey]: { type, company, user }
       };
     });
   };
@@ -414,7 +415,10 @@ const SuperAdmin = () => {
       if (targetCompany) {
         setSelectedBulkActions(prev => {
           const next = { ...prev };
-          actionItems.forEach(item => delete next[item.user.id || item.user.Id]);
+          actionItems.forEach(item => {
+            const userId = item.user.id || item.user.Id;
+            delete next[`${item.company}-${userId}`];
+          });
           return next;
         });
       } else {
@@ -1077,7 +1081,8 @@ const SuperAdmin = () => {
                                 <ul className="permission-user-list">
                                   {item.users.map((user, idx) => {
                                     const userId = user.id || user.Id;
-                                    const currentAction = selectedBulkActions[userId]?.type;
+                                    const compoundKey = `${item.company}-${userId}`;
+                                    const currentAction = selectedBulkActions[compoundKey]?.type;
 
                                     return (
                                       <li key={`${item.company}-${userId || idx}`} className="permission-user-row">
