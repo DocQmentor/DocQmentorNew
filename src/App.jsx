@@ -155,7 +155,7 @@ import { UserProvider, useUser } from "./context/UserContext";
 const msalConfig = {
   auth: {
     clientId: "450165b3-b418-4134-b525-cf04512bee71",
-    authority: "https://login.microsoftonline.com/common", // ✅ Multi-tenant
+    authority: "https://login.microsoftonline.com/organizations", // ✅ Multi-tenant
     redirectUri: window.location.origin,
   },
 };
