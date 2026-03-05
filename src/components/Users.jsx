@@ -62,7 +62,7 @@ const Users = () => {
         try {
             const tableName = sanitizeTableName(clientName);
             const response = await fetch(
-                "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=hti8hivQlsGePwd1jhdOMmm3cy_28hghWbLdWy2BLx1dAzFuchAdrA==",
+                "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=bbsE1Sshdh2O1GLYzxotgIWeM12JWkZ1bRnYZ-vFkM04AzFuXhibXA==",
                 {
                     method: "POST",
                     headers: {
@@ -251,7 +251,7 @@ const Users = () => {
         try {
             const tableName = sanitizeTableName(clientName);
             const response = await fetch(
-                "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=hti8hivQlsGePwd1jhdOMmm3cy_28hghWbLdWy2BLx1dAzFuchAdrA==",
+                "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=bbsE1Sshdh2O1GLYzxotgIWeM12JWkZ1bRnYZ-vFkM04AzFuXhibXA==",
                 {
                     method: "POST",
                     headers: {

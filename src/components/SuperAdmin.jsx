@@ -5,8 +5,8 @@ import Footer from "../Layout/Footer";
 import FilePagination from "../Layout/FilePagination";
 import { UserRound, Receipt, AlertCircle, Landmark, Home, RefreshCw, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
 
-const MASTER_API_URL = "https://docqmentorfuncapp.azurewebsites.net/api/MasterDataFunc?code=-naL4WUo1IvQ0tFNiOvKYNQVpFrlEOKr6XoAzDWRIS6HAzFuwFqgTA==";
-const DYNAMIC_TABLE_API = "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=hti8hivQlsGePwd1jhdOMmm3cy_28hghWbLdWy2BLx1dAzFuchAdrA==";
+const MASTER_API_URL = "https://docqmentorfuncapp.azurewebsites.net/api/MasterDataFunc?code=Z1XY4-hEifOUkkmGCbvvCbHxnOzQf0QNYxTiRpwOgW3JAzFuQTYLnQ==";
+const DYNAMIC_TABLE_API = "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=bbsE1Sshdh2O1GLYzxotgIWeM12JWkZ1bRnYZ-vFkM04AzFuXhibXA==";
 
 // Smart fetch function that handles Azure HTML errors
 const smartFetch = async (url, options = {}) => {

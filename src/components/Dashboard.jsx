@@ -185,7 +185,7 @@ const Dashboard = () => {
       // Add timestamp to prevent caching
       const timestamp = new Date().getTime();
       const response = await fetch(
-        `https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q==&_t=${timestamp}`
+        `https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=5ttVguFIlYsgNTLnI7I-hGlMyInPTM_Y-3ihASWqOxLzAzFuaOzdpQ==&_t=${timestamp}`
       );
 
       // 🚨 Check specifically for 503 or generic failure

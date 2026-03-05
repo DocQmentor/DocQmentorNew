@@ -173,7 +173,7 @@ const Admin = () => {
         try {
           // 1. Fetch Master Data to find client details
           const masterResponse = await fetchWithRetry(
-            "https://docqmentorfuncapp.azurewebsites.net/api/MasterDataFunc?code=-naL4WUo1IvQ0tFNiOvKYNQVpFrlEOKr6XoAzDWRIS6HAzFuwFqgTA=="
+            "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=bbsE1Sshdh2O1GLYzxotgIWeM12JWkZ1bRnYZ-vFkM04AzFuXhibXA=="
           );
 
           if (Array.isArray(masterResponse)) {
@@ -188,7 +188,7 @@ const Admin = () => {
               };
               const tableName = sanitizeTableName(clientName);
 
-              const userResponse = await fetch("https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=hti8hivQlsGePwd1jhdOMmm3cy_28hghWbLdWy2BLx1dAzFuchAdrA==", {
+              const userResponse = await fetch("https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=bbsE1Sshdh2O1GLYzxotgIWeM12JWkZ1bRnYZ-vFkM04AzFuXhibXA==", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json"
@@ -314,7 +314,7 @@ const Admin = () => {
       setDataError(null);
 
       const allDocumentsData = await fetchWithRetry(
-        "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q=="
+        "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=5ttVguFIlYsgNTLnI7I-hGlMyInPTM_Y-3ihASWqOxLzAzFuaOzdpQ=="
       );
 
       setAllDocuments(allDocumentsData);
