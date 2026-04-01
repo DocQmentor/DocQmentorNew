@@ -1,0 +1,269 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" font-family="Segoe UI, Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="1280" height="900" fill="#f4f7fa"/>
+
+  <!-- ═══════════════════════════════════════════════
+       HEADER BAR
+  ═══════════════════════════════════════════════ -->
+  <rect x="0" y="0" width="1280" height="60" fill="#ffffff" filter="url(#shadow-sm)"/>
+  <defs>
+    <filter id="shadow-sm" x="-5%" y="-5%" width="110%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000015"/>
+    </filter>
+    <filter id="card-shadow" x="-5%" y="-5%" width="110%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#00000012"/>
+    </filter>
+    <filter id="modal-shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#00000030"/>
+    </filter>
+  </defs>
+
+  <!-- Logo pill -->
+  <rect x="24" y="14" width="34" height="34" rx="8" fill="#256695"/>
+  <text x="41" y="36" text-anchor="middle" fill="white" font-size="13" font-weight="700">DQ</text>
+  <text x="68" y="36" fill="#256695" font-size="17" font-weight="800">DocQmentor</text>
+
+  <!-- Nav links -->
+  <rect x="290" y="18" width="96" height="26" rx="6" fill="#256695"/>
+  <text x="338" y="35" text-anchor="middle" fill="white" font-size="12" font-weight="700">⌂ Dashboard</text>
+
+  <text x="408" y="35" fill="#6a82a0" font-size="12" font-weight="600">📄 Data View</text>
+  <text x="502" y="35" fill="#6a82a0" font-size="12" font-weight="600">🔍 Manual Review</text>
+  <text x="618" y="35" fill="#6a82a0" font-size="12" font-weight="600">🛡 Client Admin</text>
+  <text x="716" y="35" fill="#6a82a0" font-size="12" font-weight="600">👑 Super Admin</text>
+
+  <!-- User pill -->
+  <rect x="1150" y="16" width="112" height="28" rx="14" fill="#f0f5fb"/>
+  <circle cx="1168" cy="30" r="11" fill="#256695"/>
+  <text x="1168" y="34" text-anchor="middle" fill="white" font-size="10" font-weight="700">JD</text>
+  <text x="1186" y="34" fill="#256695" font-size="12" font-weight="600">John Doe</text>
+
+  <!-- ═══════════════════════════════════════════════
+       PAGE HEADING
+  ═══════════════════════════════════════════════ -->
+  <text x="40" y="100" fill="#256695" font-size="20" font-weight="800">Document Processing Dashboard</text>
+  <text x="40" y="120" fill="#6a82a0" font-size="12">Upload documents directly — type is auto-detected. View processing activity across all models.</text>
+
+  <!-- ═══════════════════════════════════════════════
+       STATS CARDS
+  ═══════════════════════════════════════════════ -->
+  <!-- Card 1: Total -->
+  <rect x="40" y="138" width="280" height="86" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <rect x="56" y="154" width="44" height="44" rx="11" fill="#e8f1fb"/>
+  <text x="78" y="182" text-anchor="middle" font-size="22">📄</text>
+  <text x="114" y="174" fill="#7a90aa" font-size="11" font-weight="600">TOTAL DOCUMENTS</text>
+  <text x="114" y="200" fill="#256695" font-size="26" font-weight="800">148</text>
+
+  <!-- Card 2: Completed -->
+  <rect x="340" y="138" width="280" height="86" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <rect x="356" y="154" width="44" height="44" rx="11" fill="#e6f7ed"/>
+  <text x="378" y="182" text-anchor="middle" font-size="22">✅</text>
+  <text x="414" y="174" fill="#7a90aa" font-size="11" font-weight="600">COMPLETED</text>
+  <text x="414" y="200" fill="#2e9a55" font-size="26" font-weight="800">112</text>
+
+  <!-- Card 3: In Process -->
+  <rect x="640" y="138" width="280" height="86" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <rect x="656" y="154" width="44" height="44" rx="11" fill="#fff7e6"/>
+  <text x="678" y="182" text-anchor="middle" font-size="22">⏳</text>
+  <text x="714" y="174" fill="#7a90aa" font-size="11" font-weight="600">IN PROCESS</text>
+  <text x="714" y="200" fill="#e09800" font-size="26" font-weight="800">14</text>
+
+  <!-- Card 4: Manual Review -->
+  <rect x="940" y="138" width="300" height="86" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <rect x="956" y="154" width="44" height="44" rx="11" fill="#ffeaea"/>
+  <text x="978" y="182" text-anchor="middle" font-size="22">⚠️</text>
+  <text x="1014" y="174" fill="#7a90aa" font-size="11" font-weight="600">MANUAL REVIEW</text>
+  <text x="1014" y="200" fill="#ec2225" font-size="26" font-weight="800">22</text>
+
+  <!-- ═══════════════════════════════════════════════
+       DOCUMENT TYPE TABS
+  ═══════════════════════════════════════════════ -->
+  <rect x="40" y="244" width="544" height="38" rx="10" fill="white" filter="url(#card-shadow)"/>
+
+  <!-- All tab (active) -->
+  <rect x="46" y="249" width="100" height="28" rx="7" fill="#256695"/>
+  <text x="96" y="267" text-anchor="middle" fill="white" font-size="12" font-weight="700">🗂 All</text>
+  <rect x="138" y="255" width="30" height="16" rx="8" fill="rgba(255,255,255,0.25)"/>
+  <text x="153" y="267" text-anchor="middle" fill="white" font-size="10" font-weight="700">148</text>
+
+  <!-- Invoice tab -->
+  <text x="208" y="267" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">💲 Invoice</text>
+  <rect x="236" y="255" width="24" height="16" rx="8" fill="#e8f1fb"/>
+  <text x="248" y="267" text-anchor="middle" fill="#256695" font-size="10" font-weight="700">87</text>
+
+  <!-- Bank Statement tab -->
+  <text x="328" y="267" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🏦 Bank Statement</text>
+  <rect x="390" y="255" width="24" height="16" rx="8" fill="#e8f1fb"/>
+  <text x="402" y="267" text-anchor="middle" fill="#256695" font-size="10" font-weight="700">38</text>
+
+  <!-- Mortgage tab -->
+  <text x="462" y="267" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🏠 Mortgage Forms</text>
+  <rect x="526" y="255" width="24" height="16" rx="8" fill="#e8f1fb"/>
+  <text x="538" y="267" text-anchor="middle" fill="#256695" font-size="10" font-weight="700">23</text>
+
+  <!-- ═══════════════════════════════════════════════
+       UPLOAD PANEL (LEFT)
+  ═══════════════════════════════════════════════ -->
+  <rect x="40" y="300" width="330" height="570" rx="14" fill="white" filter="url(#card-shadow)"/>
+
+  <!-- Panel header -->
+  <text x="60" y="330" fill="#256695" font-size="14" font-weight="800">📤 Upload Documents</text>
+  <text x="60" y="348" fill="#8a9bb0" font-size="11">Type is auto-detected from filename.</text>
+  <line x1="40" y1="358" x2="370" y2="358" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Drop zone -->
+  <rect x="58" y="368" width="294" height="150" rx="12" fill="#f7fbff" stroke="#b8cfe0" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="205" y="408" text-anchor="middle" font-size="32">☁️</text>
+  <text x="205" y="436" text-anchor="middle" fill="#256695" font-size="13" font-weight="700">Drop files here or click to upload</text>
+  <text x="205" y="454" text-anchor="middle" fill="#8a9bb0" font-size="11">PDF, Word, JPG, PNG</text>
+  <rect x="163" y="465" width="84" height="30" rx="7" fill="#ec2225"/>
+  <text x="205" y="484" text-anchor="middle" fill="white" font-size="12" font-weight="700">Browse Files</text>
+
+  <!-- File queue title -->
+  <text x="60" y="546" fill="#7a90aa" font-size="10" font-weight="700">📋 SELECTED FILES (3)</text>
+
+  <!-- File 1 — auto detected Invoice -->
+  <rect x="58" y="556" width="294" height="54" rx="9" fill="#f7f9fb" stroke="#e8edf2" stroke-width="1"/>
+  <text x="76" y="578" font-size="18">📄</text>
+  <text x="100" y="576" fill="#2a3f55" font-size="11" font-weight="700">TechCorp_Invoice_2024.pdf</text>
+  <rect x="100" y="582" width="118" height="16" rx="6" fill="#e8f1fb"/>
+  <text x="159" y="594" text-anchor="middle" fill="#256695" font-size="9.5" font-weight="700">💲 Invoice — Auto-Detected</text>
+  <text x="336" y="588" fill="#ec2225" font-size="16" font-weight="600">✕</text>
+
+  <!-- File 2 — auto detected Bank Statement -->
+  <rect x="58" y="618" width="294" height="54" rx="9" fill="#f7f9fb" stroke="#e8edf2" stroke-width="1"/>
+  <text x="76" y="640" font-size="18">📄</text>
+  <text x="100" y="638" fill="#2a3f55" font-size="11" font-weight="700">HSBC_BankStatement_Mar.pdf</text>
+  <rect x="100" y="644" width="138" height="16" rx="6" fill="#e6f7ed"/>
+  <text x="169" y="656" text-anchor="middle" fill="#2e7a44" font-size="9.5" font-weight="700">🏦 Bank Statement — Auto-Detected</text>
+  <text x="336" y="650" fill="#ec2225" font-size="16" font-weight="600">✕</text>
+
+  <!-- File 3 — unknown type -->
+  <rect x="58" y="680" width="294" height="54" rx="9" fill="#fff8f8" stroke="#ffd0d0" stroke-width="1"/>
+  <text x="76" y="702" font-size="18">📄</text>
+  <text x="100" y="700" fill="#2a3f55" font-size="11" font-weight="700">Document_Scan_003.pdf</text>
+  <rect x="100" y="706" width="128" height="16" rx="6" fill="#ffeaea"/>
+  <text x="164" y="718" text-anchor="middle" fill="#c0392b" font-size="9.5" font-weight="700">❓ Unknown — Select Type</text>
+  <text x="336" y="712" fill="#ec2225" font-size="16" font-weight="600">✕</text>
+
+  <!-- Process button -->
+  <rect x="58" y="748" width="294" height="38" rx="9" fill="#256695"/>
+  <text x="205" y="771" text-anchor="middle" fill="white" font-size="13" font-weight="800">⚡ Process Files (3)</text>
+
+  <!-- Note about unknown file -->
+  <rect x="58" y="796" width="294" height="36" rx="8" fill="#fff7e0" stroke="#f0c040" stroke-width="1"/>
+  <text x="205" y="812" text-anchor="middle" fill="#b36a00" font-size="10" font-weight="700">⚠️ 1 file needs manual type selection</text>
+  <text x="205" y="826" text-anchor="middle" fill="#b36a00" font-size="10">A dialog will appear before upload</text>
+
+  <!-- ═══════════════════════════════════════════════
+       DOCUMENTS TABLE (RIGHT)
+  ═══════════════════════════════════════════════ -->
+  <rect x="390" y="300" width="850" height="570" rx="14" fill="white" filter="url(#card-shadow)"/>
+
+  <!-- Table toolbar -->
+  <text x="414" y="330" fill="#256695" font-size="14" font-weight="800">📋 Recent Documents</text>
+  <!-- Vendor dropdown -->
+  <rect x="990" y="314" width="120" height="26" rx="6" fill="white" stroke="#c8d8e8" stroke-width="1.5"/>
+  <text x="1000" y="331" fill="#256695" font-size="11" font-weight="600">All Vendors ▾</text>
+  <!-- Search box -->
+  <rect x="1120" y="314" width="104" height="26" rx="6" fill="white" stroke="#c8d8e8" stroke-width="1.5"/>
+  <text x="1130" y="331" fill="#aaa" font-size="11">🔍 Search…</text>
+  <line x1="390" y1="350" x2="1240" y2="350" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Table header -->
+  <rect x="390" y="351" width="850" height="34" fill="#256695"/>
+  <text x="415" y="373" fill="white" font-size="11.5" font-weight="700">ID</text>
+  <text x="460" y="373" fill="white" font-size="11.5" font-weight="700">Document Name</text>
+  <text x="680" y="373" fill="white" font-size="11.5" font-weight="700">Type</text>
+  <text x="800" y="373" fill="white" font-size="11.5" font-weight="700">Status</text>
+  <text x="940" y="373" fill="white" font-size="11.5" font-weight="700">Uploaded</text>
+  <text x="1080" y="373" fill="white" font-size="11.5" font-weight="700">Date</text>
+  <text x="1185" y="373" fill="white" font-size="11.5" font-weight="700">Action</text>
+
+  <!-- Row 1 -->
+  <rect x="390" y="385" width="850" height="40" fill="white"/>
+  <text x="415" y="410" fill="#2a3f55" font-size="12">#1041</text>
+  <text x="460" y="410" fill="#2a3f55" font-size="12">TechCorp_Invoice_2024.pdf</text>
+  <rect x="680" y="395" width="80" height="18" rx="6" fill="#e8f1fb"/>
+  <text x="720" y="408" text-anchor="middle" fill="#256695" font-size="10" font-weight="700">💲 Invoice</text>
+  <rect x="800" y="395" width="90" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="845" y="408" text-anchor="middle" fill="#2e9a55" font-size="10" font-weight="700">✅ Completed</text>
+  <text x="940" y="410" fill="#4a6080" font-size="12">2 hours ago</text>
+  <text x="1080" y="410" fill="#4a6080" font-size="12">18/03/2026</text>
+  <rect x="1184" y="396" width="42" height="22" rx="5" fill="#256695"/>
+  <text x="1205" y="411" text-anchor="middle" fill="white" font-size="11" font-weight="700">View</text>
+  <line x1="390" y1="425" x2="1240" y2="425" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 2 (even) -->
+  <rect x="390" y="425" width="850" height="40" fill="#f9fbfd"/>
+  <text x="415" y="450" fill="#2a3f55" font-size="12">#1040</text>
+  <text x="460" y="450" fill="#2a3f55" font-size="12">HSBC_BankStatement_Feb.pdf</text>
+  <rect x="680" y="434" width="110" height="18" rx="6" fill="#e6f7ed"/>
+  <text x="735" y="447" text-anchor="middle" fill="#2e7a44" font-size="10" font-weight="700">🏦 Bank Statement</text>
+  <rect x="800" y="434" width="110" height="18" rx="8" fill="#ffeaea"/>
+  <text x="855" y="447" text-anchor="middle" fill="#ec2225" font-size="10" font-weight="700">⚠️ Manual Review</text>
+  <text x="940" y="450" fill="#4a6080" font-size="12">5 hours ago</text>
+  <text x="1080" y="450" fill="#4a6080" font-size="12">18/03/2026</text>
+  <rect x="1184" y="436" width="42" height="22" rx="5" fill="#256695"/>
+  <text x="1205" y="451" text-anchor="middle" fill="white" font-size="11" font-weight="700">View</text>
+  <line x1="390" y1="465" x2="1240" y2="465" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 3 -->
+  <rect x="390" y="465" width="850" height="40" fill="white"/>
+  <text x="415" y="490" fill="#2a3f55" font-size="12">#1039</text>
+  <text x="460" y="490" fill="#2a3f55" font-size="12">LoanDoc_MortgageApp.pdf</text>
+  <rect x="680" y="474" width="106" height="18" rx="6" fill="#fff3e0"/>
+  <text x="733" y="487" text-anchor="middle" fill="#b36a00" font-size="10" font-weight="700">🏠 Mortgage Forms</text>
+  <rect x="800" y="474" width="90" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="845" y="487" text-anchor="middle" fill="#2e9a55" font-size="10" font-weight="700">✅ Completed</text>
+  <text x="940" y="490" fill="#4a6080" font-size="12">Yesterday</text>
+  <text x="1080" y="490" fill="#4a6080" font-size="12">17/03/2026</text>
+  <rect x="1184" y="476" width="42" height="22" rx="5" fill="#256695"/>
+  <text x="1205" y="491" text-anchor="middle" fill="white" font-size="11" font-weight="700">View</text>
+  <line x1="390" y1="505" x2="1240" y2="505" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 4 (even) -->
+  <rect x="390" y="505" width="850" height="40" fill="#f9fbfd"/>
+  <text x="415" y="530" fill="#2a3f55" font-size="12">#1038</text>
+  <text x="460" y="530" fill="#2a3f55" font-size="12">AlphaCo_Invoice_Q1.pdf</text>
+  <rect x="680" y="514" width="80" height="18" rx="6" fill="#e8f1fb"/>
+  <text x="720" y="527" text-anchor="middle" fill="#256695" font-size="10" font-weight="700">💲 Invoice</text>
+  <rect x="800" y="514" width="88" height="18" rx="8" fill="#fff7e0"/>
+  <text x="844" y="527" text-anchor="middle" fill="#c08000" font-size="10" font-weight="700">⏳ In Process</text>
+  <text x="940" y="530" fill="#4a6080" font-size="12">Yesterday</text>
+  <text x="1080" y="530" fill="#4a6080" font-size="12">17/03/2026</text>
+  <rect x="1184" y="516" width="42" height="22" rx="5" fill="#256695"/>
+  <text x="1205" y="531" text-anchor="middle" fill="white" font-size="11" font-weight="700">View</text>
+  <line x1="390" y1="545" x2="1240" y2="545" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 5 -->
+  <rect x="390" y="545" width="850" height="40" fill="white"/>
+  <text x="415" y="570" fill="#2a3f55" font-size="12">#1037</text>
+  <text x="460" y="570" fill="#2a3f55" font-size="12">Barclays_Statement_Q4.pdf</text>
+  <rect x="680" y="554" width="110" height="18" rx="6" fill="#e6f7ed"/>
+  <text x="735" y="567" text-anchor="middle" fill="#2e7a44" font-size="10" font-weight="700">🏦 Bank Statement</text>
+  <rect x="800" y="554" width="78" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="839" y="567" text-anchor="middle" fill="#1e6e3a" font-size="10" font-weight="700">✔ Reviewed</text>
+  <text x="940" y="570" fill="#4a6080" font-size="12">2 days ago</text>
+  <text x="1080" y="570" fill="#4a6080" font-size="12">16/03/2026</text>
+  <rect x="1184" y="556" width="42" height="22" rx="5" fill="#256695"/>
+  <text x="1205" y="571" text-anchor="middle" fill="white" font-size="11" font-weight="700">View</text>
+
+  <!-- Pagination -->
+  <rect x="570" y="835" width="30" height="22" rx="4" fill="#256695"/>
+  <text x="585" y="851" text-anchor="middle" fill="white" font-size="12" font-weight="700">1</text>
+  <rect x="608" y="835" width="30" height="22" rx="4" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="623" y="851" text-anchor="middle" fill="#256695" font-size="12" font-weight="700">2</text>
+  <rect x="646" y="835" width="30" height="22" rx="4" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="661" y="851" text-anchor="middle" fill="#256695" font-size="12" font-weight="700">3</text>
+  <rect x="684" y="835" width="30" height="22" rx="4" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="699" y="851" text-anchor="middle" fill="#256695" font-size="12">›</text>
+
+  <!-- ═══════════════════════════════════════════════
+       DESIGN LABEL
+  ═══════════════════════════════════════════════ -->
+  <rect x="40" y="876" width="540" height="20" rx="4" fill="#256695" opacity="0.08"/>
+  <text x="310" y="890" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Design 01 — New Dashboard: Direct Upload with Auto-Detection &amp; Multi-Model Tabs</text>
+
+</svg>

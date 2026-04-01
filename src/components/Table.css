@@ -1,360 +1,446 @@
-/* ===== Base Layout ===== */
+/* ══════════════════════════════════════════════════════════
+   DATA VIEW  —  Design 05
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Outer container ────────────────────────────────────── */
 .table-component-container {
   width: 100%;
-  min-height: 100vh;
+  min-height: calc(100vh - 56px);
   display: flex;
   flex-direction: column;
+  background: #f4f7fa;
   font-family: "Nunito", sans-serif;
-  background-color: #f9f9f9;
 }
 
-/* ===== Page Title ===== */
-.dataview-container h1 {
-  font-size: 22px;
-  font-weight: 700;
-  color: #266898;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  width: 100%;
-}
-
-/* ===== Main Container ===== */
+/* ── Page content area ──────────────────────────────────── */
 .dataview-container {
-  
-  margin-top: 20px;
   flex: 1;
-  padding: 50px 25px;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-/* ===== Filters Section ===== */
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 20px;
-}
-
-.filters label {
+  padding: 24px 28px 32px;
   display: flex;
   flex-direction: column;
-  font-weight: 500;
-  font-size: 13px;
-  color: #266898;
+  gap: 16px;
+  box-sizing: border-box;
 }
 
-.filters input,
-.filters select {
-  border: 1.8px solid #266898;
-  border-radius: 5px;
-  padding: 4px 8px;
-  font-size: 13px;
-  margin-top: 4px;
-  min-width: 150px;
-  height: 32px;
+/* ── Page heading ───────────────────────────────────────── */
+.dv-heading h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #256695;
+  margin: 0 0 4px;
+}
+.dv-heading p {
+  font-size: 12px;
+  color: #6a82a0;
+  margin: 0;
 }
 
-/* ===== Action Buttons ===== */
-.reset-export-bar button,
-.search-export-bar button {
-  background-color: #266898;
-  color: white;
+/* ── Model type tab bar ─────────────────────────────────── */
+.dv-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  width: fit-content;
+}
+
+.dv-tab-btn {
+  padding: 7px 18px;
   border: none;
-  border-radius: 5px;
+  border-radius: 7px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  color: #6a82a0;
+  background: transparent;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+  font-family: "Nunito", sans-serif;
+}
+.dv-tab-btn:hover  { background: #f0f5fb; color: #256695; }
+.dv-tab-btn.active { background: #256695; color: #ffffff; }
+
+/* ── Filter card ────────────────────────────────────────── */
+.dv-filter-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 16px 20px 18px;
+}
+
+.dv-filter-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #256695;
+  margin: 0 0 12px;
+}
+
+.dv-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.dv-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dv-filter-search { flex: 1; min-width: 200px; }
+
+.dv-filter-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7a90aa;
+  letter-spacing: 0.5px;
+}
+
+.dv-filter-input {
+  height: 32px;
+  min-width: 150px;
+  border: 1.5px solid #d4e2ef;
+  border-radius: 6px;
+  background: #f7f9fb;
+  padding: 0 10px;
+  font-size: 11.5px;
+  color: #2a3f55;
+  font-family: "Nunito", sans-serif;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.dv-filter-input:focus {
+  outline: none;
+  border-color: #256695;
+  background: #ffffff;
+}
+.dv-filter-input::placeholder { color: #aab8c8; }
+
+/* ── Filter action buttons ──────────────────────────────── */
+.dv-filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding-bottom: 1px;
+}
+
+.dv-btn-reset {
   height: 32px;
   padding: 0 14px;
-  transition: background 0.3s ease;
+  border: 1px solid #d0dae4;
+  border-radius: 6px;
+  background: #f4f4f4;
+  color: #6a82a0;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  transition: background 0.2s;
+}
+.dv-btn-reset:hover { background: #e8ecf0; }
+
+.dv-btn-export {
+  height: 32px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 6px;
+  background: #2e9a55;
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  transition: background 0.2s;
+}
+.dv-btn-export:hover { background: #247a44; }
+
+/* ── State messages ─────────────────────────────────────── */
+.dv-loading { color: #256695; font-size: 13px; padding: 8px 0; }
+.dv-error   { color: #ec2225; font-size: 13px; padding: 8px 0; }
+
+/* ── Table wrapper ──────────────────────────────────────── */
+.dv-table-wrap {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
 }
 
-.reset-export-bar button:hover,
-.search-export-bar button:hover {
-  background-color: #ed2224;
-}
-
-/* ===== TABLE Styling ===== */
-/* ===== TABLE Styling (Replica of SuperAdmin.css) ===== */
+/* ── TABLE Styling ──────────────────────────────────────── */
 .dataview-container table {
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border: 1px solid #ccc; /* Solid border */
+  border: 1px solid #e8edf2;
   table-layout: fixed;
   font-size: 11px;
 }
 
 .dataview-container th {
-  background: #266898 !important;
+  background: #256695 !important;
   color: white !important;
-  padding: 8px 6px;
+  padding: 9px 8px;
   text-align: left;
   font-weight: 700;
   font-size: 11px;
-  border: 1px solid #ccc; /* Full border */
+  border: 1px solid rgba(255,255,255,0.15);
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  position: relative;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  user-select: none;
 }
-
-.dataview-container th:last-child {
-  border-right: 1px solid #ccc; /* Ensure right border exists */
-}
+.dataview-container th:hover { background: #1a4f7a !important; }
 
 .dataview-container td {
-  padding: 6px;
-  color: #000; /* Black text */
+  padding: 8px;
+  color: #2a3f55;
   font-size: 11px;
-  border: 1px solid #ccc; /* Full border */
+  border: 1px solid #f0f3f7;
   vertical-align: middle;
-  line-height: 1.3; /* Increased line-height for wrapped text */
-  white-space: normal; /* Allow wrapping */
-  word-wrap: break-word; /* Break long words */
-  font-weight: 600; /* Reduced bold (from 700) */
+  line-height: 1.4;
+  white-space: normal;
+  word-wrap: break-word;
+  font-weight: 600;
 }
 
-.dataview-container tr {
-  transition: background 0.2s;
-}
+.dataview-container tr:nth-child(even) td { background: #f9fbfd; }
+.dataview-container tr:hover td          { background: #eef5fa !important; }
 
-.dataview-container tr:hover {
-  background: #f5f7fa !important;
+/* ── Confidence score badge ─────────────────────────────── */
+.conf-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
 }
+.conf-high { background: #e6f7ed; color: #2e7a44; }
+.conf-low  { background: #ffeaea; color: #c0392b; }
+.conf-na   { background: #f4f7fa; color: #8a9bb0; }
 
-.dataview-container tr:nth-child(even) {
-  background: #fcfcfc;
-}
-
-.dataview-container tr:nth-child(even):hover {
-  background: #f5f7fa;
-}
-
-/* ===== View Button Styling (Compact) ===== */
+/* ── Action button ──────────────────────────────────────── */
 .action-btn {
-  background: #266898;
+  background: #256695;
   color: white;
   border: none;
-  padding: 3px 6px;
-  border-radius: 3px;
+  padding: 3px 10px;
+  border-radius: 5px;
   cursor: pointer;
   font-size: 10px;
-  transition: all 0.2s;
+  font-weight: 600;
+  transition: background 0.2s;
   white-space: nowrap;
-  font-weight: 500;
-  min-width: 40px;
 }
+.action-btn:hover { background: #1a4f7a; }
 
-.action-btn:hover {
-  background: #1f5d8a;
-  transform: translateY(-1px);
-}
-
-/* ===== Pagination ===== */
+/* ── Pagination ─────────────────────────────────────────── */
 .pagination {
   display: flex;
   justify-content: center;
-  margin-top: 15px;
+  margin-top: 14px;
   align-items: center;
+  gap: 4px;
 }
-
 .pagination button {
-  background-color: #f8f8f8;
-  color: #266898;
+  background: #f8f8f8;
+  color: #256695;
   padding: 5px 10px;
-  margin: 0 4px;
   cursor: pointer;
   border-radius: 4px;
-  border: 1px solid #ddd;
-  font-size: 13px;
-  transition: all 0.3s ease;
+  border: 1px solid #d0dae4;
+  font-size: 12px;
+  transition: all 0.2s;
+  font-family: "Nunito", sans-serif;
 }
+.pagination button:hover { background: #e9e9e9; }
 
-.pagination button:hover {
-  background-color: #e9e9e9;
-}
-
-/* ===== Modal Styles (same as Manual Review) ===== */
+/* ══════════════════════════════════════════════════════════
+   VERSION HISTORY MODAL  —  Design 05
+   ══════════════════════════════════════════════════════════ */
 .modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
+  inset: 0;
+  background: rgba(15, 25, 40, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 1000;
 }
 
-.modal {
+.vh-modal {
   background: #fff;
-  padding: 24px 28px;
-  border-radius: 12px;
-  width: 650px;
-  max-width: 95%;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-  position: relative; /* Context for absolute close button */
+  border-radius: 14px;
+  width: 520px;
+  max-width: 95vw;
+  padding: 28px 28px 24px;
+  box-sizing: border-box;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
 }
 
-.modal h3 {
-  font-size: 22px;
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-}
-
-/* Generic modal buttons (bottom buttons) */
-.modal button:not(.modal-close-icon-btn) {
-  background-color: #266898;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.modal button:not(.modal-close-icon-btn):hover {
-  background-color: rgb(0, 71, 146);
-}
-
-/* Close button top-right - Specific override */
-.modal .modal-close-icon-btn {
+.vh-modal-accent {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background-color: transparent !important; /* Override generic */
-  color: #007bff;
-  border: none !important;
-  padding: 5px !important;
-  width: auto;
-  height: auto;
-  min-width: unset;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: #256695;
+  border-radius: 14px 14px 0 0;
+}
+
+.vh-modal-close {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 26px; height: 26px;
   border-radius: 50%;
-  display: flex !important;
+  background: #f4f7fa;
+  border: none;
+  font-size: 12px;
+  color: #6a82a0;
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.3s ease;
-  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.vh-modal-close:hover { background: #ffeaea; color: #ec2225; }
+
+.vh-modal-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #256695;
+  margin: 0 0 4px;
+  text-align: center;
+}
+.vh-modal-docname {
+  font-size: 12px;
+  color: #7a90aa;
+  text-align: center;
+  margin: 0 0 14px;
+  word-break: break-all;
+}
+.vh-divider {
+  border: none;
+  border-top: 1px solid #f0f3f7;
+  margin: 0 0 14px;
 }
 
-.modal .modal-close-icon-btn:hover {
-  background-color: #ffebee !important; /* Light red bg */
+/* ── Meta row ───────────────────────────────────────────── */
+.vh-meta-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
-
-.modal .modal-close-icon-btn:hover svg,
-.modal .modal-close-icon-btn:hover {
-  color: #dc3545 !important; /* Red icon */
+.vh-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+.vh-meta-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7a90aa;
+  letter-spacing: 0.5px;
+}
+.vh-meta-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2a3f55;
+}
+.vh-status-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #e6f7ed;
+  color: #2e7a44;
+}
+.vh-status-badge.manual-review { background: #ffeaea; color: #c0392b; }
+.vh-status-badge.in-process    { background: #fff7e6; color: #c08000; }
 
-/* ===== Version History Table Styling ===== */
+/* ── Version table ──────────────────────────────────────── */
 .version-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-  font-size: 13px;
-  color: #000; /* "Like black" */
-  border: 1px solid #ccc; /* "Light black border" */
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #2a3f55;
+  border: 1px solid #e8edf2;
+  border-radius: 6px;
+  overflow: hidden;
 }
-
 .version-table th,
 .version-table td {
   padding: 8px 12px;
   text-align: left;
-  border: 1px solid #ccc; /* Borders on all cells */
-  font-weight: 600; /* "Little bit bold" */
+  border: 1px solid #f0f3f7;
+  font-weight: 600;
 }
-
 .version-table th {
-  background-color: #f5f5f5; /* Light gray header */
+  background: #f4f8fb;
   font-weight: 700;
-  color: #333;
+  color: #256695;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
+.version-table tr:hover td { background: #f9fbfd; }
 
-.version-table tr:hover {
-  background-color: #f9f9f9;
+/* ── Modal close button ─────────────────────────────────── */
+.vh-close-btn {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  background: #256695;
+  color: #ffffff;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  transition: background 0.2s;
 }
+.vh-close-btn:hover { background: #1a4f7a; }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-  .filters input {
-    min-width: 130px;
-  }
+/* ══════════════════════════════════════════════════════════
+   FIXED COLUMN WIDTHS BY MODEL TYPE
+   ══════════════════════════════════════════════════════════ */
 
-  .dataview-container th,
-  .dataview-container td {
-    font-size: 12px;
-    padding: 8px 10px;
-  }
-}
-
-@media (max-width: 768px) {
-  .dataview-container {
-    padding: 15px;
-  }
-
-  .filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filters input,
-  .filters select,
-  .reset-export-bar button,
-  .search-export-bar button {
-    width: 100%;
-  }
-
-  .dataview-container table {
-    display: block;
-    overflow-x: auto;
-  }
-
-  .dataview-container th,
-  .dataview-container td {
-    font-size: 11.5px;
-    padding: 7px 8px;
-  }
-}
-/* ===== FIXED COLUMN WIDTHS BY MODEL TYPE ===== */
-
-/* ----- Invoice Table Column Widths ----- */
+/* Invoice */
 .dataview-container table.Invoice th:nth-child(1),
-.dataview-container table.Invoice td:nth-child(1) { width: 160px; } /* Vendor Name */
+.dataview-container table.Invoice td:nth-child(1) { width: 150px; }
 .dataview-container table.Invoice th:nth-child(2),
-.dataview-container table.Invoice td:nth-child(2) { width: 120px; } /* Invoice ID */
+.dataview-container table.Invoice td:nth-child(2) { width: 120px; }
 .dataview-container table.Invoice th:nth-child(3),
-.dataview-container table.Invoice td:nth-child(3) { width: 130px; } /* Invoice Date */
+.dataview-container table.Invoice td:nth-child(3) { width: 110px; }
 .dataview-container table.Invoice th:nth-child(4),
-.dataview-container table.Invoice td:nth-child(4) { width: 120px; } /* LPO No */
+.dataview-container table.Invoice td:nth-child(4) { width: 100px; }
 .dataview-container table.Invoice th:nth-child(5),
-.dataview-container table.Invoice td:nth-child(5) { width: 100px; } /* Sub Total */
+.dataview-container table.Invoice td:nth-child(5) { width: 90px; }
 .dataview-container table.Invoice th:nth-child(6),
-.dataview-container table.Invoice td:nth-child(6) { width: 100px; } /* VAT */
+.dataview-container table.Invoice td:nth-child(6) { width: 80px; }
 .dataview-container table.Invoice th:nth-child(7),
-.dataview-container table.Invoice td:nth-child(7) { width: 110px; } /* Invoice Total */
+.dataview-container table.Invoice td:nth-child(7) { width: 100px; }
 .dataview-container table.Invoice th:nth-child(8),
-.dataview-container table.Invoice td:nth-child(8) { width: 130px; } /* Upload Date */
+.dataview-container table.Invoice td:nth-child(8) { width: 110px; }
 .dataview-container table.Invoice th:nth-child(9),
-.dataview-container table.Invoice td:nth-child(9) { width: 140px; } /* Confidence Score */
+.dataview-container table.Invoice td:nth-child(9) { width: 110px; }
 .dataview-container table.Invoice th:nth-child(10),
-.dataview-container table.Invoice td:nth-child(10) { width: 90px; } /* Action */
+.dataview-container table.Invoice td:nth-child(10){ width: 70px; }
 
-
-/* ----- Bank Statement Table Column Widths ----- */
+/* Bank Statement */
 .dataview-container table.BankStatement th:nth-child(1),
 .dataview-container table.BankStatement td:nth-child(1) { width: 170px; }
 .dataview-container table.BankStatement th:nth-child(2),
-.dataview-container table.BankStatement td:nth-child(2) { width: 130px; }
+.dataview-container table.BankStatement td:nth-child(2) { width: 140px; }
 .dataview-container table.BankStatement th:nth-child(3),
 .dataview-container table.BankStatement td:nth-child(3) { width: 150px; }
 .dataview-container table.BankStatement th:nth-child(4),
@@ -362,27 +448,37 @@
 .dataview-container table.BankStatement th:nth-child(5),
 .dataview-container table.BankStatement td:nth-child(5) { width: 120px; }
 .dataview-container table.BankStatement th:nth-child(6),
-.dataview-container table.BankStatement td:nth-child(6) { width: 130px; }
+.dataview-container table.BankStatement td:nth-child(6) { width: 110px; }
 .dataview-container table.BankStatement th:nth-child(7),
-.dataview-container table.BankStatement td:nth-child(7) { width: 140px; }
+.dataview-container table.BankStatement td:nth-child(7) { width: 110px; }
 .dataview-container table.BankStatement th:nth-child(8),
-.dataview-container table.BankStatement td:nth-child(8) { width: 90px; }
+.dataview-container table.BankStatement td:nth-child(8) { width: 70px; }
 
-
-/* ----- Mortgage Forms Table Column Widths ----- */
+/* Mortgage Forms */
 .dataview-container table.MortgageForms th:nth-child(1),
-.dataview-container table.MortgageForms td:nth-child(1) { width: 170px; }
+.dataview-container table.MortgageForms td:nth-child(1) { width: 160px; }
 .dataview-container table.MortgageForms th:nth-child(2),
-.dataview-container table.MortgageForms td:nth-child(2) { width: 170px; }
+.dataview-container table.MortgageForms td:nth-child(2) { width: 160px; }
 .dataview-container table.MortgageForms th:nth-child(3),
-.dataview-container table.MortgageForms td:nth-child(3) { width: 130px; }
+.dataview-container table.MortgageForms td:nth-child(3) { width: 120px; }
 .dataview-container table.MortgageForms th:nth-child(4),
 .dataview-container table.MortgageForms td:nth-child(4) { width: 100px; }
 .dataview-container table.MortgageForms th:nth-child(5),
 .dataview-container table.MortgageForms td:nth-child(5) { width: 110px; }
 .dataview-container table.MortgageForms th:nth-child(6),
-.dataview-container table.MortgageForms td:nth-child(6) { width: 130px; }
+.dataview-container table.MortgageForms td:nth-child(6) { width: 110px; }
 .dataview-container table.MortgageForms th:nth-child(7),
-.dataview-container table.MortgageForms td:nth-child(7) { width: 140px; }
+.dataview-container table.MortgageForms td:nth-child(7) { width: 110px; }
 .dataview-container table.MortgageForms th:nth-child(8),
-.dataview-container table.MortgageForms td:nth-child(8) { width: 90px; }
+.dataview-container table.MortgageForms td:nth-child(8) { width: 70px; }
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .dataview-container { padding: 16px; }
+  .dv-filter-row      { gap: 10px; }
+}
+@media (max-width: 768px) {
+  .dv-filter-input { min-width: 120px; }
+  .dv-table-wrap   { overflow-x: auto; }
+  .dataview-container table { display: block; overflow-x: auto; white-space: nowrap; }
+}

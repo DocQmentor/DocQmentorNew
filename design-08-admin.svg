@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="cs"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#00000012"/></filter>
+  </defs>
+
+  <rect width="1280" height="900" fill="#f4f7fa"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1280" height="60" fill="#fff" filter="url(#cs)"/>
+  <rect x="24" y="14" width="34" height="34" rx="8" fill="#256695"/>
+  <text x="41" y="36" text-anchor="middle" fill="white" font-size="13" font-weight="800">DQ</text>
+  <text x="68" y="36" fill="#256695" font-size="17" font-weight="800">DocQmentor</text>
+  <text x="290" y="35" fill="#6a82a0" font-size="12" font-weight="600">⌂ Dashboard</text>
+  <text x="370" y="35" fill="#6a82a0" font-size="12" font-weight="600">📄 Data View</text>
+  <text x="458" y="35" fill="#6a82a0" font-size="12" font-weight="600">🔍 Manual Review</text>
+  <rect x="570" y="18" width="88" height="26" rx="6" fill="#256695"/>
+  <text x="614" y="35" text-anchor="middle" fill="white" font-size="12" font-weight="700">🛡 Client Admin</text>
+  <text x="680" y="35" fill="#6a82a0" font-size="12" font-weight="600">👑 Super Admin</text>
+  <circle cx="1218" cy="30" r="14" fill="#256695"/>
+  <text x="1218" y="35" text-anchor="middle" fill="white" font-size="10" font-weight="700">JD</text>
+
+  <!-- Page heading row -->
+  <text x="40" y="96" fill="#256695" font-size="20" font-weight="800">Client Admin — Contoso Ltd</text>
+  <text x="40" y="116" fill="#6a82a0" font-size="12">Manage confidence thresholds, view statistics and manage users for your organisation</text>
+
+  <!-- Manage Users button -->
+  <rect x="1080" y="86" width="150" height="36" rx="9" fill="#256695"/>
+  <text x="1155" y="109" text-anchor="middle" fill="white" font-size="13" font-weight="700">👥 Manage Users</text>
+
+  <!-- ─── LEFT: SECTION NAV ─── -->
+  <rect x="40" y="132" width="220" height="720" rx="12" fill="white" filter="url(#cs)"/>
+  <rect x="40" y="132" width="220" height="5" rx="3" fill="#256695"/>
+  <text x="150" y="164" text-anchor="middle" fill="#256695" font-size="13" font-weight="800">Navigation</text>
+  <line x1="56" y1="174" x2="244" y2="174" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Nav items -->
+  <!-- Active: Date-wise Stats -->
+  <rect x="52" y="184" width="196" height="38" rx="8" fill="#e8f1fb"/>
+  <text x="72" y="208" fill="#256695" font-size="13">📅</text>
+  <text x="96" y="208" fill="#256695" font-size="12" font-weight="700">Date-wise Stats</text>
+
+  <rect x="52" y="230" width="196" height="38" rx="8" fill="transparent"/>
+  <text x="72" y="254" fill="#6a82a0" font-size="13">🏢</text>
+  <text x="96" y="254" fill="#6a82a0" font-size="12" font-weight="600">Vendor-wise Stats</text>
+
+  <rect x="52" y="276" width="196" height="38" rx="8" fill="transparent"/>
+  <text x="72" y="300" fill="#6a82a0" font-size="13">⚙</text>
+  <text x="96" y="300" fill="#6a82a0" font-size="12" font-weight="600">Confidence Config</text>
+
+  <!-- Client info card -->
+  <rect x="52" y="340" width="196" height="130" rx="10" fill="#f4f8fb" stroke="#e0e8f0" stroke-width="1"/>
+  <text x="150" y="366" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Client Information</text>
+  <line x1="62" y1="372" x2="238" y2="372" stroke="#e8eef5" stroke-width="1"/>
+  <text x="68" y="392" fill="#7a90aa" font-size="10" font-weight="700">CLIENT</text>
+  <text x="68" y="408" fill="#2a3f55" font-size="11" font-weight="700">Contoso Ltd</text>
+  <text x="68" y="426" fill="#7a90aa" font-size="10" font-weight="700">PLAN</text>
+  <text x="68" y="442" fill="#2a3f55" font-size="11">Enterprise</text>
+  <text x="68" y="460" fill="#7a90aa" font-size="10" font-weight="700">USER LIMIT</text>
+  <text x="68" y="476" fill="#2a3f55" font-size="11">50 users</text>
+
+  <!-- ─── RIGHT: MAIN CONTENT ─── -->
+  <!-- Section: Date-wise Stats (active) -->
+  <rect x="278" y="132" width="982" height="352" rx="12" fill="white" filter="url(#cs)"/>
+  <rect x="278" y="132" width="982" height="5" rx="3" fill="#256695"/>
+  <text x="300" y="162" fill="#256695" font-size="15" font-weight="800">📅 Date-wise Statistics</text>
+
+  <!-- Date filter -->
+  <text x="780" y="157" fill="#7a90aa" font-size="10" font-weight="700">FROM</text>
+  <rect x="780" y="163" width="120" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="793" y="180" fill="#aab8c8" font-size="11">📅 01/03/2026</text>
+  <text x="914" y="157" fill="#7a90aa" font-size="10" font-weight="700">TO</text>
+  <rect x="914" y="163" width="120" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="927" y="180" fill="#aab8c8" font-size="11">📅 18/03/2026</text>
+  <rect x="1046" y="163" width="80" height="24" rx="6" fill="#2e9a55"/>
+  <text x="1086" y="179" text-anchor="middle" fill="white" font-size="11" font-weight="700">⬇ Export</text>
+  <rect x="1140" y="163" width="100" height="24" rx="6" fill="#f4f4f4" stroke="#d0dae4" stroke-width="1"/>
+  <text x="1190" y="179" text-anchor="middle" fill="#6a82a0" font-size="11" font-weight="700">↺ Reset</text>
+
+  <!-- Table -->
+  <rect x="294" y="198" width="950" height="32" rx="0" fill="#256695"/>
+  <path d="M300,198 Q294,198 294,204 L294,230 L1244,230 L1244,204 Q1244,198 1238,198 Z" fill="#256695"/>
+  <text x="310" y="218" fill="white" font-size="11" font-weight="700">Date</text>
+  <text x="460" y="218" fill="white" font-size="11" font-weight="700">Total</text>
+  <text x="580" y="218" fill="white" font-size="11" font-weight="700">Completed</text>
+  <text x="740" y="218" fill="white" font-size="11" font-weight="700">Manual Review</text>
+  <text x="960" y="218" fill="white" font-size="11" font-weight="700">Completion Rate</text>
+  <text x="1140" y="218" fill="white" font-size="11" font-weight="700">Action</text>
+
+  <!-- Rows -->
+  <rect x="294" y="230" width="950" height="34" fill="white"/>
+  <text x="310" y="252" fill="#2a3f55" font-size="11">18/03/2026</text>
+  <text x="460" y="252" fill="#2a3f55" font-size="11">24</text>
+  <text x="580" y="252" fill="#2a3f55" font-size="11">19</text>
+  <text x="740" y="252" fill="#2a3f55" font-size="11">5</text>
+  <rect x="960" y="238" width="80" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="1000" y="251" text-anchor="middle" fill="#2e7a44" font-size="10" font-weight="700">79.2%</text>
+  <line x1="294" y1="264" x2="1244" y2="264" stroke="#f0f3f7" stroke-width="1"/>
+
+  <rect x="294" y="264" width="950" height="34" fill="#f9fbfd"/>
+  <text x="310" y="286" fill="#2a3f55" font-size="11">17/03/2026</text>
+  <text x="460" y="286" fill="#2a3f55" font-size="11">31</text>
+  <text x="580" y="286" fill="#2a3f55" font-size="11">28</text>
+  <text x="740" y="286" fill="#2a3f55" font-size="11">3</text>
+  <rect x="960" y="272" width="80" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="1000" y="285" text-anchor="middle" fill="#2e7a44" font-size="10" font-weight="700">90.3%</text>
+  <line x1="294" y1="298" x2="1244" y2="298" stroke="#f0f3f7" stroke-width="1"/>
+
+  <rect x="294" y="298" width="950" height="34" fill="white"/>
+  <text x="310" y="320" fill="#2a3f55" font-size="11">16/03/2026</text>
+  <text x="460" y="320" fill="#2a3f55" font-size="11">18</text>
+  <text x="580" y="320" fill="#2a3f55" font-size="11">14</text>
+  <text x="740" y="320" fill="#2a3f55" font-size="11">4</text>
+  <rect x="960" y="306" width="80" height="18" rx="8" fill="#fff7e0"/>
+  <text x="1000" y="319" text-anchor="middle" fill="#c08000" font-size="10" font-weight="700">77.8%</text>
+  <line x1="294" y1="332" x2="1244" y2="332" stroke="#f0f3f7" stroke-width="1"/>
+
+  <rect x="294" y="332" width="950" height="34" fill="#f9fbfd" opacity="0.6"/>
+  <text x="310" y="354" fill="#aab8c8" font-size="11">15/03/2026</text>
+  <text x="460" y="354" fill="#aab8c8" font-size="11">22</text>
+  <text x="580" y="354" fill="#aab8c8" font-size="11">18</text>
+  <rect x="294" y="366" width="950" height="120" fill="white" opacity="0.9"/>
+
+  <!-- Pagination -->
+  <rect x="586" y="460" width="26" height="20" rx="4" fill="#256695"/>
+  <text x="599" y="474" text-anchor="middle" fill="white" font-size="11" font-weight="700">1</text>
+  <rect x="618" y="460" width="26" height="20" rx="4" fill="white" stroke="#d0dae4" stroke-width="1"/>
+  <text x="631" y="474" text-anchor="middle" fill="#256695" font-size="11">2</text>
+  <rect x="650" y="460" width="26" height="20" rx="4" fill="white" stroke="#d0dae4" stroke-width="1"/>
+  <text x="663" y="474" text-anchor="middle" fill="#256695" font-size="11">›</text>
+
+  <!-- ─── CONFIDENCE CONFIG CARD ─── -->
+  <rect x="278" y="500" width="982" height="250" rx="12" fill="white" filter="url(#cs)"/>
+  <rect x="278" y="500" width="982" height="5" rx="3" fill="#ec2225"/>
+  <text x="300" y="530" fill="#256695" font-size="15" font-weight="800">⚙ Confidence Score Thresholds</text>
+  <text x="300" y="550" fill="#8a9bb0" font-size="12">Set the minimum confidence score for auto-completion per document type</text>
+
+  <!-- Invoice threshold -->
+  <rect x="300" y="568" width="280" height="100" rx="10" fill="#f4f8fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="330" y="592" fill="#7a90aa" font-size="10" font-weight="700">💲 INVOICE THRESHOLD</text>
+  <rect x="330" y="600" width="200" height="34" rx="7" fill="white" stroke="#256695" stroke-width="2"/>
+  <text x="430" y="622" text-anchor="middle" fill="#256695" font-size="18" font-weight="800">85</text>
+  <text x="490" y="622" fill="#256695" font-size="14" font-weight="700">%</text>
+  <text x="440" y="655" text-anchor="middle" fill="#8a9bb0" font-size="10">Minimum score to auto-complete</text>
+
+  <!-- Bank threshold -->
+  <rect x="610" y="568" width="280" height="100" rx="10" fill="#f4f8fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="640" y="592" fill="#7a90aa" font-size="10" font-weight="700">🏦 BANK STATEMENT THRESHOLD</text>
+  <rect x="640" y="600" width="200" height="34" rx="7" fill="white" stroke="#256695" stroke-width="2"/>
+  <text x="740" y="622" text-anchor="middle" fill="#256695" font-size="18" font-weight="800">90</text>
+  <text x="800" y="622" fill="#256695" font-size="14" font-weight="700">%</text>
+  <text x="750" y="655" text-anchor="middle" fill="#8a9bb0" font-size="10">Minimum score to auto-complete</text>
+
+  <!-- Mortgage threshold -->
+  <rect x="920" y="568" width="280" height="100" rx="10" fill="#f4f8fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="950" y="592" fill="#7a90aa" font-size="10" font-weight="700">🏠 MORTGAGE THRESHOLD</text>
+  <rect x="950" y="600" width="200" height="34" rx="7" fill="white" stroke="#256695" stroke-width="2"/>
+  <text x="1050" y="622" text-anchor="middle" fill="#256695" font-size="18" font-weight="800">80</text>
+  <text x="1110" y="622" fill="#256695" font-size="14" font-weight="700">%</text>
+  <text x="1060" y="655" text-anchor="middle" fill="#8a9bb0" font-size="10">Minimum score to auto-complete</text>
+
+  <!-- Save config button -->
+  <rect x="930" y="686" width="310" height="38" rx="9" fill="#256695"/>
+  <text x="1085" y="709" text-anchor="middle" fill="white" font-size="13" font-weight="700">💾 Save Configuration</text>
+
+  <!-- Design label -->
+  <rect x="340" y="872" width="600" height="20" rx="4" fill="#256695" opacity="0.08"/>
+  <text x="640" y="886" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Design 08 — Client Admin (Date-wise &amp; Vendor-wise stats tables + Confidence threshold config)</text>
+</svg>

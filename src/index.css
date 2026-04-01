@@ -2,11 +2,9 @@
 * {
   margin: 0;
   padding: 0;
-  /* background-color: #ecf7fd; */
-  /* background-color: #f8fafc; */
-  background-color: white;
-
+  box-sizing: border-box;
 }
 body {
   font-family: "Nunito", sans-serif;
+  background-color: #ffffff;
 }

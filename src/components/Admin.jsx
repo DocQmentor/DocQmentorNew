@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, BarChart2, Users, Database, X, Shield, Download, RefreshCw, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import './Admin.css';
 import Footer from "../Layout/Footer";
@@ -7,6 +6,10 @@ import FilePagination from '../Layout/FilePagination';
 import useSortableData from "../utils/useSortableData";
 import './Users';
 import { useConfig } from "../context/ConfigContext";
+
+const MASTER_API_URL = "https://docqmentorfuncapp.azurewebsites.net/api/MasterDataFunc?code=Z1XY4-hEifOUkkmGCbvvCbHxnOzQf0QNYxTiRpwOgW3JAzFuQTYLnQ==";
+const DYNAMIC_TABLE_API = "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=bbsE1Sshdh2O1GLYzxotgIWeM12JWkZ1bRnYZ-vFkM04AzFuXhibXA==";
+
 // Smart fetch function to handle Azure HTML errors
 const smartFetch = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -122,12 +125,10 @@ const Admin = () => {
   };
 
   // Client Admin Data States
-  const [dateWiseData, setDateWiseData] = useState([]);
-  const [vendorWiseData, setVendorWiseData] = useState([]);
-  const [allDocuments, setAllDocuments] = useState([]); // Store original data
+  const [allDocuments, setAllDocuments] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState(null);
-  const [selectedPeriod, setSelectedPeriod] = useState('7days');
+  const [selectedPeriod] = useState('7days');
 
   // Add selected document type state
   const [selectedDocumentType, setSelectedDocumentType] = useState('');
@@ -150,8 +151,6 @@ const Admin = () => {
   const [currentVendorPage, setCurrentVendorPage] = useState(1);
   const [vendorRowsPerPage] = useState(6);
 
-  // Table Navigation State
-  const [currentTableIndex, setCurrentTableIndex] = useState(0);
   const [selectedTable, setSelectedTable] = useState('dateWise');
 
 
@@ -161,68 +160,49 @@ const Admin = () => {
   const [clientData, setClientData] = useState(null);
   const [activeUserCount, setActiveUserCount] = useState(0);
   const [showPlanPopup, setShowPlanPopup] = useState(false);
-  const [loadingClientDetails, setLoadingClientDetails] = useState(false);
 
-  // Fetch specific client data if navigated from SuperAdmin
+  // Fetch client data from master table
   useEffect(() => {
     const fetchClientDetails = async () => {
-      const clientName = location.state?.clientName;
+      try {
+        const masterResponse = await fetchWithRetry(MASTER_API_URL, { method: "GET" });
 
-      if (clientName) {
-        setLoadingClientDetails(true);
-        try {
-          // 1. Fetch Master Data to find client details
-          const masterResponse = await fetchWithRetry(
-            "https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=bbsE1Sshdh2O1GLYzxotgIWeM12JWkZ1bRnYZ-vFkM04AzFuXhibXA=="
-          );
+        if (Array.isArray(masterResponse)) {
+          const clientName = location.state?.clientName;
+          const client = clientName
+            ? masterResponse.find(c => c.Name === clientName)
+            : masterResponse[0];
 
-          if (Array.isArray(masterResponse)) {
-            const client = masterResponse.find(c => c.Name === clientName);
-            if (client) {
-              setClientData(client);
+          if (client) {
+            setClientData(client);
 
-              // 2. Fetch Active Users count from DynamicTable
-              // Using POST method as per requirement
-              const sanitizeTableName = (name) => {
-                return name.replace(/[^a-zA-Z0-9_]/g, '');
-              };
-              const tableName = sanitizeTableName(clientName);
+            const sanitizeTableName = (name) => name.replace(/[^a-zA-Z0-9_]/g, '');
+            const tableName = sanitizeTableName(client.Name);
 
-              const userResponse = await fetch("https://docqmentorfuncapp.azurewebsites.net/api/dynamictable?code=bbsE1Sshdh2O1GLYzxotgIWeM12JWkZ1bRnYZ-vFkM04AzFuXhibXA==", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  tableName: tableName,
-                  operation: "readall"
-                })
-              });
+            const userResponse = await fetch(DYNAMIC_TABLE_API, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ tableName, operation: "readall" })
+            });
 
-              const userText = await userResponse.text();
-              let users = [];
-              try {
-                const parsed = JSON.parse(userText);
-                // Handle different response structures
-                if (Array.isArray(parsed)) users = parsed;
-                else if (parsed.data && Array.isArray(parsed.data)) users = parsed.data;
-                else if (parsed.users && Array.isArray(parsed.users)) users = parsed.users;
-              } catch (e) {
-                console.error("Error parsing user data:", e);
-              }
-
-              const approvedCount = users.filter(u =>
-                (u.Permission === "Approve" || u.permission === "Approve")
-              ).length;
-
-              setActiveUserCount(approvedCount);
+            const userText = await userResponse.text();
+            let users = [];
+            try {
+              const parsed = JSON.parse(userText);
+              if (Array.isArray(parsed)) users = parsed;
+              else if (parsed.data && Array.isArray(parsed.data)) users = parsed.data;
+              else if (parsed.users && Array.isArray(parsed.users)) users = parsed.users;
+            } catch (e) {
+              console.error("Error parsing user data:", e);
             }
+
+            setActiveUserCount(
+              users.filter(u => u.Permission === "Approve" || u.permission === "Approve").length
+            );
           }
-        } catch (error) {
-          console.error("Error fetching client specific data:", error);
-        } finally {
-          setLoadingClientDetails(false);
         }
+      } catch (error) {
+        console.error("Error fetching client data:", error);
       }
     };
 
@@ -238,62 +218,10 @@ const Admin = () => {
       }
     });
   }
-  // Table Configuration
-  const tableConfig = [
-    {
-      id: 'dateWise',
-      name: 'Date-wise Statistics',
-      component: 'dateWise'
-    },
-    {
-      id: 'vendorWise',
-      name: 'Vendor-wise Statistics',
-      component: 'vendorWise'
-    },
-    {
-      id: 'configuration',
-      name: 'Confidence Configuration',
-      component: 'configuration'
-    }
-  ];
 
-  // User Management States
-  const [users, setUsers] = useState([
-    { id: 1, email: "admin@example.com", role: "Admin" },
-    { id: 2, email: "reviewer@example.com", role: "Contributor" },
-    { id: 3, email: "user1@example.com", role: "Member" },
-    { id: 4, email: "user2@example.com", role: "Member" }
-  ]);
 
-  // User Filter and Popup States
-  const [showUserPopup, setShowUserPopup] = useState(false);
-  const [filteredUsers, setFilteredUsers] = useState(users);
-  const [roleFilter, setRoleFilter] = useState('');
-  const [nameFilter, setNameFilter] = useState('');
-
-  // Table Navigation Functions
   const handleTableSelect = (tableId) => {
-    const index = tableConfig.findIndex(table => table.id === tableId);
-    if (index !== -1) {
-      setSelectedTable(tableId);
-      setCurrentTableIndex(index);
-    }
-  };
-
-  const goToPreviousTable = () => {
-    setCurrentTableIndex(prev => {
-      const newIndex = prev > 0 ? prev - 1 : tableConfig.length - 1;
-      setSelectedTable(tableConfig[newIndex].id);
-      return newIndex;
-    });
-  };
-
-  const goToNextTable = () => {
-    setCurrentTableIndex(prev => {
-      const newIndex = prev < tableConfig.length - 1 ? prev + 1 : 0;
-      setSelectedTable(tableConfig[newIndex].id);
-      return newIndex;
-    });
+    setSelectedTable(tableId);
   };
 
   // Load selected document type from localStorage on component mount
@@ -319,14 +247,6 @@ const Admin = () => {
 
       setAllDocuments(allDocumentsData);
 
-      // Process data for date-wise statistics (filtered by document type)
-      const dateStats = processDateWiseData(allDocumentsData);
-      setDateWiseData(dateStats);
-
-      // Process data for vendor-wise statistics (filtered by document type)
-      const vendorStats = processVendorWiseData(allDocumentsData);
-      setVendorWiseData(vendorStats);
-
     } catch (err) {
       console.error('Error fetching admin data:', err);
 
@@ -349,8 +269,6 @@ const Admin = () => {
 
       // Set empty arrays on error
       setAllDocuments([]);
-      setDateWiseData([]);
-      setVendorWiseData([]);
 
     } finally {
       setDataLoading(false);
@@ -594,48 +512,18 @@ const Admin = () => {
   const filteredDateWiseData = filterDateWiseData();
   const filteredVendorWiseData = filterVendorWiseData();
 
-  // Calculate total documents based on current filters and active table
-  const calculateCurrentTotalDocs = () => {
-    if (selectedTable === 'vendorWise') {
-      const total = filteredVendorWiseData.reduce((sum, item) => sum + item.total, 0);
-      return total;
-    } else {
-      // Default to date-wise (or if dateWise is selected)
-      const total = filteredDateWiseData.reduce((sum, item) => sum + item.total, 0);
-      return total;
-    }
-  };
-
-  // Calculate average metric based on active table
-  const calculateAverageMetric = () => {
-    if (selectedTable === 'vendorWise') {
-      if (filteredVendorWiseData.length === 0) return '0';
-      const totalDocs = filteredVendorWiseData.reduce((sum, item) => sum + item.total, 0);
-      const avg = totalDocs / filteredVendorWiseData.length;
-      return avg.toFixed(0);
-    } else {
-      if (filteredDateWiseData.length === 0) return '0';
-      const totalDocs = filteredDateWiseData.reduce((sum, day) => sum + day.total, 0);
-      const avg = totalDocs / Math.min(filteredDateWiseData.length, 30);
-      return avg.toFixed(0);
-    }
-  };
 
   // Use sortable data hooks for both tables
   const {
     sortedData: sortedDateData,
     toggleSort: toggleDateSort,
     renderSortIcon: renderDateSortIcon,
-    sortColumn: dateSortColumn,
-    sortOrder: dateSortOrder
   } = useSortableData(filteredDateWiseData);
 
   const {
     sortedData: sortedVendorData,
     toggleSort: toggleVendorSort,
     renderSortIcon: renderVendorSortIcon,
-    sortColumn: vendorSortColumn,
-    sortOrder: vendorSortOrder
   } = useSortableData(filteredVendorWiseData);
 
   // Paginate date-wise data
@@ -680,16 +568,6 @@ const Admin = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  // Filter users when filters change
-  useEffect(() => {
-    const filtered = users.filter(user => {
-      const roleMatch = !roleFilter || user.role === roleFilter;
-      const nameMatch = !nameFilter || user.email.toLowerCase().includes(nameFilter.toLowerCase());
-      return roleMatch && nameMatch;
-    });
-    setFilteredUsers(filtered);
-  }, [users, roleFilter, nameFilter]);
-
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentDatePage(1);
@@ -706,320 +584,186 @@ const Admin = () => {
     }
   }, [selectedDocumentType, selectedPeriod]);
 
-  // User Management Functions
-  const openUserPopup = () => {
-    setShowUserPopup(true);
-    setFilteredUsers(users);
+  const getCompRateClass = (rate) => {
+    if (rate >= 80) return "comp-high";
+    if (rate >= 50) return "comp-mid";
+    return "comp-low";
   };
 
-
+  const NAV_ITEMS = [
+    { id: "dateWise",      emoji: "📅", label: "Date-wise Stats" },
+    { id: "vendorWise",    emoji: "🏢", label: "Vendor-wise Stats" },
+    { id: "configuration", emoji: "⚙",  label: "Confidence Config" },
+  ];
 
   // Render Date-wise Table
   const renderDateWiseTable = () => (
-    <div className="admin-table-box">
-      <div className="table-section-header">
-
-        {/* Div 1: Document Type Header */}
-        <div className="table-header-top">
-          <h3 className="table-header-title">{selectedDocumentType} - Date-wise Statistics</h3>
-          <div className="table-nav-controls">
-            <button className="nav-btn" onClick={goToPreviousTable}>
-              <ChevronLeft className='admin-ChevronLeft' size={20} />
-            </button>
-            <span style={{ fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>
-              {currentTableIndex + 1} / {tableConfig.length}
-            </span>
-            <button className="nav-btn" onClick={goToNextTable}>
-              <ChevronRight className='admin-ChevronRight' size={20} />
-            </button>
-          </div>
+    <div className="ad-section-card">
+      <div className="ad-section-accent" />
+      <div className="ad-section-head">
+        <div>
+          <div className="ad-section-title">📅 Date-wise Statistics</div>
         </div>
-
-
-        {/* Div 2: Filters and Controls */}
-        <div className="table-header-bottom">
-          <div className="table-filters-container">
-            <div className="table-filter-group">
-              <label className='date-from-label' htmlFor="date-from">From Date:</label>
-              <input
-                className='date-from-input'
-                type="date"
-                id="date-from"
-                value={dateFromFilter}
-                onChange={(e) => setDateFromFilter(e.target.value)}
-              />
-            </div>
-            <div className="table-filter-group">
-              <label className='date-to-label' htmlFor="date-to">To Date:</label>
-              <input
-                className='date-to-input'
-                type="date"
-                id="date-to"
-                value={dateToFilter}
-                onChange={(e) => setDateToFilter(e.target.value)}
-              />
-            </div>
+        <div className="ad-filter-row">
+          <div className="ad-filter-field">
+            <label className="ad-filter-lbl">FROM</label>
+            <input className="ad-filter-input" type="date" value={dateFromFilter} onChange={(e) => setDateFromFilter(e.target.value)} />
           </div>
-
-          <div className="table-actions-container">
-            <button
-              onClick={() => exportToCSV(filteredDateWiseData, 'date_wise_stats')}
-              className="export-btn"
-              disabled={filteredDateWiseData.length === 0}
-            >
-              <Download className="export-btn-icon" size={16} />
-              Export CSV
-            </button>
-            <button onClick={resetDateFilters} className="reset-filters-btn">
-              Reset Filters
-            </button>
+          <div className="ad-filter-field">
+            <label className="ad-filter-lbl">TO</label>
+            <input className="ad-filter-input" type="date" value={dateToFilter} onChange={(e) => setDateToFilter(e.target.value)} />
           </div>
+          <button className="ad-btn-export" onClick={() => exportToCSV(filteredDateWiseData, 'date_wise_stats')} disabled={filteredDateWiseData.length === 0}>
+            &#8595; Export
+          </button>
+          <button className="ad-btn-reset" onClick={resetDateFilters}>&#8634; Reset</button>
         </div>
       </div>
 
-      <div className="table-scroll-wrapper">
-        <table>
+      <div className="ad-table-wrap">
+        <table className="ad-table">
           <thead>
             <tr>
-              <th onClick={() => toggleDateSort("date")}>
-                <span className="sortable-header">
-                  Date {renderDateSortIcon("date")}
-                </span>
-              </th>
-              <th onClick={() => toggleDateSort("total")}>
-                <span className="sortable-header">
-                  Total Docs Uploaded {renderDateSortIcon("total")}
-                </span>
-              </th>
-              <th onClick={() => toggleDateSort("completed")}>
-                <span className="sortable-header">
-                  Completed {renderDateSortIcon("completed")}
-                </span>
-              </th>
-              <th onClick={() => toggleDateSort("manualReview")}>
-                <span className="sortable-header">
-                  Manual Review {renderDateSortIcon("manualReview")}
-                </span>
-              </th>
+              <th onClick={() => toggleDateSort("date")}>Date {renderDateSortIcon("date")}</th>
+              <th onClick={() => toggleDateSort("total")}>Total {renderDateSortIcon("total")}</th>
+              <th onClick={() => toggleDateSort("completed")}>Completed {renderDateSortIcon("completed")}</th>
+              <th onClick={() => toggleDateSort("manualReview")}>Manual Review {renderDateSortIcon("manualReview")}</th>
+              <th onClick={() => toggleDateSort("completionRate")}>Completion Rate {renderDateSortIcon("completionRate")}</th>
             </tr>
           </thead>
           <tbody>
             {currentDateRows.length > 0 ? (
-              currentDateRows.map((day, index) => (
-                <tr key={index}>
+              currentDateRows.map((day, i) => (
+                <tr key={i}>
                   <td>{new Date(day.date).toLocaleDateString()}</td>
                   <td>{day.total}</td>
                   <td>{day.completed}</td>
                   <td>{day.manualReview}</td>
+                  <td><span className={`comp-badge ${getCompRateClass(day.completionRate)}`}>{day.completionRate.toFixed(1)}%</span></td>
                 </tr>
               ))
-            ) : !dataLoading && !dataError ? ( // Only show "no data" if not loading and no error
-              <tr>
-                <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
-                  No {selectedDocumentType} data available for selected filters
-                </td>
-              </tr>
-            ) : null}
+            ) : (
+              <tr><td colSpan="5" className="ad-td-empty">{dataLoading ? "Loading…" : `No ${selectedDocumentType} data available`}</td></tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Date-wise Pagination */}
       {sortedDateData.length > 0 && (
-        <FilePagination
-          currentPage={currentDatePage}
-          totalPages={dateTotalPages}
-          onPageChange={setCurrentDatePage}
-          rowsPerPage={dateRowsPerPage}
-          totalItems={sortedDateData.length}
-        />
+        <FilePagination currentPage={currentDatePage} totalPages={dateTotalPages} onPageChange={setCurrentDatePage} rowsPerPage={dateRowsPerPage} totalItems={sortedDateData.length} />
       )}
     </div>
   );
 
   // Render Vendor-wise Table
   const renderVendorWiseTable = () => (
-    <div className="admin-table-box">
-      <div className="table-section-header">
-        {/* Div 1: Document Type Header */}
-        <div className="table-header-top">
-          <h3 className="table-header-title">{selectedDocumentType} - Vendor-wise Statistics</h3>
-          <div className="table-nav-controls">
-            <button className="nav-btn" onClick={goToPreviousTable}>
-              <ChevronLeft className='admin-ChevronLeft' size={20} />
-            </button>
-            <span style={{ fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>
-              {currentTableIndex + 1} / {tableConfig.length}
-            </span>
-            <button className="nav-btn" onClick={goToNextTable}>
-              <ChevronRight className='admin-ChevronRight' size={20} />
-            </button>
+    <div className="ad-section-card">
+      <div className="ad-section-accent" />
+      <div className="ad-section-head">
+        <div className="ad-section-title">🏢 Vendor-wise Statistics</div>
+        <div className="ad-filter-row">
+          <div className="ad-filter-field">
+            <label className="ad-filter-lbl">VENDOR</label>
+            <select className="ad-filter-input" value={vendorSelectFilter} onChange={(e) => setVendorSelectFilter(e.target.value)}>
+              <option value="">All Vendors</option>
+              {getUniqueVendors().map(v => <option key={v} value={v}>{v}</option>)}
+            </select>
           </div>
-        </div>
-        {/* Div 2: Filters and Controls */}
-        <div className="table-header-bottom">
-          <div className="table-filters-container">
-            <div className="table-filter-group">
-              <label className='vendor-select-label' htmlFor="vendor-select">Select by Vendor:</label>
-              <select
-                className='vendor-select-input'
-                id="vendor-select"
-                value={vendorSelectFilter}
-                onChange={(e) => setVendorSelectFilter(e.target.value)}
-              >
-                <option value="">All Vendors</option>
-                {getUniqueVendors().map(vendor => (
-                  <option key={vendor} value={vendor}>{vendor}</option>
-                ))}
-              </select>
-            </div>
-            <div className="table-filter-group">
-              <label className='vendor-search-label' htmlFor="vendor-search">Search by Vendor:</label>
-              <input
-                className='vendor-search-input'
-                type="text"
-                id="vendor-search"
-                placeholder="Enter vendor name"
-                value={vendorSearchFilter}
-                onChange={(e) => setVendorSearchFilter(e.target.value)}
-              />
-            </div>
+          <div className="ad-filter-field">
+            <label className="ad-filter-lbl">SEARCH</label>
+            <input className="ad-filter-input" type="text" placeholder="Search vendor…" value={vendorSearchFilter} onChange={(e) => setVendorSearchFilter(e.target.value)} />
           </div>
-
-          <div className="table-actions-container">
-            <button
-              onClick={() => exportToCSV(filteredVendorWiseData, 'vendor_wise_stats')}
-              className="export-btn"
-              disabled={filteredVendorWiseData.length === 0}
-            >
-              <Download className="export-btn-icon" size={16} />
-              Export CSV
-            </button>
-            <button onClick={resetVendorFilters} className="reset-filters-btn">
-              Reset Filters
-            </button>
-          </div>
+          <button className="ad-btn-export" onClick={() => exportToCSV(filteredVendorWiseData, 'vendor_wise_stats')} disabled={filteredVendorWiseData.length === 0}>
+            &#8595; Export
+          </button>
+          <button className="ad-btn-reset" onClick={resetVendorFilters}>&#8634; Reset</button>
         </div>
       </div>
 
-      <div className="table-scroll-wrapper">
-        <table>
+      <div className="ad-table-wrap">
+        <table className="ad-table">
           <thead>
             <tr>
-              <th onClick={() => toggleVendorSort("vendor")}>
-                <span className="sortable-header">
-                  Vendor Name {renderVendorSortIcon("vendor")}
-                </span>
-              </th>
-              <th onClick={() => toggleVendorSort("total")}>
-                <span className="sortable-header">
-                  Total Docs Uploaded {renderVendorSortIcon("total")}
-                </span>
-              </th>
-              <th onClick={() => toggleVendorSort("completed")}>
-                <span className="sortable-header">
-                  Completed {renderVendorSortIcon("completed")}
-                </span>
-              </th>
-              <th onClick={() => toggleVendorSort("manualReview")}>
-                <span className="sortable-header">
-                  Manual Review {renderVendorSortIcon("manualReview")}
-                </span>
-              </th>
+              <th onClick={() => toggleVendorSort("vendor")}>Vendor Name {renderVendorSortIcon("vendor")}</th>
+              <th onClick={() => toggleVendorSort("total")}>Total {renderVendorSortIcon("total")}</th>
+              <th onClick={() => toggleVendorSort("completed")}>Completed {renderVendorSortIcon("completed")}</th>
+              <th onClick={() => toggleVendorSort("manualReview")}>Manual Review {renderVendorSortIcon("manualReview")}</th>
+              <th onClick={() => toggleVendorSort("completionRate")}>Completion Rate {renderVendorSortIcon("completionRate")}</th>
             </tr>
           </thead>
           <tbody>
             {currentVendorRows.length > 0 ? (
-              currentVendorRows.map((vendor, index) => (
-                <tr key={index}>
-                  <td>{vendor.vendor}</td>
-                  <td>{vendor.total}</td>
-                  <td>{vendor.completed}</td>
-                  <td>{vendor.manualReview}</td>
+              currentVendorRows.map((v, i) => (
+                <tr key={i}>
+                  <td>{v.vendor}</td>
+                  <td>{v.total}</td>
+                  <td>{v.completed}</td>
+                  <td>{v.manualReview}</td>
+                  <td><span className={`comp-badge ${getCompRateClass(v.completionRate)}`}>{v.completionRate.toFixed(1)}%</span></td>
                 </tr>
               ))
-            ) : !dataLoading && !dataError ? ( // Only show "no data" if not loading and no error
-              <tr>
-                <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
-                  No {selectedDocumentType} data available for selected filters
-                </td>
-              </tr>
+            ) : !dataLoading && !dataError ? (
+              <tr><td colSpan="5" className="ad-td-empty">No {selectedDocumentType} data available</td></tr>
             ) : null}
           </tbody>
         </table>
       </div>
 
-      {/* Vendor-wise Pagination */}
       {sortedVendorData.length > 0 && (
-        <FilePagination
-          currentPage={currentVendorPage}
-          totalPages={vendorTotalPages}
-          onPageChange={setCurrentVendorPage}
-          rowsPerPage={vendorRowsPerPage}
-          totalItems={sortedVendorData.length}
-        />
+        <FilePagination currentPage={currentVendorPage} totalPages={vendorTotalPages} onPageChange={setCurrentVendorPage} rowsPerPage={vendorRowsPerPage} totalItems={sortedVendorData.length} />
       )}
     </div>
   );
 
+  const CONF_META = {
+    Invoice:       { emoji: "💲", label: "Invoice Threshold" },
+    BankStatement: { emoji: "🏦", label: "Bank Statement Threshold" },
+    MortgageForms: { emoji: "🏠", label: "Mortgage Threshold" },
+  };
+
   const renderConfiguration = () => (
-    <div className="admin-table-box config-box">
-      <div className="table-section-header ConfidenceScoreConfiguration">
-        <div className="config-header">
-          <h3>Confidence Score Configuration</h3>
-          <p className="config-subtitle">Set the minimum confidence score (%) required for automatic completion.</p>
-        </div>
-        <div className="table-nav-controls">
-          <button className="nav-btn" onClick={goToPreviousTable}>
-            <ChevronLeft className='admin-ChevronLeft' size={20} />
-          </button>
-          <span style={{ fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>
-            {currentTableIndex + 1} / {tableConfig.length}
-          </span>
-          <button className="nav-btn" onClick={goToNextTable}>
-            <ChevronRight className='admin-ChevronRight' size={20} />
-          </button>
+    <div className="ad-section-card">
+      <div className="ad-section-accent ad-section-accent--red" />
+      <div className="ad-section-head">
+        <div>
+          <div className="ad-section-title">⚙ Confidence Score Thresholds</div>
+          <div className="ad-section-sub">Set the minimum confidence score for auto-completion per document type</div>
         </div>
       </div>
 
       {configLoading ? (
-        <div className="config-loading">Loading configuration...</div>
+        <div className="ad-conf-loading">Loading configuration…</div>
       ) : (
-        <div className="config-form">
-          {Object.keys(localConfig).map((key) => (
-            <div key={key} className="config-item">
-              <label className="config-label">{key}</label>
-              <div className="config-input-wrapper">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={localConfig[key]}
-                  onChange={(e) => handleConfigChange(key, e.target.value)}
-                  className="config-input"
-                />
-                <span className="config-percent">%</span>
+        <div className="ad-conf-cards">
+          {Object.keys(localConfig).map((key) => {
+            const meta = CONF_META[key] || { emoji: "⚙", label: key };
+            return (
+              <div key={key} className="ad-conf-card">
+                <div className="ad-conf-card-lbl">{meta.emoji} {meta.label.toUpperCase()}</div>
+                <div className="ad-conf-card-input-row">
+                  <input
+                    type="number" min="0" max="100"
+                    value={localConfig[key]}
+                    onChange={(e) => handleConfigChange(key, e.target.value)}
+                    className="ad-conf-input"
+                  />
+                  <span className="ad-conf-pct">%</span>
+                </div>
+                <div className="ad-conf-card-hint">Minimum score to auto-complete</div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      <div className="config-actions">
+      <div className="ad-conf-actions">
         {configMessage && (
-          <div className={`config-message ${configMessage.type}`}>
-            {configMessage.text}
-          </div>
+          <div className={`ad-conf-msg ${configMessage.type}`}>{configMessage.text}</div>
         )}
-        <button
-          className="save-config-btn"
-          onClick={saveConfiguration}
-          disabled={isSavingConfig || configLoading}
-        >
-          {isSavingConfig ? 'Saving...' : 'Save Configuration'}
+        <button className="ad-btn-save-conf" onClick={saveConfiguration} disabled={isSavingConfig || configLoading}>
+          {isSavingConfig ? "Saving…" : "💾 Save Configuration"}
         </button>
       </div>
-
     </div>
   );
 
@@ -1041,201 +785,122 @@ const Admin = () => {
     fetchData();
   }, [selectedPeriod]);
 
-  // Show loading or error states
-  if (dataLoading) return <div className="loading">Loading admin data...</div>;
-
-  // Render error state with retry button
-  if (dataError) {
-    return (
-      <div className="admin-container">
-        <main className="admin-main">
-          <div className="error-container">
-            <div className="error-card">
-              <h3 className="error-title">⚠️ Connection Issue</h3>
-              <p className="error-message">{dataError}</p>
-              <button
-                onClick={fetchData}
-                className="refresh-data-btn"
-                style={{ margin: '0 auto' }}
-              >
-                <RefreshCw size={18} /> Try Again
-              </button>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  const clientName = clientData?.Name || location.state?.clientName || "—";
 
   return (
-    <div className="admin-container">
-      <main className="admin-main">
-        <section className='header-admin'>
-          <p>{clientData ? `${clientData.Name} Dashboard` : "Admin Dashboard"}</p>
-          <button onClick={fetchData}>
-            <RefreshCw className='RefreshCw-admin' size={16} /> Refresh Data
-          </button>
-        </section>
+    <div className="ad-page">
+      <div className="ad-content">
+      {/* Layout: sidebar + main */}
+      <div className="ad-layout">
 
-        <section className='summarys-admin'>
-          <div className="summary-card docs-summary">
-            <div className="icon-box docs-icon">
-              <Database className='Database-admin' size={24} />
+        {/* ── LEFT SIDEBAR ── */}
+        <aside className="ad-sidebar">
+          <div className="ad-sidebar-accent" />
+          <div className="ad-sidebar-title">Navigation</div>
+          <hr className="ad-sidebar-hr" />
+
+          <nav className="ad-nav">
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.id}
+                className={`ad-nav-item${selectedTable === item.id ? " active" : ""}`}
+                onClick={() => handleTableSelect(item.id)}
+              >
+                <span className="ad-nav-emoji">{item.emoji}</span>
+                {item.label}
+              </button>
+            ))}
+            <button className="ad-manage-users-btn" onClick={handleToggle}>
+              <span className="ad-nav-emoji">👥</span>
+              Manage Users
+            </button>
+          </nav>
+
+          {/* Client Info Card */}
+          <div className="ad-client-card">
+            <div className="ad-client-card-title">Client Information</div>
+            <hr className="ad-client-card-hr" />
+            {[
+              ["CLIENT",     clientName],
+              ["PLAN",       clientData?.PlanName || "—"],
+              ["USER LIMIT", clientData?.UserLimits ? `${clientData.UserLimits} users` : "—"],
+            ].map(([lbl, val]) => (
+              <div key={lbl} className="ad-client-row">
+                <div className="ad-client-lbl">{lbl}</div>
+                <div className="ad-client-val">{val}</div>
+              </div>
+            ))}
+            <button
+              className="ad-client-plan-btn"
+              onClick={() => clientData && setShowPlanPopup(true)}
+              disabled={!clientData}
+            >
+              View Full Details
+            </button>
+          </div>
+        </aside>
+
+        {/* ── MAIN CONTENT ── */}
+        <main className="ad-main">
+
+          {/* Summary Cards */}
+          <div className="ad-summary-row">
+            <div className="ad-summary-card">
+              <div className="ad-summary-icon ad-summary-icon--docs">📄</div>
+              <div>
+                <div className="ad-summary-label">Total Docs</div>
+                <div className="ad-summary-value">{dataLoading ? "…" : allDocuments.length}</div>
+              </div>
             </div>
-            <div className="card-content">
-              <span className="label">Total {selectedDocumentType} Docs</span>
-              <span className="value">{calculateCurrentTotalDocs().toLocaleString()}</span>
+            <div className="ad-summary-card">
+              <div className="ad-summary-icon ad-summary-icon--users">👥</div>
+              <div>
+                <div className="ad-summary-label">Active Users</div>
+                <div className="ad-summary-value">{activeUserCount}</div>
+              </div>
             </div>
           </div>
 
-          <div className="summary-card stats-summary">
-            <div className="icon-box stats-icon">
-              <BarChart2 className='BarChart2-admin' size={24} />
-            </div>
-            <div className="card-content">
-              <span className="label">
-                {selectedTable === 'vendorWise'
-                  ? `Avg ${selectedDocumentType} / Vendor`
-                  : `Avg ${selectedDocumentType} / Day`}
-              </span>
-              <span className="value">{calculateAverageMetric()}</span>
-            </div>
-          </div>
-
-          <div className="summary-card users-summary" onClick={openUserPopup} style={{ cursor: 'pointer' }}>
-            <div className="icon-box users-icon">
-              <Users className='Users-admin' size={24} />
-            </div>
-            <div className="card-content">
-              <span className="label">Active Users</span>
-              <span className="value">
-                {clientData ? activeUserCount : users.length}
-              </span>
-            </div>
-          </div>
-          <div className="summary-card " onClick={openUserPopup} style={{ cursor: 'pointer' }}>
-            <div className="icon-box users-icon">
-              <Users className='Users-admin' size={24} />
-            </div>
-            <div className="card-content" onClick={handleToggle}>
-              <span className="label">Users Management</span>
-              <span className="value">View</span>
-            </div>
-          </div>
-
-          <div
-            className="summary-card plan-summary"
-            onClick={() => clientData && setShowPlanPopup(true)}
-            style={{ cursor: clientData ? 'pointer' : 'default' }}
-          >
-            <div className="icon-box plan-icon">
-              <Shield className='Shield-admin' size={24} />
-            </div>
-            <div className="card-content">
-              <span className="label">Active Plan</span>
-              <span className="value" style={{ fontSize: '1.25rem' }}>
-                {clientData ? clientData.PlanName : "Enterprise"}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* Render Current Table */}
-        <section className="dashboard-content">
           {renderCurrentTable()}
-        </section>
+        </main>
+      </div>
 
-        {/* Plan Summary Popup */}
-        {showPlanPopup && clientData && (
-          <div className="modal-overlay" onClick={() => setShowPlanPopup(false)}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>{clientData.Name} Plan Details</h3>
-                <button className="close-btn" onClick={() => setShowPlanPopup(false)}>
-                  <X className='Admin-X' size={24} />
-                </button>
-              </div>
-
-              <div className="modal-details-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Client ID</span>
-                  <span className="detail-value">{clientData.ID || clientData.id}</span>
+      {/* Plan Details Popup */}
+      {showPlanPopup && clientData && (
+        <div className="ad-modal-overlay" onClick={() => setShowPlanPopup(false)}>
+          <div className="ad-modal" onClick={e => e.stopPropagation()}>
+            <div className="ad-modal-head">
+              <h3>{clientData.Name} — Plan Details</h3>
+              <button className="ad-modal-close" onClick={() => setShowPlanPopup(false)}>✕</button>
+            </div>
+            <div className="ad-modal-grid">
+              {[
+                ["Client ID",       clientData.ID || clientData.id],
+                ["Name",            clientData.Name],
+                ["Plan",            clientData.PlanName],
+                ["Start Date",      clientData.StartDate ? new Date(clientData.StartDate).toLocaleDateString() : "N/A"],
+                ["End Date",        clientData.EndDate   ? new Date(clientData.EndDate).toLocaleDateString()   : "N/A"],
+                ["Active Users",    activeUserCount],
+                ["User Limit",      clientData.UserLimits],
+                ["Invoice Count",   clientData.InvoiceCount],
+                ["Bank Count",      clientData.BankStatementCount],
+                ["Mortgage Count",  clientData.MortgageFormsCount],
+                ["Invoice Status",  clientData.Invoice || "Inactive"],
+                ["Bank Status",     clientData.BankStatement || "Inactive"],
+                ["Mortgage Status", clientData.MortgageForms || "Inactive"],
+              ].map(([lbl, val]) => (
+                <div key={lbl} className="ad-modal-row">
+                  <span className="ad-modal-lbl">{lbl}</span>
+                  <span className="ad-modal-val">{val}</span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Name</span>
-                  <span className="detail-value">{clientData.Name}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Plan Name</span>
-                  <span className="detail-value">{clientData.PlanName}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Start Date</span>
-                  <span className="detail-value">
-                    {clientData.StartDate ? new Date(clientData.StartDate).toLocaleDateString() : 'N/A'}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">End Date</span>
-                  <span className="detail-value">
-                    {clientData.EndDate ? new Date(clientData.EndDate).toLocaleDateString() : 'N/A'}
-                  </span>
-                </div>
-
-                {/* User Statistics */}
-                <div className="detail-item">
-                  <span className="detail-label">Active Users</span>
-                  <span className="detail-value" style={{ color: 'var(--success)', fontWeight: 'bold' }}>
-                    {activeUserCount}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">User Limits</span>
-                  <span className="detail-value">{clientData.UserLimits}</span>
-                </div>
-
-                {/* Document Limits */}
-                <div className="detail-item">
-                  <span className="detail-label">Invoice Count</span>
-                  <span className="detail-value">{clientData.InvoiceCount}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Bank Count</span>
-                  <span className="detail-value">{clientData.BankStatementCount}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Mortgage Count</span>
-                  <span className="detail-value">{clientData.MortgageFormsCount}</span>
-                </div>
-
-                {/* Statuses */}
-                <div className="detail-item">
-                  <span className="detail-label">Invoice Status</span>
-                  <span className={`detail-value status-${(clientData.Invoice || 'inactive').toLowerCase()}`}>
-                    {clientData.Invoice || 'Inactive'}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Bank Status</span>
-                  <span className={`detail-value status-${(clientData.BankStatement || 'inactive').toLowerCase()}`}>
-                    {clientData.BankStatement || 'Inactive'}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Mortgage Status</span>
-                  <span className={`detail-value status-${(clientData.MortgageForms || 'inactive').toLowerCase()}`}>
-                    {clientData.MortgageForms || 'Inactive'}
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
-        )}
-      </main>
-      <footer>
-        <Footer />
-      </footer>
+        </div>
+      )}
+
+      </div>
+      <Footer />
     </div>
   );
 };

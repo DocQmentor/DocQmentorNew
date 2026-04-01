@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 880" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="cs"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#00000012"/></filter>
+    <filter id="ms"><feDropShadow dx="0" dy="10" stdDeviation="24" flood-color="#00000030"/></filter>
+  </defs>
+
+  <!-- Background (dimmed Manual Review behind) -->
+  <rect width="1280" height="880" fill="#f4f7fa"/>
+  <rect width="1280" height="880" fill="rgba(10,20,35,0.55)"/>
+
+  <!-- ─── EDIT MODAL ─── -->
+  <rect x="60" y="50" width="1160" height="770" rx="18" fill="white" filter="url(#ms)"/>
+  <rect x="60" y="50" width="1160" height="6" rx="3" fill="#256695"/>
+
+  <!-- Close button -->
+  <circle cx="1198" cy="78" r="14" fill="#f4f7fa"/>
+  <text x="1198" y="83" text-anchor="middle" fill="#6a82a0" font-size="14" font-weight="700">✕</text>
+
+  <!-- Modal title -->
+  <text x="640" y="92" text-anchor="middle" fill="#256695" font-size="17" font-weight="800">Edit Details — Invoice</text>
+
+  <!-- ─── TABS (inside modal) ─── -->
+  <rect x="80" y="106" width="440" height="34" rx="9" fill="#f4f8fb" stroke="#e0e8f0" stroke-width="1"/>
+  <!-- Active tab -->
+  <rect x="84" y="109" width="130" height="28" rx="7" fill="#256695"/>
+  <text x="149" y="127" text-anchor="middle" fill="white" font-size="12" font-weight="700">✏ Edit Details</text>
+  <!-- Inactive tabs -->
+  <text x="280" y="127" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🕐 Version History</text>
+  <text x="434" y="127" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">📄 PDF Details</text>
+
+  <!-- ─── LEFT: PDF PREVIEW ─── -->
+  <rect x="80" y="152" width="490" height="590" rx="12" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <rect x="80" y="152" width="490" height="36" rx="0" fill="#e8f0f7"/>
+  <rect x="80" y="152" width="490" height="18" fill="#e8f0f7"/>
+  <rect x="80" y="152" width="490" height="36" rx="8" fill="#e8f0f7"/>
+
+  <text x="100" y="175" fill="#256695" font-size="12" font-weight="700">📄 TechCorp_Invoice_2024.pdf</text>
+  <!-- PDF iframe simulation -->
+  <rect x="96" y="200" width="458" height="520" rx="6" fill="white" stroke="#dde6f0" stroke-width="1"/>
+  <!-- Simulated PDF content -->
+  <rect x="110" y="218" width="200" height="16" rx="4" fill="#e8f0f7"/>
+  <rect x="110" y="244" width="300" height="10" rx="3" fill="#f0f3f7"/>
+  <rect x="110" y="260" width="260" height="10" rx="3" fill="#f0f3f7"/>
+  <rect x="110" y="290" width="420" height="1" fill="#e0e8f0"/>
+  <!-- Invoice table simulation -->
+  <rect x="110" y="308" width="420" height="24" rx="3" fill="#f0f5fb"/>
+  <text x="130" y="324" fill="#256695" font-size="10" font-weight="700">Description</text>
+  <text x="380" y="324" fill="#256695" font-size="10" font-weight="700">Amount</text>
+  <rect x="110" y="332" width="420" height="20" rx="0" fill="white"/>
+  <text x="130" y="346" fill="#4a6080" font-size="10">Professional Services — Q1 2026</text>
+  <text x="430" y="346" text-anchor="end" fill="#4a6080" font-size="10">AED 8,400</text>
+  <rect x="110" y="352" width="420" height="20" rx="0" fill="#f9fbfd"/>
+  <text x="130" y="366" fill="#4a6080" font-size="10">VAT (5%)</text>
+  <text x="430" y="366" text-anchor="end" fill="#4a6080" font-size="10">AED 420</text>
+  <rect x="110" y="372" width="420" height="24" rx="0" fill="#e8f1fb"/>
+  <text x="130" y="389" fill="#256695" font-size="11" font-weight="700">Total</text>
+  <text x="430" y="389" text-anchor="end" fill="#256695" font-size="11" font-weight="700">AED 8,820</text>
+  <rect x="110" y="420" width="420" height="10" rx="4" fill="#f0f3f7"/>
+  <rect x="110" y="440" width="300" height="10" rx="4" fill="#f0f3f7"/>
+  <rect x="110" y="460" width="200" height="10" rx="4" fill="#f0f3f7"/>
+  <text x="326" y="680" text-anchor="middle" fill="#b0bec8" font-size="11">Scroll to view full document</text>
+
+  <!-- ─── RIGHT: EDIT FORM ─── -->
+  <rect x="590" y="152" width="610" height="590" rx="12" fill="#fafcff" stroke="#e8eef5" stroke-width="1"/>
+
+  <!-- Form heading -->
+  <text x="614" y="182" fill="#256695" font-size="13" font-weight="800">Invoice Fields</text>
+  <text x="614" y="200" fill="#8a9bb0" font-size="11">Edit the extracted data below and save your changes</text>
+  <line x1="606" y1="210" x2="1184" y2="210" stroke="#eef0f4" stroke-width="1"/>
+
+  <!-- Field: Vendor Name -->
+  <text x="614" y="234" fill="#7a90aa" font-size="10" font-weight="700">VENDOR NAME</text>
+  <rect x="614" y="240" width="270" height="32" rx="7" fill="white" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="628" y="261" fill="#2a3f55" font-size="12">TechCorp Ltd</text>
+
+  <!-- Field: Invoice ID -->
+  <text x="908" y="234" fill="#7a90aa" font-size="10" font-weight="700">INVOICE ID</text>
+  <rect x="908" y="240" width="270" height="32" rx="7" fill="white" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="922" y="261" fill="#2a3f55" font-size="12">INV-2024-005</text>
+
+  <!-- Field: Invoice Date -->
+  <text x="614" y="300" fill="#7a90aa" font-size="10" font-weight="700">INVOICE DATE</text>
+  <rect x="614" y="306" width="270" height="32" rx="7" fill="white" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="628" y="327" fill="#2a3f55" font-size="12">16/03/2026</text>
+
+  <!-- Field: LPO NO -->
+  <text x="908" y="300" fill="#7a90aa" font-size="10" font-weight="700">LPO NUMBER</text>
+  <rect x="908" y="306" width="270" height="32" rx="7" fill="white" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="922" y="327" fill="#2a3f55" font-size="12">LPO-4490</text>
+
+  <!-- Field: Sub Total -->
+  <text x="614" y="366" fill="#7a90aa" font-size="10" font-weight="700">SUB TOTAL</text>
+  <rect x="614" y="372" width="270" height="32" rx="7" fill="white" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="628" y="393" fill="#2a3f55" font-size="12">8400</text>
+
+  <!-- Field: VAT — has error highlight (missing) -->
+  <text x="908" y="366" fill="#ec2225" font-size="10" font-weight="700">VAT ⚠ Required</text>
+  <rect x="908" y="372" width="270" height="32" rx="7" fill="#fff8f8" stroke="#ec2225" stroke-width="2"/>
+  <text x="922" y="393" fill="#aab8c8" font-size="12">Enter VAT amount…</text>
+
+  <!-- Field: Invoice Total -->
+  <text x="614" y="432" fill="#7a90aa" font-size="10" font-weight="700">INVOICE TOTAL</text>
+  <rect x="614" y="438" width="270" height="32" rx="7" fill="white" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="628" y="459" fill="#2a3f55" font-size="12">8820</text>
+
+  <!-- Confidence score indicator -->
+  <rect x="908" y="432" width="270" height="86" rx="10" fill="#fff7e0" stroke="#f0c040" stroke-width="1.5"/>
+  <text x="1043" y="454" text-anchor="middle" fill="#b36a00" font-size="11" font-weight="700">AI Confidence Score</text>
+  <text x="1043" y="476" text-anchor="middle" fill="#e09800" font-size="24" font-weight="800">68.4%</text>
+  <text x="1043" y="498" text-anchor="middle" fill="#b36a00" font-size="10">Below threshold (85%) — review required</text>
+  <rect x="924" y="504" width="238" height="6" rx="3" fill="#f0e0c0"/>
+  <rect x="924" y="504" width="163" height="6" rx="3" fill="#e09800"/>
+
+  <!-- Divider -->
+  <line x1="606" y1="550" x2="1184" y2="550" stroke="#eef0f4" stroke-width="1"/>
+
+  <!-- Action buttons -->
+  <rect x="614" y="566" width="140" height="38" rx="9" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="684" y="589" text-anchor="middle" fill="#6a82a0" font-size="13" font-weight="700">✕ Cancel</text>
+
+  <rect x="768" y="566" width="192" height="38" rx="9" fill="#256695"/>
+  <text x="864" y="589" text-anchor="middle" fill="white" font-size="13" font-weight="700">💾 Save Changes</text>
+
+  <!-- Saved / reviewed badge note -->
+  <rect x="614" y="616" width="346" height="34" rx="8" fill="#e6f7ed"/>
+  <text x="787" y="631" text-anchor="middle" fill="#2e7a44" font-size="11" font-weight="700">✅ Saving marks this document as "Reviewed"</text>
+  <text x="787" y="647" text-anchor="middle" fill="#4a9a66" font-size="10">Status moves from Manual Review → Reviewed</text>
+
+  <!-- ─── TAB 2 PREVIEW: Version History ─── -->
+  <rect x="80" y="756" width="490" height="52" rx="10" fill="#f0f7ff" stroke="#c8dcef" stroke-width="1.5"/>
+  <text x="325" y="778" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">🕐 Version History tab shows: field change log</text>
+  <text x="325" y="794" text-anchor="middle" fill="#5a7a9a" font-size="10">Each save creates a new version entry with user + timestamp</text>
+
+  <!-- ─── TAB 3 PREVIEW: PDF Details ─── -->
+  <rect x="590" y="756" width="610" height="52" rx="10" fill="#f0f7ff" stroke="#c8dcef" stroke-width="1.5"/>
+  <text x="895" y="778" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">📄 PDF Details tab: File Name · Format · Size (KB) · Document Type</text>
+  <text x="895" y="794" text-anchor="middle" fill="#5a7a9a" font-size="10">Read-only metadata from the uploaded document</text>
+
+  <!-- Design label -->
+  <rect x="340" y="848" width="600" height="20" rx="4" fill="#256695" opacity="0.08"/>
+  <text x="640" y="862" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Design 07 — Edit Modal (PDF preview + form fields; VAT missing highlighted; confidence score; 3 tabs)</text>
+</svg>

@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="cs"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#00000012"/></filter>
+    <filter id="ms"><feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#00000025"/></filter>
+  </defs>
+
+  <rect width="1280" height="900" fill="#f4f7fa"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1280" height="60" fill="#fff" filter="url(#cs)"/>
+  <rect x="24" y="14" width="34" height="34" rx="8" fill="#256695"/>
+  <text x="41" y="36" text-anchor="middle" fill="white" font-size="13" font-weight="800">DQ</text>
+  <text x="68" y="36" fill="#256695" font-size="17" font-weight="800">DocQmentor</text>
+  <text x="290" y="35" fill="#6a82a0" font-size="12" font-weight="600">⌂ Dashboard</text>
+  <text x="370" y="35" fill="#6a82a0" font-size="12" font-weight="600">📄 Data View</text>
+  <text x="458" y="35" fill="#6a82a0" font-size="12" font-weight="600">🔍 Manual Review</text>
+  <rect x="570" y="18" width="88" height="26" rx="6" fill="#256695"/>
+  <text x="614" y="35" text-anchor="middle" fill="white" font-size="12" font-weight="700">🛡 Client Admin</text>
+  <text x="680" y="35" fill="#6a82a0" font-size="12" font-weight="600">👑 Super Admin</text>
+  <circle cx="1218" cy="30" r="14" fill="#256695"/>
+  <text x="1218" y="35" text-anchor="middle" fill="white" font-size="10" font-weight="700">JD</text>
+
+  <!-- Page heading -->
+  <text x="40" y="96" fill="#256695" font-size="20" font-weight="800">Contoso Ltd — User Management</text>
+  <text x="40" y="116" fill="#6a82a0" font-size="12">Manage users, roles and permissions for your organisation</text>
+  <!-- Refresh -->
+  <rect x="1130" y="86" width="110" height="32" rx="8" fill="white" stroke="#d0dae4" stroke-width="1.5" filter="url(#cs)"/>
+  <text x="1185" y="107" text-anchor="middle" fill="#256695" font-size="12" font-weight="700">↺ Refresh</text>
+
+  <!-- ─── METRICS CARDS ─── -->
+  <!-- Card 1 -->
+  <rect x="40" y="132" width="180" height="86" rx="12" fill="white" filter="url(#cs)"/>
+  <text x="60" y="158" font-size="20">👥</text>
+  <text x="96" y="155" fill="#7a90aa" font-size="10" font-weight="700">TOTAL USERS</text>
+  <text x="96" y="178" fill="#256695" font-size="24" font-weight="800">42</text>
+  <text x="60" y="204" fill="#8a9bb0" font-size="10">All registered</text>
+
+  <!-- Card 2 -->
+  <rect x="236" y="132" width="180" height="86" rx="12" fill="white" filter="url(#cs)"/>
+  <text x="256" y="158" font-size="20">✅</text>
+  <text x="292" y="155" fill="#7a90aa" font-size="10" font-weight="700">ACTIVE USERS</text>
+  <text x="292" y="178" fill="#2e9a55" font-size="24" font-weight="800">36</text>
+  <text x="256" y="204" fill="#8a9bb0" font-size="10">Approved access</text>
+
+  <!-- Card 3 -->
+  <rect x="432" y="132" width="180" height="86" rx="12" fill="white" filter="url(#cs)"/>
+  <text x="452" y="158" font-size="20">⏳</text>
+  <text x="488" y="155" fill="#7a90aa" font-size="10" font-weight="700">IN PROCESS</text>
+  <text x="488" y="178" fill="#e09800" font-size="24" font-weight="800">4</text>
+  <text x="452" y="204" fill="#8a9bb0" font-size="10">Pending approval</text>
+
+  <!-- Card 4 -->
+  <rect x="628" y="132" width="180" height="86" rx="12" fill="white" filter="url(#cs)"/>
+  <text x="648" y="158" font-size="20">🔒</text>
+  <text x="684" y="155" fill="#7a90aa" font-size="10" font-weight="700">USER LIMIT</text>
+  <text x="684" y="178" fill="#256695" font-size="24" font-weight="800">50</text>
+  <text x="648" y="204" fill="#8a9bb0" font-size="10">Max allowed</text>
+
+  <!-- Card 5 -->
+  <rect x="824" y="132" width="180" height="86" rx="12" fill="white" filter="url(#cs)"/>
+  <text x="844" y="158" font-size="20">➕</text>
+  <text x="880" y="155" fill="#7a90aa" font-size="10" font-weight="700">ADDITIONAL SLOTS</text>
+  <text x="880" y="178" fill="#256695" font-size="24" font-weight="800">8</text>
+  <text x="844" y="204" fill="#8a9bb0" font-size="10">Remaining slots</text>
+
+  <!-- Card 6: Add User (clickable) -->
+  <rect x="1020" y="132" width="220" height="86" rx="12" fill="#256695" filter="url(#cs)"/>
+  <text x="1040" y="165" font-size="26">➕</text>
+  <text x="1082" y="163" fill="white" font-size="14" font-weight="800">Add New User</text>
+  <text x="1082" y="183" fill="rgba(255,255,255,0.7)" font-size="11">Click to invite a user</text>
+  <text x="1082" y="203" fill="rgba(255,255,255,0.55)" font-size="10">Sends access request</text>
+
+  <!-- ─── FILTER BAR ─── -->
+  <rect x="40" y="234" width="1200" height="64" rx="12" fill="white" filter="url(#cs)"/>
+
+  <text x="60" y="258" fill="#7a90aa" font-size="10" font-weight="700">SEARCH BY ID</text>
+  <rect x="60" y="264" width="150" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="73" y="281" fill="#aab8c8" font-size="11">🔍 User ID…</text>
+
+  <text x="226" y="258" fill="#7a90aa" font-size="10" font-weight="700">SEARCH BY EMAIL</text>
+  <rect x="226" y="264" width="200" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="239" y="281" fill="#aab8c8" font-size="11">🔍 user@contoso.com…</text>
+
+  <text x="442" y="258" fill="#7a90aa" font-size="10" font-weight="700">SEARCH BY ROLE</text>
+  <rect x="442" y="264" width="160" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="455" y="281" fill="#aab8c8" font-size="11">All Roles ▾</text>
+
+  <rect x="618" y="264" width="90" height="24" rx="6" fill="#f4f4f4" stroke="#d0dae4" stroke-width="1"/>
+  <text x="663" y="280" text-anchor="middle" fill="#6a82a0" font-size="11" font-weight="700">↺ Reset</text>
+
+  <!-- ─── USERS TABLE ─── -->
+  <rect x="40" y="314" width="1200" height="490" rx="12" fill="white" filter="url(#cs)"/>
+  <path d="M50,314 Q40,314 40,324 L40,350 L1240,350 L1240,324 Q1240,314 1230,314 Z" fill="#256695"/>
+  <text x="65" y="336" fill="white" font-size="11" font-weight="700">ID</text>
+  <text x="140" y="336" fill="white" font-size="11" font-weight="700">Email</text>
+  <text x="520" y="336" fill="white" font-size="11" font-weight="700">Role</text>
+  <text x="820" y="336" fill="white" font-size="11" font-weight="700">Permission Status</text>
+  <text x="1130" y="336" fill="white" font-size="11" font-weight="700">Action</text>
+
+  <!-- Row 1 -->
+  <rect x="40" y="350" width="1200" height="40" fill="white"/>
+  <text x="65" y="374" fill="#2a3f55" font-size="11">USR-001</text>
+  <text x="140" y="374" fill="#2a3f55" font-size="11">john.doe@contoso.com</text>
+  <text x="520" y="374" fill="#2a3f55" font-size="11">Admin</text>
+  <rect x="820" y="359" width="72" height="20" rx="10" fill="#e6f7ed"/>
+  <text x="856" y="373" text-anchor="middle" fill="#2e7a44" font-size="10" font-weight="700">✅ Approved</text>
+  <line x1="40" y1="390" x2="1240" y2="390" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 2 -->
+  <rect x="40" y="390" width="1200" height="40" fill="#f9fbfd"/>
+  <text x="65" y="414" fill="#2a3f55" font-size="11">USR-002</text>
+  <text x="140" y="414" fill="#2a3f55" font-size="11">sarah.admin@contoso.com</text>
+  <text x="520" y="414" fill="#2a3f55" font-size="11">Reviewer</text>
+  <rect x="820" y="399" width="72" height="20" rx="10" fill="#e6f7ed"/>
+  <text x="856" y="413" text-anchor="middle" fill="#2e7a44" font-size="10" font-weight="700">✅ Approved</text>
+  <line x1="40" y1="430" x2="1240" y2="430" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 3 — in process -->
+  <rect x="40" y="430" width="1200" height="40" fill="white"/>
+  <text x="65" y="454" fill="#2a3f55" font-size="11">USR-003</text>
+  <text x="140" y="454" fill="#2a3f55" font-size="11">new.user@contoso.com</text>
+  <text x="520" y="454" fill="#2a3f55" font-size="11">Viewer</text>
+  <rect x="820" y="439" width="80" height="20" rx="10" fill="#fff7e0"/>
+  <text x="860" y="453" text-anchor="middle" fill="#c08000" font-size="10" font-weight="700">⏳ In Process</text>
+  <line x1="40" y1="470" x2="1240" y2="470" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 4 -->
+  <rect x="40" y="470" width="1200" height="40" fill="#f9fbfd"/>
+  <text x="65" y="494" fill="#2a3f55" font-size="11">USR-004</text>
+  <text x="140" y="494" fill="#2a3f55" font-size="11">mark.reviewer@contoso.com</text>
+  <text x="520" y="494" fill="#2a3f55" font-size="11">Reviewer</text>
+  <rect x="820" y="479" width="72" height="20" rx="10" fill="#e6f7ed"/>
+  <text x="856" y="493" text-anchor="middle" fill="#2e7a44" font-size="10" font-weight="700">✅ Approved</text>
+  <line x1="40" y1="510" x2="1240" y2="510" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Faded rows -->
+  <rect x="40" y="510" width="1200" height="40" fill="white" opacity="0.5"/>
+  <text x="65" y="534" fill="#c8d0da" font-size="11">USR-005</text>
+  <rect x="40" y="550" width="1200" height="200" fill="white" opacity="0.7"/>
+
+  <!-- Pagination -->
+  <rect x="566" y="786" width="26" height="20" rx="4" fill="#256695"/>
+  <text x="579" y="800" text-anchor="middle" fill="white" font-size="11" font-weight="700">1</text>
+  <rect x="598" y="786" width="26" height="20" rx="4" fill="white" stroke="#d0dae4" stroke-width="1"/>
+  <text x="611" y="800" text-anchor="middle" fill="#256695" font-size="11">2</text>
+  <rect x="630" y="786" width="26" height="20" rx="4" fill="white" stroke="#d0dae4" stroke-width="1"/>
+  <text x="643" y="800" text-anchor="middle" fill="#256695" font-size="11">›</text>
+
+  <!-- ─── ADD USER MODAL ─── -->
+  <rect x="380" y="210" width="520" height="380" rx="16" fill="white" filter="url(#ms)" stroke="#e0e8f0" stroke-width="1"/>
+  <rect x="380" y="210" width="520" height="6" rx="3" fill="#256695"/>
+  <circle cx="882" cy="230" r="12" fill="#f4f7fa"/>
+  <text x="882" y="235" text-anchor="middle" fill="#6a82a0" font-size="13" font-weight="700">✕</text>
+  <text x="640" y="256" text-anchor="middle" fill="#256695" font-size="15" font-weight="800">👤 Add New User</text>
+  <line x1="396" y1="268" x2="884" y2="268" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Email field -->
+  <text x="404" y="292" fill="#7a90aa" font-size="10" font-weight="700">EMAIL ADDRESS</text>
+  <rect x="404" y="298" width="472" height="36" rx="8" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="420" y="321" fill="#aab8c8" font-size="12">user@contoso.com</text>
+
+  <!-- Role field -->
+  <text x="404" y="356" fill="#7a90aa" font-size="10" font-weight="700">ROLE</text>
+  <rect x="404" y="362" width="472" height="36" rx="8" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="420" y="385" fill="#aab8c8" font-size="12">e.g. Reviewer, Viewer, Admin</text>
+
+  <!-- Validation rules -->
+  <rect x="404" y="414" width="472" height="70" rx="8" fill="#f0f7ff"/>
+  <text x="424" y="432" fill="#256695" font-size="11" font-weight="700">Validation rules:</text>
+  <text x="424" y="450" fill="#5a7a9a" font-size="11">• Email domain must match: @contoso.com</text>
+  <text x="424" y="468" fill="#5a7a9a" font-size="11">• No spaces allowed · No duplicate emails</text>
+
+  <!-- Buttons -->
+  <rect x="404" y="496" width="216" height="36" rx="9" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="512" y="518" text-anchor="middle" fill="#6a82a0" font-size="13" font-weight="700">Cancel</text>
+  <rect x="632" y="496" width="244" height="36" rx="9" fill="#256695"/>
+  <text x="754" y="518" text-anchor="middle" fill="white" font-size="13" font-weight="700">➕ Add User</text>
+
+  <!-- Design label -->
+  <rect x="340" y="872" width="600" height="20" rx="4" fill="#256695" opacity="0.08"/>
+  <text x="640" y="886" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Design 09 — Users Management (metrics cards, user table, Add New User modal with validation)</text>
+</svg>

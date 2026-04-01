@@ -1,22 +1,28 @@
-import React from 'react';
 import { useMsal } from '@azure/msal-react';
-import { useNavigate } from 'react-router-dom';
-import Footer from '../Layout/Footer';
 import { toast } from 'react-toastify';
 import './Login.css';
 
-// Image Imports (Recommended for React apps)
 import docQmentorLogo from '../assets/logo-docqmentor.png';
-import techstarLogo from '../assets/6393841f01ab88522a2396b9_Techstar Logo (1) (1).png';
-import mainVisual from '../assets/dq-mainimage.png';
-import homeIcon from '../assets/home.png';
-import uploadDocIcon from '../assets/upload doc.png';
-import statusTrackerIcon from '../assets/status tracker.png';
-import dataViewIcon from '../assets/data view.png';
+import techstarLogo   from '../assets/6393841f01ab88522a2396b9_Techstar Logo (1) (1).png';
 
-const Login = ({ setUser }) => {
+const FEATURES = [
+  { emoji: '🏠', title: 'Dashboard',      desc: 'Document management command centre with real-time insights.' },
+  { emoji: '📤', title: 'Upload',         desc: 'Drag-and-drop batch processing with automatic type detection.' },
+  { emoji: '📊', title: 'Status Tracker', desc: 'Real-time stage tracking and full processing visibility.' },
+  { emoji: '📋', title: 'Data View',      desc: 'Filterable table with sorting, presets and bulk actions.' },
+];
+
+const MicrosoftIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block', flexShrink: 0 }}>
+    <rect x="1"  y="1"  width="9" height="9" fill="#F25022" />
+    <rect x="11" y="1"  width="9" height="9" fill="#7FBA00" />
+    <rect x="1"  y="11" width="9" height="9" fill="#00A4EF" />
+    <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+  </svg>
+);
+
+const Login = () => {
   const { instance } = useMsal();
-  const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
@@ -32,77 +38,85 @@ const Login = ({ setUser }) => {
 
   return (
     <div className="login-page-container">
-      <div className='main'>
-        <header className='Login-header'>
-          <img className='img-doc' src={docQmentorLogo} alt="DocQmentor Logo" />
-          <img className='img-tech' src={techstarLogo} alt="Techstar Logo" />
-        </header>
 
-        <div className='summary'>
-          <h1 className="highlight">
-            Welcome to <span className="highlight-letter">D</span>oc
-            <span className="highlight-letter">Q</span>mentor
+      {/* ══════════════════════════════════════
+          LEFT PANEL — Branding
+      ══════════════════════════════════════ */}
+      <div className="login-left">
+        {/* Decorative background circles */}
+        <span className="login-circle login-circle-1" />
+        <span className="login-circle login-circle-2" />
+        <span className="login-circle login-circle-3" />
+
+        <div className="login-left-inner">
+
+          {/* Logos */}
+          <div className="login-logo-row">
+            <img src={docQmentorLogo} alt="DocQmentor" className="login-logo-doc" />
+            <img src={techstarLogo}   alt="Techstar"   className="login-logo-tech" />
+          </div>
+
+          {/* Headline */}
+          <h1 className="login-headline">
+            Welcome to{' '}
+            <span className="login-hl-d">D</span>oc
+            <span className="login-hl-q">Q</span>mentor
           </h1>
-          <h1 className="main-title">Automate & Empower your Team's Productivity</h1>
-          <p className='para'>
-            Eliminate manual tasks in Finance, Logistics, HR Compliance functions with AI-Powered automation by leveraging Microsoft 365, AI and Power Platform tools.
+          <p className="login-tagline">Automate &amp; Empower your Team's Productivity</p>
+          <p className="login-sub">
+            Eliminate manual tasks in Finance, Logistics and HR Compliance with
+            AI-powered automation built on Microsoft 365, AI and Power Platform.
           </p>
 
-          <div className="auth-status">
-            <button className="login-button" onClick={handleLogin}>
-              Login with Microsoft
-            </button>
-          </div>
-        </div>
-
-        <div className='image-con'>
-          <img className='image' src={mainVisual} alt="Main Visual" />
-        </div>
-
-        {/* FEATURES SECTION */}
-        <div className="features-section">
-          <div className="feature-card">
-            <div className="feature-header">
-              <img src={homeIcon} alt="Home Icon" className="feature-icon" />
-              <h3>Home</h3>
-            </div>
-            <p>
-              The Home Page serves as your document management command center with instant access to all key features and real-time notifications to keep your team aligned.
-            </p>
+          {/* Feature cards */}
+          <div className="login-feature-grid">
+            {FEATURES.map(({ emoji, title, desc }) => (
+              <div className="login-feature-card" key={title}>
+                <span className="login-feat-icon-box">{emoji}</span>
+                <div>
+                  <h4>{title}</h4>
+                  <p>{desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="feature-card">
-            <div className="feature-header">
-              <img src={uploadDocIcon} alt="Dashboard Icon" className="feature-icon" />
-              <h3>Dashboard</h3>
-            </div>
-            <p>
-              Streamlined drag-and-drop dashboard with batch processing, file-type categorization, and upload analytics for smart document organization.
-            </p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-header">
-              <img src={statusTrackerIcon} alt="Status Tracker Icon" className="feature-icon" />
-              <h3>Status Tracker</h3>
-            </div>
-            <p>
-              Full visibility of document status with real-time stage tracking and timestamps, removing guesswork and improving accountability.
-            </p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-header">
-              <img src={dataViewIcon} alt="Data View Icon" className="feature-icon" />
-              <h3>Data View</h3>
-            </div>
-            <p>
-              Powerful filterable table with sorting, presets, and bulk actions for managing and processing documents at scale.
-            </p>
-          </div>
+          <p className="login-copy">© 2026 DocQmentor · Techstar Technologies</p>
         </div>
       </div>
-      <Footer />
+
+      {/* ══════════════════════════════════════
+          RIGHT PANEL — Login card
+      ══════════════════════════════════════ */}
+      <div className="login-right">
+        <div className="login-card">
+          {/* Red top accent */}
+          <div className="login-card-accent" />
+
+          <h2 className="login-card-title">Sign in to DocQmentor</h2>
+          <p className="login-card-sub">Use your Microsoft organisational account</p>
+
+          <div className="login-card-divider" />
+
+          {/* Microsoft identity box */}
+          <div className="login-ms-box">
+            <span className="login-ms-icon"><MicrosoftIcon size={28} /></span>
+            <div>
+              <p className="login-ms-title">Microsoft Azure AD</p>
+              <p className="login-ms-desc">Enterprise authentication with MFA support</p>
+              <p className="login-ms-desc">Only organisational accounts are permitted</p>
+            </div>
+          </div>
+
+          <button className="login-btn" onClick={handleLogin}>
+            <MicrosoftIcon size={20} />&nbsp;&nbsp;Login with Microsoft
+          </button>
+
+          <p className="login-note">Secure single sign-on via Microsoft MSAL</p>
+          <p className="login-lock">🔒 Your session is protected by Azure Active Directory</p>
+        </div>
+      </div>
+
     </div>
   );
 };

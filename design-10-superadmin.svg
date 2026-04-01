@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="cs"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#00000012"/></filter>
+    <filter id="ms"><feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#00000025"/></filter>
+  </defs>
+
+  <rect width="1280" height="960" fill="#f4f7fa"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1280" height="60" fill="#fff" filter="url(#cs)"/>
+  <rect x="24" y="14" width="34" height="34" rx="8" fill="#256695"/>
+  <text x="41" y="36" text-anchor="middle" fill="white" font-size="13" font-weight="800">DQ</text>
+  <text x="68" y="36" fill="#256695" font-size="17" font-weight="800">DocQmentor</text>
+  <text x="290" y="35" fill="#6a82a0" font-size="12" font-weight="600">⌂ Dashboard</text>
+  <text x="370" y="35" fill="#6a82a0" font-size="12" font-weight="600">📄 Data View</text>
+  <text x="458" y="35" fill="#6a82a0" font-size="12" font-weight="600">🔍 Manual Review</text>
+  <text x="574" y="35" fill="#6a82a0" font-size="12" font-weight="600">🛡 Client Admin</text>
+  <rect x="662" y="18" width="90" height="26" rx="6" fill="#256695"/>
+  <text x="707" y="35" text-anchor="middle" fill="white" font-size="12" font-weight="700">👑 Super Admin</text>
+  <circle cx="1218" cy="30" r="14" fill="#256695"/>
+  <text x="1218" y="35" text-anchor="middle" fill="white" font-size="10" font-weight="700">SA</text>
+
+  <!-- Page heading -->
+  <text x="40" y="96" fill="#256695" font-size="20" font-weight="800">Super Admin — System Management</text>
+  <text x="40" y="116" fill="#6a82a0" font-size="12">Manage all clients, approve access requests and configure system-wide settings</text>
+
+  <!-- ─── SECTION TABS ─── -->
+  <rect x="40" y="130" width="440" height="38" rx="10" fill="white" filter="url(#cs)"/>
+  <rect x="46" y="136" width="140" height="26" rx="7" fill="#256695"/>
+  <text x="116" y="153" text-anchor="middle" fill="white" font-size="12" font-weight="700">🏢 Client Management</text>
+  <text x="304" y="153" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🔐 Access Requests</text>
+  <rect x="386" y="142" width="24" height="16" rx="8" fill="#ffeaea"/>
+  <text x="398" y="154" text-anchor="middle" fill="#c0392b" font-size="9.5" font-weight="700">7</text>
+
+  <!-- Add Client button -->
+  <rect x="1080" y="130" width="160" height="38" rx="9" fill="#256695" filter="url(#cs)"/>
+  <text x="1160" y="154" text-anchor="middle" fill="white" font-size="13" font-weight="700">➕ Add New Client</text>
+
+  <!-- ─── CLIENT TABLE ─── -->
+  <rect x="40" y="184" width="1200" height="360" rx="12" fill="white" filter="url(#cs)"/>
+  <path d="M50,184 Q40,184 40,194 L40,220 L1240,220 L1240,194 Q1240,184 1230,184 Z" fill="#256695"/>
+  <text x="65" y="206" fill="white" font-size="11" font-weight="700">Client Name</text>
+  <text x="230" y="206" fill="white" font-size="11" font-weight="700">Plan</text>
+  <text x="370" y="206" fill="white" font-size="11" font-weight="700">Start Date</text>
+  <text x="490" y="206" fill="white" font-size="11" font-weight="700">End Date</text>
+  <text x="620" y="206" fill="white" font-size="11" font-weight="700">Invoice</text>
+  <text x="710" y="206" fill="white" font-size="11" font-weight="700">Bank Stmt</text>
+  <text x="820" y="206" fill="white" font-size="11" font-weight="700">Mortgage</text>
+  <text x="940" y="206" fill="white" font-size="11" font-weight="700">User Limit</text>
+  <text x="1060" y="206" fill="white" font-size="11" font-weight="700">Status</text>
+  <text x="1148" y="206" fill="white" font-size="11" font-weight="700">Actions</text>
+
+  <!-- Row 1 -->
+  <rect x="40" y="220" width="1200" height="38" fill="white"/>
+  <text x="65" y="243" fill="#2a3f55" font-size="11" font-weight="600">Contoso Ltd</text>
+  <text x="230" y="243" fill="#2a3f55" font-size="11">Enterprise</text>
+  <text x="370" y="243" fill="#2a3f55" font-size="11">01/01/2026</text>
+  <text x="490" y="243" fill="#2a3f55" font-size="11">31/12/2026</text>
+  <rect x="620" y="228" width="42" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="641" y="241" text-anchor="middle" fill="#2e7a44" font-size="9" font-weight="700">Active</text>
+  <rect x="710" y="228" width="42" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="731" y="241" text-anchor="middle" fill="#2e7a44" font-size="9" font-weight="700">Active</text>
+  <rect x="820" y="228" width="48" height="18" rx="8" fill="#ffeaea"/>
+  <text x="844" y="241" text-anchor="middle" fill="#c0392b" font-size="9" font-weight="700">Inactive</text>
+  <text x="940" y="243" fill="#2a3f55" font-size="11">50</text>
+  <rect x="1060" y="228" width="56" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="1088" y="241" text-anchor="middle" fill="#2e7a44" font-size="9.5" font-weight="700">Active</text>
+  <rect x="1148" y="229" width="32" height="20" rx="5" fill="#256695"/>
+  <text x="1164" y="243" text-anchor="middle" fill="white" font-size="10" font-weight="700">✏</text>
+  <rect x="1186" y="229" width="32" height="20" rx="5" fill="#ffeaea"/>
+  <text x="1202" y="243" text-anchor="middle" fill="#ec2225" font-size="12" font-weight="700">🗑</text>
+  <line x1="40" y1="258" x2="1240" y2="258" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 2 -->
+  <rect x="40" y="258" width="1200" height="38" fill="#f9fbfd"/>
+  <text x="65" y="281" fill="#2a3f55" font-size="11" font-weight="600">Alpha Solutions</text>
+  <text x="230" y="281" fill="#2a3f55" font-size="11">Professional</text>
+  <text x="370" y="281" fill="#2a3f55" font-size="11">15/02/2026</text>
+  <text x="490" y="281" fill="#2a3f55" font-size="11">14/02/2027</text>
+  <rect x="620" y="266" width="42" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="641" y="279" text-anchor="middle" fill="#2e7a44" font-size="9" font-weight="700">Active</text>
+  <rect x="710" y="266" width="48" height="18" rx="8" fill="#ffeaea"/>
+  <text x="734" y="279" text-anchor="middle" fill="#c0392b" font-size="9" font-weight="700">Inactive</text>
+  <rect x="820" y="266" width="48" height="18" rx="8" fill="#ffeaea"/>
+  <text x="844" y="279" text-anchor="middle" fill="#c0392b" font-size="9" font-weight="700">Inactive</text>
+  <text x="940" y="281" fill="#2a3f55" font-size="11">25</text>
+  <rect x="1060" y="266" width="56" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="1088" y="279" text-anchor="middle" fill="#2e7a44" font-size="9.5" font-weight="700">Active</text>
+  <rect x="1148" y="267" width="32" height="20" rx="5" fill="#256695"/>
+  <text x="1164" y="281" text-anchor="middle" fill="white" font-size="10" font-weight="700">✏</text>
+  <rect x="1186" y="267" width="32" height="20" rx="5" fill="#ffeaea"/>
+  <text x="1202" y="281" text-anchor="middle" fill="#ec2225" font-size="12" font-weight="700">🗑</text>
+  <line x1="40" y1="296" x2="1240" y2="296" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 3 -->
+  <rect x="40" y="296" width="1200" height="38" fill="white"/>
+  <text x="65" y="319" fill="#2a3f55" font-size="11" font-weight="600">Beta Technologies</text>
+  <text x="230" y="319" fill="#2a3f55" font-size="11">Starter</text>
+  <text x="370" y="319" fill="#2a3f55" font-size="11">01/03/2026</text>
+  <text x="490" y="319" fill="#2a3f55" font-size="11">28/02/2027</text>
+  <rect x="620" y="304" width="42" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="641" y="317" text-anchor="middle" fill="#2e7a44" font-size="9" font-weight="700">Active</text>
+  <rect x="710" y="304" width="42" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="731" y="317" text-anchor="middle" fill="#2e7a44" font-size="9" font-weight="700">Active</text>
+  <rect x="820" y="304" width="42" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="841" y="317" text-anchor="middle" fill="#2e7a44" font-size="9" font-weight="700">Active</text>
+  <text x="940" y="319" fill="#2a3f55" font-size="11">10</text>
+  <rect x="1060" y="304" width="56" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="1088" y="317" text-anchor="middle" fill="#2e7a44" font-size="9.5" font-weight="700">Active</text>
+  <rect x="1148" y="305" width="32" height="20" rx="5" fill="#256695"/>
+  <text x="1164" y="319" text-anchor="middle" fill="white" font-size="10" font-weight="700">✏</text>
+  <rect x="1186" y="305" width="32" height="20" rx="5" fill="#ffeaea"/>
+  <text x="1202" y="319" text-anchor="middle" fill="#ec2225" font-size="12" font-weight="700">🗑</text>
+  <line x1="40" y1="334" x2="1240" y2="334" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Faded rows -->
+  <rect x="40" y="334" width="1200" height="38" fill="#f9fbfd" opacity="0.6"/>
+  <text x="65" y="357" fill="#aab8c8" font-size="11">Gamma Group</text>
+  <rect x="40" y="372" width="1200" height="38" fill="white" opacity="0.4"/>
+  <text x="65" y="395" fill="#c8d0da" font-size="11">Delta Holdings</text>
+
+  <!-- Fade -->
+  <rect x="40" y="400" width="1200" height="144" fill="white" opacity="0.9"/>
+
+  <!-- ─── ACCESS REQUESTS SECTION ─── -->
+  <rect x="40" y="560" width="1200" height="300" rx="12" fill="white" filter="url(#cs)"/>
+  <rect x="40" y="560" width="1200" height="5" rx="3" fill="#ec2225"/>
+  <text x="64" y="590" fill="#256695" font-size="15" font-weight="800">🔐 Pending Access Requests</text>
+  <rect x="1100" y="573" width="120" height="28" rx="7" fill="#2e9a55"/>
+  <text x="1160" y="591" text-anchor="middle" fill="white" font-size="11" font-weight="700">✅ Approve All</text>
+
+  <!-- Company group 1 (expanded) -->
+  <rect x="56" y="604" width="1168" height="34" rx="8" fill="#f4f8fb" stroke="#d4e2ef" stroke-width="1"/>
+  <text x="76" y="625" fill="#256695" font-size="13">▼</text>
+  <text x="96" y="625" fill="#256695" font-size="13" font-weight="700">Contoso Ltd</text>
+  <rect x="196" y="611" width="28" height="18" rx="8" fill="#ffeaea"/>
+  <text x="210" y="624" text-anchor="middle" fill="#c0392b" font-size="10" font-weight="700">3</text>
+  <text x="1120" y="625" fill="#6a82a0" font-size="11" font-weight="600">Select all in group</text>
+  <rect x="1200" y="613" width="14" height="14" rx="3" fill="white" stroke="#c8d8e8" stroke-width="1.5"/>
+
+  <!-- User request rows -->
+  <rect x="72" y="638" width="1152" height="34" fill="white" stroke="#f0f3f7" stroke-width="1"/>
+  <rect x="88" y="648" width="14" height="14" rx="3" fill="white" stroke="#c8d8e8" stroke-width="1.5"/>
+  <text x="114" y="660" fill="#2a3f55" font-size="11">alex.jones@contoso.com</text>
+  <text x="400" y="660" fill="#6a82a0" font-size="11">Viewer</text>
+  <text x="600" y="660" fill="#6a82a0" font-size="11">Requested: 17/03/2026</text>
+  <rect x="1100" y="643" width="62" height="22" rx="6" fill="#2e9a55"/>
+  <text x="1131" y="658" text-anchor="middle" fill="white" font-size="10" font-weight="700">✅ Approve</text>
+  <rect x="1172" y="643" width="46" height="22" rx="6" fill="#ffeaea"/>
+  <text x="1195" y="658" text-anchor="middle" fill="#ec2225" font-size="10" font-weight="700">✕ Deny</text>
+
+  <rect x="72" y="672" width="1152" height="34" fill="#f9fbfd" stroke="#f0f3f7" stroke-width="1"/>
+  <rect x="88" y="682" width="14" height="14" rx="3" fill="#256695" stroke="#256695" stroke-width="1"/>
+  <text x="96" y="692" text-anchor="middle" fill="white" font-size="9" font-weight="800">✓</text>
+  <text x="114" y="694" fill="#2a3f55" font-size="11">maria.smith@contoso.com</text>
+  <text x="400" y="694" fill="#6a82a0" font-size="11">Reviewer</text>
+  <text x="600" y="694" fill="#6a82a0" font-size="11">Requested: 18/03/2026</text>
+  <rect x="1100" y="677" width="62" height="22" rx="6" fill="#2e9a55"/>
+  <text x="1131" y="692" text-anchor="middle" fill="white" font-size="10" font-weight="700">✅ Approve</text>
+  <rect x="1172" y="677" width="46" height="22" rx="6" fill="#ffeaea"/>
+  <text x="1195" y="692" text-anchor="middle" fill="#ec2225" font-size="10" font-weight="700">✕ Deny</text>
+
+  <!-- Company group 2 (collapsed) -->
+  <rect x="56" y="716" width="1168" height="34" rx="8" fill="#f4f8fb" stroke="#d4e2ef" stroke-width="1"/>
+  <text x="76" y="737" fill="#6a82a0" font-size="13">▶</text>
+  <text x="96" y="737" fill="#2a3f55" font-size="13" font-weight="600">Alpha Solutions</text>
+  <rect x="218" y="723" width="28" height="18" rx="8" fill="#ffeaea"/>
+  <text x="232" y="736" text-anchor="middle" fill="#c0392b" font-size="10" font-weight="700">4</text>
+  <text x="360" y="737" fill="#8a9bb0" font-size="11">Click to expand 4 pending requests</text>
+
+  <!-- Company group 3 (collapsed) -->
+  <rect x="56" y="756" width="1168" height="34" rx="8" fill="#f4f8fb" stroke="#d4e2ef" stroke-width="1"/>
+  <text x="76" y="777" fill="#6a82a0" font-size="13">▶</text>
+  <text x="96" y="777" fill="#2a3f55" font-size="13" font-weight="600">Beta Technologies</text>
+  <rect x="226" y="763" width="28" height="18" rx="8" fill="#fff7e0"/>
+  <text x="240" y="776" text-anchor="middle" fill="#c08000" font-size="10" font-weight="700">2</text>
+  <text x="366" y="777" fill="#8a9bb0" font-size="11">Click to expand 2 pending requests</text>
+
+  <!-- Bulk action bar at bottom -->
+  <rect x="56" y="802" width="1168" height="40" rx="8" fill="#f0f7ff" stroke="#c8dcef" stroke-width="1.5"/>
+  <text x="70" y="826" fill="#256695" font-size="11" font-weight="700">2 users selected</text>
+  <rect x="900" y="810" width="140" height="24" rx="6" fill="#2e9a55"/>
+  <text x="970" y="826" text-anchor="middle" fill="white" font-size="11" font-weight="700">✅ Approve Selected</text>
+  <rect x="1056" y="810" width="120" height="24" rx="6" fill="#ffeaea" stroke="#ffd0d0" stroke-width="1"/>
+  <text x="1116" y="826" text-anchor="middle" fill="#ec2225" font-size="11" font-weight="700">✕ Deny Selected</text>
+
+  <!-- Azure cold start note -->
+  <rect x="40" y="872" width="800" height="34" rx="8" fill="#fff7e0" stroke="#f0c040" stroke-width="1"/>
+  <text x="60" y="887" fill="#b36a00" font-size="11" font-weight="700">⚠️ Azure Cold Start Handling:</text>
+  <text x="180" y="887" fill="#b36a00" font-size="11"> If the backend returns 503, a banner is shown with automatic retry (10s → 20s → 30s backoff)</text>
+  <text x="60" y="899" fill="#8a7000" font-size="10">The UI shows a "Retrying..." indicator while waiting for Azure Functions to warm up</text>
+
+  <!-- Design label -->
+  <rect x="340" y="936" width="600" height="20" rx="4" fill="#256695" opacity="0.08"/>
+  <text x="640" y="950" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Design 10 — Super Admin (Client management table, Access request approvals with bulk actions)</text>
+</svg>

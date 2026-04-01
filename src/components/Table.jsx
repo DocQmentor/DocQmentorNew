@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Header from "../Layout/Header";
 import Footer from "../Layout/Footer";
 import "./Table.css";
 import { saveAs } from "file-saver";
@@ -524,240 +523,213 @@ const filteredData = sortedData.filter((item) => {
     selectedModelType,
   ]);
 
+  const MODEL_TABS = [
+    { key: "Invoice",       emoji: "💲", label: "Invoice" },
+    { key: "BankStatement", emoji: "🏦", label: "Bank Statement" },
+    { key: "MortgageForms", emoji: "🏠", label: "Mortgage Forms" },
+  ];
+
+  const getConfClass = (score) => {
+    if (score === "N/A") return "conf-na";
+    const n = parseFloat(score);
+    return n >= 85 ? "conf-high" : "conf-low";
+  };
+
+  const closeModal = () =>
+    setVersionModal({ visible: false, history: [], docName: "", uploadedBy: "", reviewedBy: "", status: "" });
+
   return (
     <div className="table-component-container">
-      <Header />
       <div className="dataview-container">
-        <h1>{selectedModelType} Data View</h1>
 
-        {/* Model Type Selector */}
-        {/* <div className="model-type-selector">
-          <label>
-            <strong>Document Type:</strong>
-            <select 
-              value={selectedModelType} 
-              onChange={(e) => handleModelTypeChange(e.target.value)}
+        {/* ── Model type tab bar ── */}
+        <div className="dv-tabs-bar">
+          {MODEL_TABS.map((t) => (
+            <button
+              key={t.key}
+              className={`dv-tab-btn${selectedModelType === t.key ? " active" : ""}`}
+              onClick={() => handleModelTypeChange(t.key)}
             >
-              <option value="Invoice">Invoice</option>
-              <option value="BankStatement">Bank Statement</option>
-              <option value="MortgageForms">Mortgage Forms</option>
-            </select>
-          </label>
-        </div> */}
+              {t.emoji} {t.label}
+            </button>
+          ))}
+        </div>
 
-        {/* Filters */}
-        <div className="filters">
-          {selectedModelType === "Invoice" && (
-            <label>
-              <strong>Vendor:</strong>
+        {/* ── Filter card ── */}
+        <div className="dv-filter-card">
+          <p className="dv-filter-title">🔽 Filters</p>
+          <div className="dv-filter-row">
+
+            {/* Model-specific primary filter */}
+            {selectedModelType === "Invoice" && (
+              <div className="dv-filter-field">
+                <span className="dv-filter-lbl">VENDOR NAME</span>
+                <input
+                  type="text"
+                  value={vendorFilter}
+                  onChange={(e) => setVendorFilter(e.target.value)}
+                  placeholder="Search vendor…"
+                  className="dv-filter-input"
+                />
+              </div>
+            )}
+            {selectedModelType === "BankStatement" && (
+              <div className="dv-filter-field">
+                <span className="dv-filter-lbl">ACCOUNT HOLDER</span>
+                <input
+                  type="text"
+                  value={accountHolderFilter}
+                  onChange={(e) => setAccountHolderFilter(e.target.value)}
+                  placeholder="Search account holder…"
+                  className="dv-filter-input"
+                />
+              </div>
+            )}
+            {selectedModelType === "MortgageForms" && (
+              <div className="dv-filter-field">
+                <span className="dv-filter-lbl">LENDER NAME</span>
+                <input
+                  type="text"
+                  value={LendernameFilter}
+                  onChange={(e) => setLendernameFilter(e.target.value)}
+                  placeholder="Search lender…"
+                  className="dv-filter-input"
+                />
+              </div>
+            )}
+
+            <div className="dv-filter-field">
+              <span className="dv-filter-lbl">FROM DATE</span>
+              <input type="date" value={fromDate} max={today}
+                onChange={(e) => setFromDate(e.target.value)} className="dv-filter-input" />
+            </div>
+
+            <div className="dv-filter-field">
+              <span className="dv-filter-lbl">TO DATE</span>
+              <input type="date" value={toDate} min={fromDate} max={today}
+                onChange={(e) => setToDate(e.target.value)} className="dv-filter-input" />
+            </div>
+
+            <div className="dv-filter-field">
+              <span className="dv-filter-lbl">UPLOAD DATE</span>
+              <select value={uploadDateFilter} onChange={(e) => setUploadDateFilter(e.target.value)} className="dv-filter-input">
+                <option value="all">All Dates ▾</option>
+                <option value="7days">Last 7 Days</option>
+                <option value="30days">Last 30 Days</option>
+              </select>
+            </div>
+
+            <div className="dv-filter-field dv-filter-search">
+              <span className="dv-filter-lbl">SEARCH ALL</span>
               <input
                 type="text"
-                value={vendorFilter}
-                onChange={(e) => setVendorFilter(e.target.value)}
-                placeholder="Enter vendor name"
+                placeholder="🔍 Search across all fields…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="dv-filter-input"
               />
-            </label>
-          )}
+            </div>
 
-          {/* Account Holder Filter (BankStatement only) */}
-          {selectedModelType === "BankStatement" && (
-            <label>
-              <strong>Account Holder:</strong>
-              <input
-                type="text"
-                value={accountHolderFilter}
-                onChange={(e) => setAccountHolderFilter(e.target.value)}
-                placeholder="Enter account holder name"
-              />
-            </label>
-          )}
-
-          {/* Lender Name Filter (MortgageForms only) */}
-          {selectedModelType === "MortgageForms" && (
-            <label>
-              <strong>Lender Name:</strong>
-              <input
-                type="text"
-                value={LendernameFilter}
-                onChange={(e) => setLendernameFilter(e.target.value)}
-                placeholder="Enter lender name"
-              />
-            </label>
-          )}
-
-          {/* Date Range Filter */}
-          <label>
-            <strong>{selectedModelType} From Date:</strong>
-            <input
-              type="date"
-              value={fromDate}
-              max={today}
-              onChange={(e) => setFromDate(e.target.value)}
-            />
-          </label>
-          <label>
-            <strong>{selectedModelType} To Date:</strong>
-            <input
-              type="date"
-              value={toDate}
-               min={fromDate}  
-              max={today}
-              onChange={(e) => setToDate(e.target.value)}
-            />
-          </label>
-
-          {/* Upload Date Filter */}
-          <label>
-            <strong>Upload Date:</strong>
-            <select
-              value={uploadDateFilter}
-              onChange={(e) => setUploadDateFilter(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="7days">Last 7 Days</option>
-              <option value="30days">Last 30 Days</option>
-            </select>
-          </label>
-
-          {/* Search Filter */}
-          <label>
-            <strong>Search All:</strong>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </label>
-
-          {/* Action Buttons */}
-          <div className="reset-export-bar">
-            <button onClick={handleResetFilters}>Reset</button>
-          </div>
-          <div className="search-export-bar">
-            <button onClick={handleExportCSV}>Export CSV</button>
+            <div className="dv-filter-actions">
+              <button className="dv-btn-reset" onClick={handleResetFilters}>↺ Reset Filters</button>
+              <button className="dv-btn-export" onClick={handleExportCSV}>⬇ Export CSV</button>
+            </div>
           </div>
         </div>
 
-        {loading && <p>Loading data...</p>}
-        {error && <p style={{ color: "red" }}>Error: {error}</p>}
+        {loading && <p className="dv-loading">Loading data…</p>}
+        {error   && <p className="dv-error">Error: {error}</p>}
 
         <ErrorBoundary>
           {!loading && (
             <>
-             <table className={selectedModelType}>
-
-                <thead>
-                  <tr>
-                    {modelTypeHeaders[selectedModelType].map((header, idx) => (
-                      <th
-                        key={idx}
-                        onClick={() =>
-                          toggleSort(modelTypeKeys[selectedModelType][idx])
-                        }
-                      >
-                        {/* <span className="sortable-header"> */}
-                          {header}{" "}
-                          {renderSortIcon(
-                            modelTypeKeys[selectedModelType][idx]
-                          )}
-                        {/* </span> */}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentRows.length > 0 ? (
-                    currentRows.map((item, index) => (
-                      <tr key={index}>
-                        {modelTypeKeys[selectedModelType].map((key, idx) =>
-                          key === "_rawDocument" ? (
-                            <td key={idx}>
-                              <button
-                                className="action-btn"
-                                onClick={() =>
-                                  handleViewDocument(item._rawDocument)
-                                }
-                              >
-                                View
-                              </button>
-                            </td>
-                          ) : key === "confidenceScore" ? (
-                            <td key={idx}>
-                              {item.confidenceScore !== "N/A"
-                                ? `${parseFloat(item.confidenceScore).toFixed(
-                                    2
-                                  )}%`
-                                : "N/A"}
-                              {item._rawDocument?.status === "Reviewed" && (
-                                <Info
-                                  size={16}
-                                  color="#007bff"
-                                  style={{
-                                    cursor: "pointer",
-                                    marginLeft: "5px",
-                                  }}
-                                  onClick={() =>
-                                    handleInfoClick(item._rawDocument)
-                                  }
-                                />
-                              )}
-                            </td>
-                          ) :key.toLowerCase().includes("date")
-? (
-                            <td key={idx}>{formatDate(item[key])}</td>
-                          ) : (
-                            <td key={idx}>
-                                {getString(item[key] || item[key.toLowerCase()] || item[key.replace(/\s+/g, "")])}
-                            </td>
-                          )
-                        )}
-                      </tr>
-                    ))
-                  ) : (
+              <div className="dv-table-wrap">
+                <table className={selectedModelType}>
+                  <thead>
                     <tr>
-                      <td
-                        colSpan={modelTypeHeaders[selectedModelType].length}
-                        style={{ textAlign: "center" }}
-                      >
-                        No records found.
-                      </td>
+                      {modelTypeHeaders[selectedModelType].map((header, idx) => (
+                        <th key={idx} onClick={() => toggleSort(modelTypeKeys[selectedModelType][idx])}>
+                          {header} {renderSortIcon(modelTypeKeys[selectedModelType][idx])}
+                        </th>
+                      ))}
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {currentRows.length > 0 ? (
+                      currentRows.map((item, index) => (
+                        <tr key={index}>
+                          {modelTypeKeys[selectedModelType].map((key, idx) =>
+                            key === "_rawDocument" ? (
+                              <td key={idx}>
+                                <button className="action-btn" onClick={() => handleViewDocument(item._rawDocument)}>
+                                  View
+                                </button>
+                              </td>
+                            ) : key === "confidenceScore" ? (
+                              <td key={idx} style={{ whiteSpace: "nowrap" }}>
+                                <span className={`conf-badge ${getConfClass(item.confidenceScore)}`}>
+                                  {item.confidenceScore !== "N/A"
+                                    ? `${parseFloat(item.confidenceScore).toFixed(2)}%`
+                                    : "N/A"}
+                                </span>
+                                {item._rawDocument?.status === "Reviewed" && (
+                                  <Info
+                                    size={15}
+                                    color="#256695"
+                                    style={{ cursor: "pointer", marginLeft: "6px", verticalAlign: "middle" }}
+                                    onClick={() => handleInfoClick(item._rawDocument)}
+                                  />
+                                )}
+                              </td>
+                            ) : key.toLowerCase().includes("date") ? (
+                              <td key={idx}>{formatDate(item[key])}</td>
+                            ) : (
+                              <td key={idx}>
+                                {getString(item[key] || item[key.toLowerCase()] || item[key.replace(/\s+/g, "")])}
+                              </td>
+                            )
+                          )}
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={modelTypeHeaders[selectedModelType].length} style={{ textAlign: "center", padding: "24px", color: "#8a9bb0" }}>
+                          No records found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-              {/* Version History Modal */}
+              {/* ── Version History Modal (Design 05) ── */}
               {versionModal.visible && (
                 <div className="modal-backdrop">
-                  <div className="modal">
-                    {/* Top Right Close Button */}
-                    <button
-                      className="modal-close-icon-btn"
-                      onClick={() =>
-                        setVersionModal({
-                          visible: false,
-                          history: [],
-                          docName: "",
-                          uploadedBy: "",
-                          reviewedBy: "",
-                          status: ""
-                        })
-                      }
-                      title="Close"
-                    >
-                      <X />
-                    </button>
+                  <div className="vh-modal">
+                    <div className="vh-modal-accent" />
+                    <button className="vh-modal-close" onClick={closeModal}>✕</button>
 
-                    <h3>Document Review History</h3>
-                    <div className="modal-doc-info" style={{ marginBottom: "15px", textAlign: "left" }}>
-                        <p><strong>Document:</strong> {versionModal.docName}</p>
-                        <p><strong>Status:</strong> {versionModal.status}</p>
-                        <p><strong>Uploaded By:</strong> {versionModal.uploadedBy || "Unknown"}</p>
-                        <p><strong>Reviewed By:</strong> {versionModal.reviewedBy || "Pending"}</p>
+                    <h3 className="vh-modal-title">📋 Version History</h3>
+                    <p className="vh-modal-docname">{versionModal.docName}</p>
+                    <hr className="vh-divider" />
+
+                    <div className="vh-meta-row">
+                      <div className="vh-meta-item">
+                        <span className="vh-meta-lbl">STATUS</span>
+                        <span className={`vh-status-badge ${(versionModal.status || "").toLowerCase().replace(" ", "-")}`}>
+                          {versionModal.status || "—"}
+                        </span>
+                      </div>
+                      <div className="vh-meta-item">
+                        <span className="vh-meta-lbl">UPLOADED BY</span>
+                        <span className="vh-meta-val">{versionModal.uploadedBy || "Unknown"}</span>
+                      </div>
+                      <div className="vh-meta-item">
+                        <span className="vh-meta-lbl">REVIEWED BY</span>
+                        <span className="vh-meta-val">{versionModal.reviewedBy || "Pending"}</span>
+                      </div>
                     </div>
 
-                    <h4 style={{textAlign:"left"}}>Change Log:</h4>
                     <table className="version-table">
                       <thead>
                         <tr>
@@ -769,44 +741,38 @@ const filteredData = sortedData.filter((item) => {
                       </thead>
                       <tbody>
                         {versionModal.history.length > 0 ? (
-                            versionModal.history.map((v, i) => {
-                                // 🛠️ Handle mismatched keys from SQL backend (ChangedBy/ChangedAt)
-                                // Backend might return { Action: "...", ChangedBy: "...", ChangedAt: "..." }
-                                const action = v.action || v.Action;
-                                
-                                let userName = "N/A";
-                                if (v.user && typeof v.user === "object") userName = v.user.name || v.user.id;
-                                else if (v.ChangedBy) userName = v.ChangedBy;
-                                else if (v.user) userName = v.user;
-                                
-                                const rawTime = v.timestamp || v.ChangedAt;
-                                let timeStr = "N/A";
-                                if (rawTime) {
-                                    const d = new Date(rawTime);
-                                    if (!isNaN(d.getTime()) && d.getFullYear() > 1970) {
-                                        timeStr = d.toLocaleString();
-                                    }
-                                }
-
-                                return (
-                                  <tr key={i}>
-                                    <td>{v.version || v.Version || "-"}</td>
-                                    <td>{action}</td>
-                                    <td>{userName}</td>
-                                    <td>{timeStr}</td>
-                                  </tr>
-                                );
-                            })
+                          versionModal.history.map((v, i) => {
+                            const action = v.action || v.Action;
+                            let userName = "N/A";
+                            if (v.user && typeof v.user === "object") userName = v.user.name || v.user.id;
+                            else if (v.ChangedBy) userName = v.ChangedBy;
+                            else if (v.user) userName = v.user;
+                            const rawTime = v.timestamp || v.ChangedAt;
+                            let timeStr = "N/A";
+                            if (rawTime) {
+                              const d = new Date(rawTime);
+                              if (!isNaN(d.getTime()) && d.getFullYear() > 1970) timeStr = d.toLocaleString();
+                            }
+                            return (
+                              <tr key={i}>
+                                <td>{v.version || v.Version || "-"}</td>
+                                <td>{action}</td>
+                                <td>{userName}</td>
+                                <td>{timeStr}</td>
+                              </tr>
+                            );
+                          })
                         ) : (
-                            <tr><td colSpan="4">No detailed history available.</td></tr>
+                          <tr><td colSpan="4" style={{ textAlign: "center", color: "#aab8c8" }}>No detailed history available.</td></tr>
                         )}
                       </tbody>
                     </table>
+
+                    <button className="vh-close-btn" onClick={closeModal}>Close</button>
                   </div>
                 </div>
               )}
 
-              {/* File Pagination */}
               <FilePagination
                 currentPage={currentPage}
                 totalPages={totalPages}

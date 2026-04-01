@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" font-family="Segoe UI, Arial, sans-serif">
+
+  <defs>
+    <filter id="card-shadow">
+      <feDropShadow dx="0" dy="3" stdDeviation="8" flood-color="#00000014"/>
+    </filter>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#256695"/>
+    </marker>
+    <marker id="arrow-amber" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#e09800"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#2e9a55"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#ec2225"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="760" fill="#f4f7fa"/>
+
+  <!-- Title banner -->
+  <rect x="0" y="0" width="1280" height="70" fill="#256695"/>
+  <text x="640" y="30" text-anchor="middle" fill="white" font-size="18" font-weight="800">DocQmentor — New Upload Flow with Auto-Detection</text>
+  <text x="640" y="54" text-anchor="middle" fill="rgba(255,255,255,0.75)" font-size="13">Files uploaded directly from dashboard. Type detected automatically. Manual prompt only when needed.</text>
+
+  <!-- ═══════════════════════════════════
+       FLOW STEPS (TOP ROW)
+  ═══════════════════════════════════ -->
+
+  <!-- Step 1: User uploads -->
+  <rect x="40" y="110" width="180" height="130" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <circle cx="130" cy="150" r="30" fill="#e8f1fb"/>
+  <text x="130" y="160" text-anchor="middle" font-size="28">📤</text>
+  <text x="130" y="202" text-anchor="middle" fill="#1a2a3a" font-size="13" font-weight="800">User Uploads</text>
+  <text x="130" y="218" text-anchor="middle" fill="#7a90aa" font-size="11">Drag-drop or Browse</text>
+  <text x="130" y="232" text-anchor="middle" fill="#7a90aa" font-size="11">Files from Dashboard</text>
+  <rect x="40" y="106" width="180" height="5" rx="3" fill="#256695"/>
+
+  <!-- Arrow 1→2 -->
+  <line x1="222" y1="175" x2="258" y2="175" stroke="#256695" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- Step 2: Auto-detect -->
+  <rect x="260" y="110" width="180" height="130" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <circle cx="350" cy="150" r="30" fill="#fff7e6"/>
+  <text x="350" y="160" text-anchor="middle" font-size="28">🔍</text>
+  <text x="350" y="202" text-anchor="middle" fill="#1a2a3a" font-size="13" font-weight="800">Auto-Detect Type</text>
+  <text x="350" y="218" text-anchor="middle" fill="#7a90aa" font-size="11">Keyword scan on</text>
+  <text x="350" y="232" text-anchor="middle" fill="#7a90aa" font-size="11">filename</text>
+  <rect x="260" y="106" width="180" height="5" rx="3" fill="#e09800"/>
+
+  <!-- Arrow 2 splits → 3 and 4 -->
+  <!-- Arrow to "Type Found" (down-right) -->
+  <line x1="440" y1="160" x2="510" y2="140" stroke="#2e9a55" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <text x="473" y="146" fill="#2e9a55" font-size="10" font-weight="700">identified</text>
+
+  <!-- Arrow to "Unknown" (down-right lower) -->
+  <line x1="440" y1="190" x2="510" y2="260" stroke="#ec2225" stroke-width="2" marker-end="url(#arrow-red)"/>
+  <text x="449" y="228" fill="#ec2225" font-size="10" font-weight="700">unknown</text>
+
+  <!-- Step 3a: Type identified → queue -->
+  <rect x="510" y="100" width="190" height="110" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <circle cx="605" cy="135" r="24" fill="#e6f7ed"/>
+  <text x="605" y="143" text-anchor="middle" font-size="22">✅</text>
+  <text x="605" y="178" text-anchor="middle" fill="#1a2a3a" font-size="12" font-weight="800">Type Identified</text>
+  <text x="605" y="194" text-anchor="middle" fill="#7a90aa" font-size="10">Added to queue with</text>
+  <text x="605" y="207" text-anchor="middle" fill="#7a90aa" font-size="10">detected type badge</text>
+  <rect x="510" y="96" width="190" height="5" rx="3" fill="#2e9a55"/>
+
+  <!-- Step 3b: Unknown → modal -->
+  <rect x="510" y="230" width="190" height="110" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <circle cx="605" cy="265" r="24" fill="#ffeaea"/>
+  <text x="605" y="273" text-anchor="middle" font-size="22">🤔</text>
+  <text x="605" y="308" text-anchor="middle" fill="#1a2a3a" font-size="12" font-weight="800">Show Type Modal</text>
+  <text x="605" y="324" text-anchor="middle" fill="#7a90aa" font-size="10">User selects type</text>
+  <text x="605" y="337" text-anchor="middle" fill="#7a90aa" font-size="10">from 3 options</text>
+  <rect x="510" y="226" width="190" height="5" rx="3" fill="#ec2225"/>
+
+  <!-- Arrow 3a → 5 -->
+  <line x1="700" y1="155" x2="760" y2="175" stroke="#256695" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- Arrow 3b → 5 -->
+  <line x1="700" y1="285" x2="760" y2="195" stroke="#256695" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <!-- Step 5: Upload with correct type -->
+  <rect x="760" y="110" width="190" height="130" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <circle cx="855" cy="150" r="30" fill="#e8f1fb"/>
+  <text x="855" y="160" text-anchor="middle" font-size="28">☁️</text>
+  <text x="855" y="202" text-anchor="middle" fill="#1a2a3a" font-size="13" font-weight="800">Upload to Azure</text>
+  <text x="855" y="218" text-anchor="middle" fill="#7a90aa" font-size="11">Blob metadata includes</text>
+  <text x="855" y="232" text-anchor="middle" fill="#7a90aa" font-size="11">correct modelType</text>
+  <rect x="760" y="106" width="190" height="5" rx="3" fill="#256695"/>
+
+  <!-- Arrow 5→6 -->
+  <line x1="951" y1="175" x2="987" y2="175" stroke="#2e9a55" stroke-width="2" marker-end="url(#arrow-green)"/>
+
+  <!-- Step 6: Shown under correct tab -->
+  <rect x="990" y="110" width="190" height="130" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <circle cx="1085" cy="150" r="30" fill="#e6f7ed"/>
+  <text x="1085" y="160" text-anchor="middle" font-size="28">📊</text>
+  <text x="1085" y="202" text-anchor="middle" fill="#1a2a3a" font-size="13" font-weight="800">Correct Tab View</text>
+  <text x="1085" y="218" text-anchor="middle" fill="#7a90aa" font-size="11">Appears under Invoice /</text>
+  <text x="1085" y="232" text-anchor="middle" fill="#7a90aa" font-size="11">Bank / Mortgage tab</text>
+  <rect x="990" y="106" width="190" height="5" rx="3" fill="#2e9a55"/>
+
+  <!-- ═══════════════════════════════════
+       KEYWORD DETECTION TABLE
+  ═══════════════════════════════════ -->
+  <rect x="40" y="290" width="450" height="220" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <rect x="40" y="286" width="450" height="5" rx="3" fill="#e09800"/>
+  <text x="265" y="326" text-anchor="middle" fill="#256695" font-size="14" font-weight="800">🔍 Auto-Detection Keyword Rules</text>
+  <line x1="56" y1="336" x2="474" y2="336" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Table header -->
+  <rect x="56" y="344" width="418" height="26" rx="6" fill="#f4f8fb"/>
+  <text x="170" y="361" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Document Type</text>
+  <text x="380" y="361" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Filename Keywords Detected</text>
+
+  <!-- Invoice row -->
+  <rect x="56" y="376" width="418" height="34" fill="white"/>
+  <rect x="66" y="382" width="72" height="18" rx="7" fill="#e8f1fb"/>
+  <text x="102" y="395" text-anchor="middle" fill="#256695" font-size="10.5" font-weight="700">💲 Invoice</text>
+  <text x="310" y="397" text-anchor="middle" fill="#4a6080" font-size="11">invoice · inv_ · inv- · receipt · bill</text>
+  <line x1="56" y1="410" x2="474" y2="410" stroke="#f5f5f5" stroke-width="1"/>
+
+  <!-- Bank row -->
+  <rect x="56" y="410" width="418" height="34" fill="#f9fbfd"/>
+  <rect x="56" y="416" width="118" height="18" rx="7" fill="#e6f7ed"/>
+  <text x="115" y="429" text-anchor="middle" fill="#2e7a44" font-size="10.5" font-weight="700">🏦 Bank Statement</text>
+  <text x="310" y="431" text-anchor="middle" fill="#4a6080" font-size="11">statement · bank_ · bank- · stmt · bankstmt</text>
+  <line x1="56" y1="444" x2="474" y2="444" stroke="#f5f5f5" stroke-width="1"/>
+
+  <!-- Mortgage row -->
+  <rect x="56" y="444" width="418" height="34" fill="white"/>
+  <rect x="56" y="450" width="112" height="18" rx="7" fill="#fff3e0"/>
+  <text x="112" y="463" text-anchor="middle" fill="#b36a00" font-size="10.5" font-weight="700">🏠 Mortgage Forms</text>
+  <text x="310" y="465" text-anchor="middle" fill="#4a6080" font-size="11">mortgage · loan_ · loan- · lend · borrow · mort</text>
+  <line x1="56" y1="478" x2="474" y2="478" stroke="#f5f5f5" stroke-width="1"/>
+
+  <!-- Unknown row -->
+  <rect x="56" y="478" width="418" height="34" fill="#fff8f8"/>
+  <rect x="56" y="484" width="76" height="18" rx="7" fill="#ffeaea"/>
+  <text x="94" y="497" text-anchor="middle" fill="#c0392b" font-size="10.5" font-weight="700">❓ Unknown</text>
+  <text x="310" y="499" text-anchor="middle" fill="#c0392b" font-size="11">No matching keyword → Modal shown</text>
+
+  <!-- ═══════════════════════════════════
+       STATS COMPARISON
+  ═══════════════════════════════════ -->
+  <rect x="520" y="290" width="720" height="220" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <rect x="520" y="286" width="720" height="5" rx="3" fill="#256695"/>
+  <text x="880" y="326" text-anchor="middle" fill="#256695" font-size="14" font-weight="800">Before vs After: Key UI Changes</text>
+  <line x1="536" y1="336" x2="1224" y2="336" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Before column header -->
+  <rect x="548" y="346" width="300" height="26" rx="7" fill="#ffeaea"/>
+  <text x="698" y="363" text-anchor="middle" fill="#c0392b" font-size="12" font-weight="700">❌ Before (Old Design)</text>
+
+  <!-- After column header -->
+  <rect x="872" y="346" width="340" height="26" rx="7" fill="#e6f7ed"/>
+  <text x="1042" y="363" text-anchor="middle" fill="#2e7a44" font-size="12" font-weight="700">✅ After (New Design)</text>
+
+  <!-- Row 1 -->
+  <text x="554" y="394" fill="#4a6080" font-size="11">Login → SelectDocumentType page</text>
+  <text x="554" y="414" fill="#4a6080" font-size="11">→ then Dashboard</text>
+  <text x="878" y="394" fill="#2a3f55" font-size="11" font-weight="600">Login → Dashboard directly</text>
+  <text x="878" y="414" fill="#2a3f55" font-size="11">(no intermediate page)</text>
+  <line x1="536" y1="426" x2="1224" y2="426" stroke="#f5f5f5" stroke-width="1"/>
+
+  <!-- Row 2 -->
+  <text x="554" y="450" fill="#4a6080" font-size="11">Must select 1 model before uploading</text>
+  <text x="878" y="450" fill="#2a3f55" font-size="11" font-weight="600">Upload any file — type auto-detected</text>
+  <line x1="536" y1="468" x2="1224" y2="468" stroke="#f5f5f5" stroke-width="1"/>
+
+  <!-- Row 3 -->
+  <text x="554" y="492" fill="#4a6080" font-size="11">Dashboard shows only 1 model at a time</text>
+  <text x="878" y="492" fill="#2a3f55" font-size="11" font-weight="600">All models visible via tabs — switchable</text>
+
+  <!-- Divider between before/after columns -->
+  <line x1="860" y1="340" x2="860" y2="510" stroke="#e0e8f0" stroke-width="1"/>
+
+  <!-- ═══════════════════════════════════
+       TAB BAR PREVIEW
+  ═══════════════════════════════════ -->
+  <rect x="40" y="540" width="1200" height="170" rx="14" fill="white" filter="url(#card-shadow)"/>
+  <rect x="40" y="536" width="1200" height="5" rx="3" fill="#256695"/>
+  <text x="640" y="576" text-anchor="middle" fill="#256695" font-size="14" font-weight="800">📑 New Document Type Tab Bar — Replaces SelectDocumentType Screen</text>
+  <line x1="56" y1="586" x2="1224" y2="586" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Tab bar mockup -->
+  <rect x="56" y="600" width="640" height="42" rx="10" fill="#f7f9fb" stroke="#e5eaf0" stroke-width="1"/>
+
+  <!-- All tab active -->
+  <rect x="62" y="606" width="110" height="30" rx="8" fill="#256695"/>
+  <text x="92" y="626" text-anchor="middle" fill="white" font-size="12" font-weight="700">🗂 All</text>
+  <rect x="106" y="612" width="32" height="16" rx="8" fill="rgba(255,255,255,0.25)"/>
+  <text x="122" y="624" text-anchor="middle" fill="white" font-size="9.5" font-weight="700">148</text>
+
+  <!-- Invoice tab -->
+  <text x="218" y="625" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">💲 Invoice</text>
+  <rect x="254" y="612" width="26" height="16" rx="8" fill="#e8f1fb"/>
+  <text x="267" y="624" text-anchor="middle" fill="#256695" font-size="9.5" font-weight="700">87</text>
+
+  <!-- Bank tab -->
+  <text x="365" y="625" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🏦 Bank Statement</text>
+  <rect x="426" y="612" width="26" height="16" rx="8" fill="#e8f1fb"/>
+  <text x="439" y="624" text-anchor="middle" fill="#256695" font-size="9.5" font-weight="700">38</text>
+
+  <!-- Mortgage tab -->
+  <text x="520" y="625" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🏠 Mortgage Forms</text>
+  <rect x="582" y="612" width="26" height="16" rx="8" fill="#e8f1fb"/>
+  <text x="595" y="624" text-anchor="middle" fill="#256695" font-size="9.5" font-weight="700">23</text>
+
+  <!-- Annotation for tab bar -->
+  <rect x="730" y="597" width="500" height="52" rx="10" fill="#f0f7ff" stroke="#c8dcef" stroke-width="1.5"/>
+  <text x="980" y="619" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Each tab shows document count for that model type.</text>
+  <text x="980" y="637" text-anchor="middle" fill="#5a7a9a" font-size="11">Stats cards and document list update when you switch tabs.</text>
+  <text x="980" y="655" text-anchor="middle" fill="#5a7a9a" font-size="11">Vendor filter is only shown when a specific type tab is active.</text>
+
+  <!-- Design label -->
+  <rect x="340" y="724" width="600" height="22" rx="4" fill="#256695" opacity="0.1"/>
+  <text x="640" y="739" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Design 03 — Complete Upload Flow, Detection Rules, Before/After Comparison &amp; Tab Bar Preview</text>
+
+</svg>

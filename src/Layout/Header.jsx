@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home,Search, LayoutDashboard, FileText, User, LogOut, Building, Crown, Shield, Brain } from 'lucide-react';
+import { Home, Search, FileText, User, LogOut, Crown, Shield } from 'lucide-react';
 import { useMsal } from '@azure/msal-react';
 import './Header.css';
 import docQmentorLogo from '../assets/logo-docqmentor.png';
@@ -70,16 +70,7 @@ const Header = ({ minimal }) => {
         <ul>
           {!minimal && (
             <>
-            <li className={location.pathname === '/select' ? 'active' : ''}>
-                <NavLink
-                  to="/select"
-                  className="a"
-                  onClick={(e) => handleNavigationClick(e, '/select')}
-                >
-                  <Brain size={20} className="i" /> Models
-                </NavLink>
-              </li>
-              <li className={location.pathname === '/dashboard' ? 'active' : ''}>
+            <li className={location.pathname === '/dashboard' ? 'active' : ''}>
                 <NavLink
                   to="/dashboard"
                   className="a"

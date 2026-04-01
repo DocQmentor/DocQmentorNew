@@ -77,7 +77,7 @@ const AppRoutes = () => {
         path="/"
         element={
           accounts.length > 0 ? (
-            <Navigate to="/select" replace />
+            <Navigate to="/dashboard" replace />
           ) : (
             <UnauthenticatedTemplate>
               <Login />

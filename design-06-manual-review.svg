@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="cs"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#00000012"/></filter>
+  </defs>
+
+  <rect width="1280" height="900" fill="#f4f7fa"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1280" height="60" fill="#fff" filter="url(#cs)"/>
+  <rect x="24" y="14" width="34" height="34" rx="8" fill="#256695"/>
+  <text x="41" y="36" text-anchor="middle" fill="white" font-size="13" font-weight="800">DQ</text>
+  <text x="68" y="36" fill="#256695" font-size="17" font-weight="800">DocQmentor</text>
+  <text x="290" y="35" fill="#6a82a0" font-size="12" font-weight="600">⌂ Dashboard</text>
+  <text x="370" y="35" fill="#6a82a0" font-size="12" font-weight="600">📄 Data View</text>
+  <rect x="444" y="18" width="110" height="26" rx="6" fill="#256695"/>
+  <text x="499" y="35" text-anchor="middle" fill="white" font-size="12" font-weight="700">🔍 Manual Review</text>
+  <text x="576" y="35" fill="#6a82a0" font-size="12" font-weight="600">🛡 Client Admin</text>
+  <text x="672" y="35" fill="#6a82a0" font-size="12" font-weight="600">👑 Super Admin</text>
+  <circle cx="1218" cy="30" r="14" fill="#256695"/>
+  <text x="1218" y="35" text-anchor="middle" fill="white" font-size="10" font-weight="700">JD</text>
+
+  <!-- Page heading -->
+  <text x="40" y="96" fill="#256695" font-size="20" font-weight="800">Invoice Manual Review</text>
+  <text x="40" y="116" fill="#6a82a0" font-size="12">Documents requiring human review — low confidence or missing mandatory fields</text>
+
+  <!-- Alert banner -->
+  <rect x="40" y="126" width="1200" height="36" rx="8" fill="#fff7e0" stroke="#f0c040" stroke-width="1.5"/>
+  <text x="60" y="148" fill="#b36a00" font-size="12" font-weight="700">⚠️  22 documents are awaiting manual review. Please review and edit fields as needed.</text>
+  <rect x="1140" y="133" width="90" height="22" rx="6" fill="#e09800"/>
+  <text x="1185" y="148" text-anchor="middle" fill="white" font-size="11" font-weight="700">View All</text>
+
+  <!-- Model tabs -->
+  <rect x="40" y="174" width="500" height="38" rx="10" fill="white" filter="url(#cs)"/>
+  <rect x="46" y="180" width="100" height="26" rx="7" fill="#256695"/>
+  <text x="96" y="197" text-anchor="middle" fill="white" font-size="12" font-weight="700">💲 Invoice</text>
+  <rect x="152" y="186" width="24" height="16" rx="8" fill="rgba(255,255,255,0.25)"/>
+  <text x="164" y="198" text-anchor="middle" fill="white" font-size="9.5" font-weight="700">22</text>
+  <text x="240" y="197" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🏦 Bank Statement</text>
+  <rect x="302" y="186" width="24" height="16" rx="8" fill="#e8f1fb"/>
+  <text x="314" y="198" text-anchor="middle" fill="#256695" font-size="9.5" font-weight="700">8</text>
+  <text x="390" y="197" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🏠 Mortgage Forms</text>
+  <rect x="452" y="186" width="24" height="16" rx="8" fill="#e8f1fb"/>
+  <text x="464" y="198" text-anchor="middle" fill="#256695" font-size="9.5" font-weight="700">4</text>
+
+  <!-- Filter bar -->
+  <rect x="40" y="224" width="1200" height="80" rx="12" fill="white" filter="url(#cs)"/>
+  <text x="60" y="248" fill="#256695" font-size="13" font-weight="800">🔽 Filters</text>
+
+  <text x="60" y="268" fill="#7a90aa" font-size="10" font-weight="700">VENDOR</text>
+  <rect x="60" y="274" width="150" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="73" y="291" fill="#aab8c8" font-size="11">Search vendor…</text>
+
+  <text x="226" y="268" fill="#7a90aa" font-size="10" font-weight="700">FROM DATE</text>
+  <rect x="226" y="274" width="130" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="239" y="291" fill="#aab8c8" font-size="11">📅 dd/mm/yyyy</text>
+
+  <text x="372" y="268" fill="#7a90aa" font-size="10" font-weight="700">TO DATE</text>
+  <rect x="372" y="274" width="130" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="385" y="291" fill="#aab8c8" font-size="11">📅 dd/mm/yyyy</text>
+
+  <text x="518" y="268" fill="#7a90aa" font-size="10" font-weight="700">UPLOAD DATE</text>
+  <rect x="518" y="274" width="140" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="531" y="291" fill="#aab8c8" font-size="11">All Dates ▾</text>
+
+  <text x="674" y="268" fill="#7a90aa" font-size="10" font-weight="700">SEARCH ALL</text>
+  <rect x="674" y="274" width="200" height="24" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="687" y="291" fill="#aab8c8" font-size="11">🔍 Search…</text>
+
+  <rect x="892" y="274" width="90" height="24" rx="6" fill="#f4f4f4" stroke="#d0dae4" stroke-width="1"/>
+  <text x="937" y="290" text-anchor="middle" fill="#6a82a0" font-size="11" font-weight="700">↺ Reset</text>
+  <rect x="994" y="274" width="100" height="24" rx="6" fill="#2e9a55"/>
+  <text x="1044" y="290" text-anchor="middle" fill="white" font-size="11" font-weight="700">⬇ Export CSV</text>
+
+  <!-- Table -->
+  <rect x="40" y="316" width="1200" height="520" rx="12" fill="white" filter="url(#cs)"/>
+  <path d="M50,316 Q40,316 40,326 L40,352 L1240,352 L1240,326 Q1240,316 1230,316 Z" fill="#ec2225"/>
+
+  <text x="65" y="338" fill="white" font-size="11" font-weight="700">Vendor Name</text>
+  <text x="200" y="338" fill="white" font-size="11" font-weight="700">Invoice ID</text>
+  <text x="320" y="338" fill="white" font-size="11" font-weight="700">Invoice Date</text>
+  <text x="440" y="338" fill="white" font-size="11" font-weight="700">LPO NO</text>
+  <text x="560" y="338" fill="white" font-size="11" font-weight="700">Sub Total</text>
+  <text x="660" y="338" fill="white" font-size="11" font-weight="700">VAT</text>
+  <text x="740" y="338" fill="white" font-size="11" font-weight="700">Invoice Total</text>
+  <text x="880" y="338" fill="white" font-size="11" font-weight="700">Upload Date</text>
+  <text x="1000" y="338" fill="white" font-size="11" font-weight="700">Confidence</text>
+  <text x="1140" y="338" fill="white" font-size="11" font-weight="700">Action</text>
+
+  <!-- Row 1 — low confidence -->
+  <rect x="40" y="352" width="1200" height="40" fill="white"/>
+  <text x="65" y="376" fill="#2a3f55" font-size="11">TechCorp Ltd</text>
+  <text x="200" y="376" fill="#2a3f55" font-size="11">INV-2024-005</text>
+  <text x="320" y="376" fill="#2a3f55" font-size="11">16/03/2026</text>
+  <text x="440" y="376" fill="#2a3f55" font-size="11">LPO-4490</text>
+  <text x="560" y="376" fill="#2a3f55" font-size="11">AED 7,200</text>
+  <text x="660" y="376" fill="#c0392b" font-size="11" font-weight="700">—</text>
+  <text x="740" y="376" fill="#c0392b" font-size="11" font-weight="700">Missing</text>
+  <text x="880" y="376" fill="#2a3f55" font-size="11">18/03/2026</text>
+  <rect x="1000" y="360" width="60" height="18" rx="8" fill="#ffeaea"/>
+  <text x="1030" y="373" text-anchor="middle" fill="#c0392b" font-size="10" font-weight="700">68.4%</text>
+  <rect x="1138" y="361" width="46" height="22" rx="5" fill="#ec2225"/>
+  <text x="1161" y="376" text-anchor="middle" fill="white" font-size="11" font-weight="700">✏ Edit</text>
+  <line x1="40" y1="392" x2="1240" y2="392" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 2 — missing fields -->
+  <rect x="40" y="392" width="1200" height="40" fill="#fff8f8"/>
+  <text x="65" y="416" fill="#2a3f55" font-size="11">Beta Supplies</text>
+  <text x="200" y="416" fill="#2a3f55" font-size="11">INV-2024-008</text>
+  <text x="320" y="416" fill="#2a3f55" font-size="11">15/03/2026</text>
+  <text x="440" y="416" fill="#c0392b" font-size="11" font-weight="700">—</text>
+  <text x="560" y="416" fill="#2a3f55" font-size="11">AED 4,500</text>
+  <text x="660" y="416" fill="#2a3f55" font-size="11">AED 225</text>
+  <text x="740" y="416" fill="#2a3f55" font-size="11">AED 4,725</text>
+  <text x="880" y="416" fill="#2a3f55" font-size="11">17/03/2026</text>
+  <rect x="1000" y="400" width="60" height="18" rx="8" fill="#fff7e0"/>
+  <text x="1030" y="413" text-anchor="middle" fill="#c08000" font-size="10" font-weight="700">79.0%</text>
+  <rect x="1138" y="401" width="46" height="22" rx="5" fill="#ec2225"/>
+  <text x="1161" y="416" text-anchor="middle" fill="white" font-size="11" font-weight="700">✏ Edit</text>
+  <line x1="40" y1="432" x2="1240" y2="432" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 3 -->
+  <rect x="40" y="432" width="1200" height="40" fill="white"/>
+  <text x="65" y="456" fill="#2a3f55" font-size="11">Nexus Corp</text>
+  <text x="200" y="456" fill="#2a3f55" font-size="11">INV-2024-011</text>
+  <text x="320" y="456" fill="#2a3f55" font-size="11">13/03/2026</text>
+  <text x="440" y="456" fill="#2a3f55" font-size="11">LPO-4310</text>
+  <text x="560" y="456" fill="#2a3f55" font-size="11">AED 9,800</text>
+  <text x="660" y="456" fill="#2a3f55" font-size="11">AED 490</text>
+  <text x="740" y="456" fill="#c0392b" font-size="11" font-weight="700">Missing</text>
+  <text x="880" y="456" fill="#2a3f55" font-size="11">16/03/2026</text>
+  <rect x="1000" y="440" width="60" height="18" rx="8" fill="#ffeaea"/>
+  <text x="1030" y="453" text-anchor="middle" fill="#c0392b" font-size="10" font-weight="700">71.2%</text>
+  <rect x="1138" y="441" width="46" height="22" rx="5" fill="#ec2225"/>
+  <text x="1161" y="456" text-anchor="middle" fill="white" font-size="11" font-weight="700">✏ Edit</text>
+  <line x1="40" y1="472" x2="1240" y2="472" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Faded rows -->
+  <rect x="40" y="472" width="1200" height="40" fill="#fff8f8" opacity="0.6"/>
+  <text x="65" y="496" fill="#aab8c8" font-size="11">Omega Ltd</text>
+  <line x1="40" y1="512" x2="1240" y2="512" stroke="#f0f3f7" stroke-width="1"/>
+  <rect x="40" y="512" width="1200" height="40" fill="white" opacity="0.4"/>
+  <text x="65" y="536" fill="#c8d0da" font-size="11">Delta Exports</text>
+
+  <!-- Fade gradient -->
+  <rect x="40" y="530" width="1200" height="220" fill="white" opacity="0.9"/>
+
+  <!-- Pagination -->
+  <rect x="530" y="804" width="30" height="22" rx="4" fill="#ec2225"/>
+  <text x="545" y="820" text-anchor="middle" fill="white" font-size="12" font-weight="700">1</text>
+  <rect x="568" y="804" width="30" height="22" rx="4" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="583" y="820" text-anchor="middle" fill="#256695" font-size="12" font-weight="700">2</text>
+  <rect x="606" y="804" width="30" height="22" rx="4" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="621" y="820" text-anchor="middle" fill="#256695" font-size="12" font-weight="700">3</text>
+  <rect x="644" y="804" width="30" height="22" rx="4" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="659" y="820" text-anchor="middle" fill="#256695" font-size="12">›</text>
+
+  <!-- Legend: why items appear here -->
+  <rect x="40" y="840" width="600" height="44" rx="10" fill="#fff8f8" stroke="#ffd0d0" stroke-width="1.5"/>
+  <text x="60" y="857" fill="#c0392b" font-size="11" font-weight="700">🔴 Why does a document appear here?</text>
+  <text x="60" y="874" fill="#6a82a0" font-size="11">Confidence score below threshold  ·  One or more mandatory fields missing  ·  Flagged for review by AI</text>
+
+  <!-- Design label -->
+  <rect x="340" y="872" width="600" height="20" rx="4" fill="#ec2225" opacity="0.08"/>
+  <text x="640" y="886" text-anchor="middle" fill="#ec2225" font-size="11" font-weight="700">Design 06 — Manual Review Queue (Edit button opens Edit Modal; per-model tabs with pending counts)</text>
+</svg>

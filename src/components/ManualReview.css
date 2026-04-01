@@ -1,442 +1,387 @@
-/* ===== Base Styles ===== */
-.ManualReview-full-container {
+/* ===== Page Wrapper ===== */
+.mr-page {
   width: 100%;
-  min-height: 100vh;
+  min-height: calc(100vh - 56px);
   display: flex;
   flex-direction: column;
+  background: #f4f7fb;
   font-family: "Nunito", sans-serif;
-  background-color: #f9f9f9;
 }
 
-/* ===== Main Section ===== */
-.ManualReview-main-container {
-  margin-top: 20px;
+.mr-content {
   flex: 1;
-  padding: 50px 25px;
+  padding: 24px 28px;
+  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* ===== Heading ===== */
+.mr-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mr-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0d2f4f;
+  margin: 0 0 4px 0;
+}
+
+.mr-subtitle {
+  font-size: 13px;
+  color: #7a8fa6;
+  margin: 0;
+}
+
+.mr-refresh-btn {
+  background: white;
+  border: 1.5px solid #d4e2ef;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #256695;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.mr-refresh-btn:hover { background: #e8f1fb; }
+
+/* ===== Alert Banner ===== */
+.mr-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fffbea;
+  border: 1.5px solid #f0c040;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #7a5c00;
+}
+
+.mr-alert-icon { font-size: 18px; flex-shrink: 0; }
+.mr-alert-text { flex: 1; line-height: 1.5; }
+
+.mr-alert-view-all {
+  background: #f0c040;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5a3d00;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.mr-alert-view-all:hover { background: #e0b030; }
+
+/* ===== Model Tabs ===== */
+.mr-tabs-bar {
+  display: flex;
+  gap: 8px;
+  background: white;
+  border-radius: 10px;
+  padding: 6px;
+  border: 1.5px solid #e4ecf4;
+  width: fit-content;
+}
+
+.mr-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a7a96;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.mr-tab:hover { background: #f0f4f8; }
+
+.mr-tab.active {
+  background: #256695;
+  color: white;
+}
+
+.mr-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ec2225;
+  color: white;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  line-height: 1;
+}
+
+.mr-tab.active .mr-tab-badge {
+  background: rgba(255,255,255,0.3);
+}
+
+/* ===== Filter Card ===== */
+.mr-filter-card {
+  background: white;
+  border-radius: 12px;
+  border: 1.5px solid #e4ecf4;
+  padding: 16px 18px;
+}
+
+.mr-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.mr-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.mr-filter-field--grow { flex: 1; min-width: 180px; }
+
+.mr-filter-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9ab0c5;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.mr-filter-input {
+  height: 34px;
+  border: 1.5px solid #d4e2ef;
+  border-radius: 7px;
+  padding: 0 10px;
+  font-size: 13px;
+  background: #f7f9fb;
+  color: #1a3549;
+  outline: none;
+  transition: border-color 0.2s;
   box-sizing: border-box;
   width: 100%;
 }
-.ManualReview-Table-header h1{
-   font-size: 22px;
-  font-weight: 700;
-  color: #266898;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  width: 100%;
-}
-/* .ManualReview-main-container h2 {
-  font-size: 22px;
-  font-weight: 700;
-  color: #0d3c61;
-  margin-bottom: 10px;
-} */
-/* ===== FIXED COLUMN WIDTHS FOR MANUAL REVIEW BY MODEL TYPE ===== */
+.mr-filter-input:focus { border-color: #256695; background: white; }
 
-/* ----- Invoice Table Column Widths ----- */
-.ManualReview-Table.Invoice th:nth-child(1),
-.ManualReview-Table.Invoice td:nth-child(1) { width: 160px; } /* Vendor Name */
-.ManualReview-Table.Invoice th:nth-child(2),
-.ManualReview-Table.Invoice td:nth-child(2) { width: 120px; } /* Invoice ID */
-.ManualReview-Table.Invoice th:nth-child(3),
-.ManualReview-Table.Invoice td:nth-child(3) { width: 130px; } /* Invoice Date */
-.ManualReview-Table.Invoice th:nth-child(4),
-.ManualReview-Table.Invoice td:nth-child(4) { width: 120px; } /* LPO No */
-.ManualReview-Table.Invoice th:nth-child(5),
-.ManualReview-Table.Invoice td:nth-child(5) { width: 100px; } /* Sub Total */
-.ManualReview-Table.Invoice th:nth-child(6),
-.ManualReview-Table.Invoice td:nth-child(6) { width: 100px; } /* VAT */
-.ManualReview-Table.Invoice th:nth-child(7),
-.ManualReview-Table.Invoice td:nth-child(7) { width: 110px; } /* Total */
-.ManualReview-Table.Invoice th:nth-child(8),
-.ManualReview-Table.Invoice td:nth-child(8) { width: 130px; } /* Upload Date */
-.ManualReview-Table.Invoice th:nth-child(9),
-.ManualReview-Table.Invoice td:nth-child(9) { width: 140px; } /* Confidence Score */
-.ManualReview-Table.Invoice th:nth-child(10),
-.ManualReview-Table.Invoice td:nth-child(10) { width: 90px; } /* Action */
-
-
-/* ----- Bank Statement Table Column Widths ----- */
-.ManualReview-Table.BankStatement th:nth-child(1),
-.ManualReview-Table.BankStatement td:nth-child(1) { width: 170px; }
-.ManualReview-Table.BankStatement th:nth-child(2),
-.ManualReview-Table.BankStatement td:nth-child(2) { width: 130px; }
-.ManualReview-Table.BankStatement th:nth-child(3),
-.ManualReview-Table.BankStatement td:nth-child(3) { width: 150px; }
-.ManualReview-Table.BankStatement th:nth-child(4),
-.ManualReview-Table.BankStatement td:nth-child(4) { width: 120px; }
-.ManualReview-Table.BankStatement th:nth-child(5),
-.ManualReview-Table.BankStatement td:nth-child(5) { width: 120px; }
-.ManualReview-Table.BankStatement th:nth-child(6),
-.ManualReview-Table.BankStatement td:nth-child(6) { width: 130px; }
-.ManualReview-Table.BankStatement th:nth-child(7),
-.ManualReview-Table.BankStatement td:nth-child(7) { width: 140px; }
-.ManualReview-Table.BankStatement th:nth-child(8),
-.ManualReview-Table.BankStatement td:nth-child(8) { width: 90px; }
-
-
-/* ----- Mortgage Forms Table Column Widths ----- */
-.ManualReview-Table.MortgageForms th:nth-child(1),
-.ManualReview-Table.MortgageForms td:nth-child(1) { width: 170px; }
-.ManualReview-Table.MortgageForms th:nth-child(2),
-.ManualReview-Table.MortgageForms td:nth-child(2) { width: 170px; }
-.ManualReview-Table.MortgageForms th:nth-child(3),
-.ManualReview-Table.MortgageForms td:nth-child(3) { width: 130px; }
-.ManualReview-Table.MortgageForms th:nth-child(4),
-.ManualReview-Table.MortgageForms td:nth-child(4) { width: 100px; }
-.ManualReview-Table.MortgageForms th:nth-child(5),
-.ManualReview-Table.MortgageForms td:nth-child(5) { width: 110px; }
-.ManualReview-Table.MortgageForms th:nth-child(6),
-.ManualReview-Table.MortgageForms td:nth-child(6) { width: 130px; }
-.ManualReview-Table.MortgageForms th:nth-child(7),
-.ManualReview-Table.MortgageForms td:nth-child(7) { width: 140px; }
-.ManualReview-Table.MortgageForms th:nth-child(8),
-.ManualReview-Table.MortgageForms td:nth-child(8) { width: 90px; }
-
-
-/* ===== Filters Section ===== */
-.filters {
+.mr-filter-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: space-between;
+  gap: 8px;
   align-items: flex-end;
-  margin-bottom: 20px;
+  padding-bottom: 0;
+  flex-shrink: 0;
 }
 
-.filters label {
-  display: flex;
-  flex-direction: column;
-  font-weight: 500;
+.mr-btn-reset {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 7px;
+  border: 1.5px solid #d4e2ef;
+  background: #f0f4f8;
+  color: #5a7a96;
   font-size: 13px;
-  color: #266898;
-}
-
-.filters input,
-.filters select {
-  border: 1.8px solid #266898;
-  border-radius: 5px;
-  padding: 4px 8px;
-  font-size: 13px;
-  margin-top: 4px;
-  min-width: 150px;
-  height: 32px;
-}
-
-/* ===== Buttons ===== */
-.export-button,
-.reset-button {
-  background-color: #266898;
-  color: white;
-  border: none;
-  border-radius: 5px;
   font-weight: 600;
   cursor: pointer;
-  height: 32px;
+  transition: background 0.2s;
+}
+.mr-btn-reset:hover { background: #e0e8f0; }
+
+.mr-btn-export {
+  height: 34px;
   padding: 0 14px;
-  transition: background 0.3s ease;
+  border-radius: 7px;
+  border: none;
+  background: #2e9a55;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.mr-btn-export:hover { background: #247a44; }
+
+/* ===== Error Box ===== */
+.mr-error-box {
+  background: #fff3f3;
+  border: 1.5px solid #f5b8b8;
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #a00;
+}
+.mr-error-box p { margin: 0; flex: 1; }
+.mr-btn-retry {
+  background: #ec2225;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.export-button:hover,
-.reset-button:hover {
-  background-color: #ed2224;
+/* ===== Table Wrapper ===== */
+.mr-table-wrap {
+  background: white;
+  border-radius: 12px;
+  border: 1.5px solid #e4ecf4;
+  overflow: hidden;
+  flex: 1;
+}
+
+.mr-table-info {
+  padding: 12px 16px;
+  font-size: 12px;
+  color: #7a8fa6;
+  border-bottom: 1px solid #f0f4f8;
 }
 
 /* ===== Table ===== */
-/* ===== Table (Replica of SuperAdmin.css) ===== */
-.ManualReview-Table {
+.mr-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border: 1px solid #ccc; /* Solid border */
   table-layout: fixed;
-  font-size: 11px;
+  font-size: 12px;
 }
 
-.ManualReview-Table th {
-  background: #266898 !important;
+.mr-table thead tr {
+  background: #ec2225;
+}
+
+.mr-table th {
+  background: #ec2225 !important;
   color: white !important;
-  padding: 8px 6px;
+  padding: 10px 10px;
   text-align: left;
   font-weight: 700;
   font-size: 11px;
-  border: 1px solid #ccc; /* Full grid border */
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  position: relative;
+  letter-spacing: 0.4px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  cursor: pointer;
+  user-select: none;
+  border-right: 1px solid rgba(255,255,255,0.15);
 }
+.mr-table th:last-child { border-right: none; }
 
-.ManualReview-Table th:last-child {
-  border-right: 1px solid #ccc;
-}
-
-.ManualReview-Table td {
-  padding: 6px;
-  color: #000; /* Black text */
-  font-size: 11px;
-  border: 1px solid #ccc; /* Full grid border */
+.mr-table td {
+  padding: 8px 10px;
+  color: #1a3549;
+  font-size: 12px;
+  border-bottom: 1px solid #f0f4f8;
   vertical-align: middle;
-  line-height: 1.3; /* Increased line-height */
-  white-space: normal; /* Allow wrapping */
-  word-wrap: break-word;
-  font-weight: 600; /* Reduced bold */
+  word-break: break-word;
 }
 
-.ManualReview-Table tr {
-  transition: background 0.2s;
+.mr-table tr:last-child td { border-bottom: none; }
+.mr-table tr:hover td { background: #f7fafd; }
+.mr-table tr:nth-child(even) td { background: #fafcfe; }
+.mr-table tr:nth-child(even):hover td { background: #f0f6fb; }
+
+.mr-td-center {
+  text-align: center;
+  color: #9ab0c5;
+  padding: 28px !important;
 }
 
-.ManualReview-Table tr:hover {
-  background: #f5f7fa !important;
-}
+/* ===== Column Widths — Invoice ===== */
+.mr-table.Invoice th:nth-child(1), .mr-table.Invoice td:nth-child(1) { width: 150px; }
+.mr-table.Invoice th:nth-child(2), .mr-table.Invoice td:nth-child(2) { width: 110px; }
+.mr-table.Invoice th:nth-child(3), .mr-table.Invoice td:nth-child(3) { width: 110px; }
+.mr-table.Invoice th:nth-child(4), .mr-table.Invoice td:nth-child(4) { width: 100px; }
+.mr-table.Invoice th:nth-child(5), .mr-table.Invoice td:nth-child(5) { width:  90px; }
+.mr-table.Invoice th:nth-child(6), .mr-table.Invoice td:nth-child(6) { width:  80px; }
+.mr-table.Invoice th:nth-child(7), .mr-table.Invoice td:nth-child(7) { width: 100px; }
+.mr-table.Invoice th:nth-child(8), .mr-table.Invoice td:nth-child(8) { width: 110px; }
+.mr-table.Invoice th:nth-child(9), .mr-table.Invoice td:nth-child(9) { width: 110px; }
+.mr-table.Invoice th:nth-child(10),.mr-table.Invoice td:nth-child(10){ width:  80px; }
 
-.ManualReview-Table tr:nth-child(even) {
-  background: #fcfcfc;
-}
+/* ===== Column Widths — BankStatement ===== */
+.mr-table.BankStatement th:nth-child(1), .mr-table.BankStatement td:nth-child(1) { width: 160px; }
+.mr-table.BankStatement th:nth-child(2), .mr-table.BankStatement td:nth-child(2) { width: 130px; }
+.mr-table.BankStatement th:nth-child(3), .mr-table.BankStatement td:nth-child(3) { width: 140px; }
+.mr-table.BankStatement th:nth-child(4), .mr-table.BankStatement td:nth-child(4) { width: 120px; }
+.mr-table.BankStatement th:nth-child(5), .mr-table.BankStatement td:nth-child(5) { width: 120px; }
+.mr-table.BankStatement th:nth-child(6), .mr-table.BankStatement td:nth-child(6) { width: 110px; }
+.mr-table.BankStatement th:nth-child(7), .mr-table.BankStatement td:nth-child(7) { width: 110px; }
+.mr-table.BankStatement th:nth-child(8), .mr-table.BankStatement td:nth-child(8) { width:  80px; }
 
-.ManualReview-Table tr:nth-child(even):hover {
-  background: #f5f7fa;
-}
+/* ===== Column Widths — MortgageForms ===== */
+.mr-table.MortgageForms th:nth-child(1), .mr-table.MortgageForms td:nth-child(1) { width: 160px; }
+.mr-table.MortgageForms th:nth-child(2), .mr-table.MortgageForms td:nth-child(2) { width: 160px; }
+.mr-table.MortgageForms th:nth-child(3), .mr-table.MortgageForms td:nth-child(3) { width: 120px; }
+.mr-table.MortgageForms th:nth-child(4), .mr-table.MortgageForms td:nth-child(4) { width:  90px; }
+.mr-table.MortgageForms th:nth-child(5), .mr-table.MortgageForms td:nth-child(5) { width: 100px; }
+.mr-table.MortgageForms th:nth-child(6), .mr-table.MortgageForms td:nth-child(6) { width: 110px; }
+.mr-table.MortgageForms th:nth-child(7), .mr-table.MortgageForms td:nth-child(7) { width: 110px; }
+.mr-table.MortgageForms th:nth-child(8), .mr-table.MortgageForms td:nth-child(8) { width:  80px; }
 
-/* ===== Action Button (Compact) ===== */
-.ManualReview-Table button {
-  background: #266898;
+/* ===== Edit Button ===== */
+.mr-edit-btn {
+  background: #ec2225;
   color: white;
   border: none;
-  padding: 3px 6px;
-  border-radius: 3px;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 10px;
-  transition: all 0.2s;
   white-space: nowrap;
-  font-weight: 500;
-  min-width: 40px;
+  transition: background 0.2s, transform 0.1s;
 }
-
-.ManualReview-Table button:hover {
-  background: #1f5d8a;
+.mr-edit-btn:hover {
+  background: #c91a1d;
   transform: translateY(-1px);
 }
 
-/* ===== Pagination ===== */
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 15px;
-  align-items: center;
-}
-
-.pagination button {
-  background-color: #f8f8f8;
-  color: #266898;
-  padding: 5px 10px;
-  margin: 0 4px;
-  cursor: pointer;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  font-size: 13px;
-  transition: all 0.3s ease;
-}
-
-.pagination button:hover {
-  background-color: #e9e9e9;
-}
-
-/* ===== Modal ===== */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-.modal {
-  background: #ffffff;
-  padding: 24px 28px;
+/* ===== Confidence Badges ===== */
+.conf-badge {
+  display: inline-block;
+  padding: 2px 8px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  width: 650px;
-  max-width: 95%;
-  font-family: "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
-
-.modal h3 {
-  font-size: 22px;
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-}
-
-.modal button {
-  background-color: #266898;
-  color: white;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.modal button:hover {
-  background-color: #266898;
-}
+.conf-badge.conf-high  { background: #e6f7ed; color: #2e7a44; }
+.conf-badge.conf-low   { background: #fdecea; color: #c0392b; }
+.conf-badge.conf-grey  { background: #f0f4f8; color: #7a8fa6; }
 
 /* ===== Responsive ===== */
 @media (max-width: 1024px) {
-  .filters {
-    gap: 10px;
-  }
-
-  .filters input {
-    min-width: 130px;
-  }
-
-  .ManualReview-Table th,
-  .ManualReview-Table td {
-    font-size: 12px;
-    padding: 8px 10px;
-  }
+  .mr-page { padding: 16px 14px; }
+  .mr-filter-field { min-width: 120px; }
 }
 
 @media (max-width: 768px) {
-  .ManualReview-main-container {
-    padding: 15px;
-  }
-
-  .filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filters input,
-  .filters select {
-    width: 100%;
-  }
-
-  .export-button,
-  .reset-button {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .ManualReview-Table {
-    display: block;
-    overflow-x: auto;
-  }
-
-  .ManualReview-Table th,
-  .ManualReview-Table td {
-    font-size: 11.5px;
-    padding: 7px 8px;
-  }
-}
-/* 📱 Tablet (Two-column filters and controlled table width) */
-@media (max-width: 1024px) {
-
-  .ManualReview-main-container {
-    padding: 30px 16px;
-  }
-
-  .filters {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    width: 100%;
-    gap: 10px;
-  }
-
-  .ManualReview-Table th,
-  .ManualReview-Table td {
-    font-size: 12px;
-    padding: 8px;
-  }
-}
-
-/* 📱 Mobile Layout: Filters stacked and scrollable table */
-@media (max-width: 768px) {
-
-  .ManualReview-main-container {
-    padding: 20px 10px;
-  }
-
-  .filters {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .filters input,
-  .filters select,
-  .export-button,
-  .reset-button {
-    width: 100%;
-  }
-
-  /* Force Scroll Table on Mobile */
-  .ManualReview-Table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-
-  /* Ensure cells readable */
-  .ManualReview-Table th,
-  .ManualReview-Table td {
-    min-width: 120px;
-    font-size: 11px;
-    padding: 6px;
-  }
-
-  .ManualReview-Table-header h1 {
-    font-size: 18px;
-    text-align: center;
-  }
-
-  /* Reduce width & center Filter section */
-  .ManualReview-Table-header .filters {
-    width: 100%;
-  }
-}
-
-/* 📱 Extra Small Phones */
-@media (max-width: 480px) {
-
-  .ManualReview-main-container {
-    padding: 15px 6px;
-  }
-
-  .ManualReview-full-container {
-    overflow-x: hidden;
-  }
-
-  /* Smaller buttons */
-  .ManualReview-Table button {
-    font-size: 11px;
-    padding: 4px 8px;
-  }
-}
-
-/* 📱 Ultra Small Devices (≤360px width) */
-@media (max-width: 360px) {
-  .ManualReview-Table th,
-  .ManualReview-Table td {
-    min-width: 100px;
-    font-size: 10px;
-  }
-
-  .filters label {
-    font-size: 11px;
-  }
+  .mr-page { padding: 12px 10px; }
+  .mr-tabs-bar { flex-wrap: wrap; width: 100%; }
+  .mr-tab { flex: 1; justify-content: center; }
+  .mr-filter-row { flex-direction: column; }
+  .mr-filter-field, .mr-filter-field--grow { width: 100%; min-width: unset; }
+  .mr-filter-actions { width: 100%; }
+  .mr-btn-reset, .mr-btn-export { flex: 1; justify-content: center; }
+  .mr-heading { flex-direction: column; align-items: stretch; }
 }

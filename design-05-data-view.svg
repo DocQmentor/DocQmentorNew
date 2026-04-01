@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="cs"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#00000012"/></filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="900" fill="#f4f7fa"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1280" height="60" fill="#fff" filter="url(#cs)"/>
+  <rect x="24" y="14" width="34" height="34" rx="8" fill="#256695"/>
+  <text x="41" y="36" text-anchor="middle" fill="white" font-size="13" font-weight="800">DQ</text>
+  <text x="68" y="36" fill="#256695" font-size="17" font-weight="800">DocQmentor</text>
+  <text x="290" y="35" fill="#6a82a0" font-size="12" font-weight="600">⌂ Dashboard</text>
+  <rect x="364" y="18" width="72" height="26" rx="6" fill="#256695"/>
+  <text x="400" y="35" text-anchor="middle" fill="white" font-size="12" font-weight="700">📄 Data View</text>
+  <text x="458" y="35" fill="#6a82a0" font-size="12" font-weight="600">🔍 Manual Review</text>
+  <text x="574" y="35" fill="#6a82a0" font-size="12" font-weight="600">🛡 Client Admin</text>
+  <text x="672" y="35" fill="#6a82a0" font-size="12" font-weight="600">👑 Super Admin</text>
+  <circle cx="1218" cy="30" r="14" fill="#256695"/>
+  <text x="1218" y="35" text-anchor="middle" fill="white" font-size="10" font-weight="700">JD</text>
+
+  <!-- Page heading -->
+  <text x="40" y="96" fill="#256695" font-size="20" font-weight="800">Invoice Data View</text>
+  <text x="40" y="116" fill="#6a82a0" font-size="12">Filterable table of all processed documents with export and version history</text>
+
+  <!-- ─── MODEL TYPE TAB BAR ─── -->
+  <rect x="40" y="130" width="500" height="38" rx="10" fill="white" filter="url(#cs)"/>
+  <rect x="46" y="136" width="100" height="26" rx="7" fill="#256695"/>
+  <text x="96" y="153" text-anchor="middle" fill="white" font-size="12" font-weight="700">💲 Invoice</text>
+  <text x="204" y="153" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🏦 Bank Statement</text>
+  <text x="348" y="153" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="600">🏠 Mortgage Forms</text>
+
+  <!-- ─── FILTER BAR ─── -->
+  <rect x="40" y="184" width="1200" height="96" rx="12" fill="white" filter="url(#cs)"/>
+  <text x="60" y="208" fill="#256695" font-size="13" font-weight="800">🔽 Filters</text>
+
+  <!-- Filter row 1 -->
+  <text x="60" y="232" fill="#7a90aa" font-size="10" font-weight="700">VENDOR NAME</text>
+  <rect x="60" y="238" width="160" height="28" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="73" y="257" fill="#aab8c8" font-size="11">Search vendor…</text>
+
+  <text x="238" y="232" fill="#7a90aa" font-size="10" font-weight="700">FROM DATE</text>
+  <rect x="238" y="238" width="140" height="28" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="251" y="257" fill="#aab8c8" font-size="11">📅 dd/mm/yyyy</text>
+
+  <text x="396" y="232" fill="#7a90aa" font-size="10" font-weight="700">TO DATE</text>
+  <rect x="396" y="238" width="140" height="28" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="409" y="257" fill="#aab8c8" font-size="11">📅 dd/mm/yyyy</text>
+
+  <text x="554" y="232" fill="#7a90aa" font-size="10" font-weight="700">UPLOAD DATE</text>
+  <rect x="554" y="238" width="150" height="28" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="567" y="257" fill="#aab8c8" font-size="11">All Dates ▾</text>
+
+  <text x="722" y="232" fill="#7a90aa" font-size="10" font-weight="700">SEARCH ALL</text>
+  <rect x="722" y="238" width="210" height="28" rx="6" fill="#f7f9fb" stroke="#d4e2ef" stroke-width="1.5"/>
+  <text x="735" y="257" fill="#aab8c8" font-size="11">🔍 Search across all fields…</text>
+
+  <!-- Filter action buttons -->
+  <rect x="950" y="238" width="110" height="28" rx="6" fill="#f4f4f4" stroke="#d0dae4" stroke-width="1"/>
+  <text x="1005" y="256" text-anchor="middle" fill="#6a82a0" font-size="11" font-weight="700">↺ Reset Filters</text>
+  <rect x="1074" y="238" width="110" height="28" rx="6" fill="#2e9a55"/>
+  <text x="1129" y="256" text-anchor="middle" fill="white" font-size="11" font-weight="700">⬇ Export CSV</text>
+
+  <!-- ─── DATA TABLE ─── -->
+  <rect x="40" y="296" width="1200" height="504" rx="12" fill="white" filter="url(#cs)"/>
+
+  <!-- Table header -->
+  <rect x="40" y="296" width="1200" height="36" rx="0" fill="#256695"/>
+  <rect x="40" y="296" width="1200" height="36" rx="0"/>
+  <!-- Round top corners only -->
+  <rect x="40" y="296" width="1200" height="18" fill="#256695"/>
+  <rect x="40" y="296" width="1200" height="36" rx="10" fill="none"/>
+  <rect x="40" y="296" width="1200" height="36" fill="#256695" rx="0"/>
+  <!-- Workaround: just use rect with top radius -->
+  <path d="M50,296 Q40,296 40,306 L40,332 L1240,332 L1240,306 Q1240,296 1230,296 Z" fill="#256695"/>
+
+  <text x="65" y="318" fill="white" font-size="11" font-weight="700">Vendor Name</text>
+  <text x="195" y="318" fill="white" font-size="11" font-weight="700">Invoice ID</text>
+  <text x="315" y="318" fill="white" font-size="11" font-weight="700">Invoice Date</text>
+  <text x="435" y="318" fill="white" font-size="11" font-weight="700">LPO NO</text>
+  <text x="555" y="318" fill="white" font-size="11" font-weight="700">Sub Total</text>
+  <text x="660" y="318" fill="white" font-size="11" font-weight="700">VAT</text>
+  <text x="745" y="318" fill="white" font-size="11" font-weight="700">Invoice Total</text>
+  <text x="875" y="318" fill="white" font-size="11" font-weight="700">Upload Date</text>
+  <text x="1005" y="318" fill="white" font-size="11" font-weight="700">Confidence</text>
+  <text x="1150" y="318" fill="white" font-size="11" font-weight="700">Action</text>
+
+  <!-- Data rows -->
+  <!-- Row 1 -->
+  <rect x="40" y="332" width="1200" height="38" fill="white"/>
+  <text x="65" y="355" fill="#2a3f55" font-size="11">TechCorp Ltd</text>
+  <text x="195" y="355" fill="#2a3f55" font-size="11">INV-2024-001</text>
+  <text x="315" y="355" fill="#2a3f55" font-size="11">15/03/2026</text>
+  <text x="435" y="355" fill="#2a3f55" font-size="11">LPO-4421</text>
+  <text x="555" y="355" fill="#2a3f55" font-size="11">AED 8,400</text>
+  <text x="660" y="355" fill="#2a3f55" font-size="11">AED 420</text>
+  <text x="745" y="355" fill="#2a3f55" font-size="11">AED 8,820</text>
+  <text x="875" y="355" fill="#2a3f55" font-size="11">18/03/2026</text>
+  <rect x="1005" y="340" width="64" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="1037" y="353" text-anchor="middle" fill="#2e7a44" font-size="10" font-weight="700">96.2%</text>
+  <rect x="1148" y="341" width="36" height="20" rx="5" fill="#256695"/>
+  <text x="1166" y="355" text-anchor="middle" fill="white" font-size="10" font-weight="700">View</text>
+  <line x1="40" y1="370" x2="1240" y2="370" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 2 -->
+  <rect x="40" y="370" width="1200" height="38" fill="#f9fbfd"/>
+  <text x="65" y="393" fill="#2a3f55" font-size="11">Alpha Services</text>
+  <text x="195" y="393" fill="#2a3f55" font-size="11">INV-2024-002</text>
+  <text x="315" y="393" fill="#2a3f55" font-size="11">14/03/2026</text>
+  <text x="435" y="393" fill="#2a3f55" font-size="11">LPO-4398</text>
+  <text x="555" y="393" fill="#2a3f55" font-size="11">AED 12,500</text>
+  <text x="660" y="393" fill="#2a3f55" font-size="11">AED 625</text>
+  <text x="745" y="393" fill="#2a3f55" font-size="11">AED 13,125</text>
+  <text x="875" y="393" fill="#2a3f55" font-size="11">17/03/2026</text>
+  <rect x="1005" y="378" width="64" height="18" rx="8" fill="#ffeaea"/>
+  <text x="1037" y="391" text-anchor="middle" fill="#c0392b" font-size="10" font-weight="700">72.1%</text>
+  <rect x="1148" y="379" width="36" height="20" rx="5" fill="#256695"/>
+  <text x="1166" y="393" text-anchor="middle" fill="white" font-size="10" font-weight="700">View</text>
+  <!-- Info icon (reviewed doc) -->
+  <circle cx="1200" cy="389" r="9" fill="#e8f1fb"/>
+  <text x="1200" y="394" text-anchor="middle" fill="#256695" font-size="11" font-weight="800">ℹ</text>
+  <line x1="40" y1="408" x2="1240" y2="408" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- Row 3 -->
+  <rect x="40" y="408" width="1200" height="38" fill="white"/>
+  <text x="65" y="431" fill="#2a3f55" font-size="11">Global Traders</text>
+  <text x="195" y="431" fill="#2a3f55" font-size="11">INV-2024-003</text>
+  <text x="315" y="431" fill="#2a3f55" font-size="11">12/03/2026</text>
+  <text x="435" y="431" fill="#2a3f55" font-size="11">LPO-4355</text>
+  <text x="555" y="431" fill="#2a3f55" font-size="11">AED 5,200</text>
+  <text x="660" y="431" fill="#2a3f55" font-size="11">AED 260</text>
+  <text x="745" y="431" fill="#2a3f55" font-size="11">AED 5,460</text>
+  <text x="875" y="431" fill="#2a3f55" font-size="11">16/03/2026</text>
+  <rect x="1005" y="416" width="64" height="18" rx="8" fill="#e6f7ed"/>
+  <text x="1037" y="429" text-anchor="middle" fill="#2e7a44" font-size="10" font-weight="700">91.5%</text>
+  <rect x="1148" y="417" width="36" height="20" rx="5" fill="#256695"/>
+  <text x="1166" y="431" text-anchor="middle" fill="white" font-size="10" font-weight="700">View</text>
+  <line x1="40" y1="446" x2="1240" y2="446" stroke="#f0f3f7" stroke-width="1"/>
+
+  <!-- More rows (faded) -->
+  <rect x="40" y="446" width="1200" height="38" fill="#f9fbfd" opacity="0.7"/>
+  <text x="65" y="469" fill="#aab8c8" font-size="11">Nexus Corp</text>
+  <text x="195" y="469" fill="#aab8c8" font-size="11">INV-2024-004</text>
+  <text x="315" y="469" fill="#aab8c8" font-size="11">10/03/2026</text>
+  <text x="435" y="469" fill="#aab8c8" font-size="11">LPO-4310</text>
+  <text x="555" y="469" fill="#aab8c8" font-size="11">AED 3,750</text>
+  <text x="660" y="469" fill="#aab8c8" font-size="11">AED 187</text>
+  <text x="745" y="469" fill="#aab8c8" font-size="11">AED 3,937</text>
+  <line x1="40" y1="484" x2="1240" y2="484" stroke="#f0f3f7" stroke-width="1"/>
+  <rect x="40" y="484" width="1200" height="38" fill="white" opacity="0.5"/>
+  <rect x="40" y="522" width="1200" height="38" fill="#f9fbfd" opacity="0.3"/>
+
+  <!-- Gradient fade -->
+  <rect x="40" y="496" width="1200" height="140" fill="url(#fade)"/>
+  <defs>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="white" stop-opacity="0"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Pagination -->
+  <rect x="530" y="770" width="30" height="22" rx="4" fill="#256695"/>
+  <text x="545" y="786" text-anchor="middle" fill="white" font-size="12" font-weight="700">1</text>
+  <rect x="568" y="770" width="30" height="22" rx="4" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="583" y="786" text-anchor="middle" fill="#256695" font-size="12" font-weight="700">2</text>
+  <rect x="606" y="770" width="30" height="22" rx="4" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="621" y="786" text-anchor="middle" fill="#256695" font-size="12" font-weight="700">3</text>
+  <text x="650" y="786" fill="#6a82a0" font-size="12">…</text>
+  <rect x="668" y="770" width="30" height="22" rx="4" fill="white" stroke="#d0dae4" stroke-width="1.5"/>
+  <text x="683" y="786" text-anchor="middle" fill="#256695" font-size="12">›</text>
+
+  <!-- ─── VERSION HISTORY MODAL (inset) ─── -->
+  <rect x="800" y="430" width="420" height="300" rx="14" fill="white" filter="url(#cs)" stroke="#e0e8f0" stroke-width="1"/>
+  <rect x="800" y="430" width="420" height="5" rx="3" fill="#256695"/>
+  <circle cx="1200" cy="448" r="10" fill="#f4f7fa"/>
+  <text x="1200" y="453" text-anchor="middle" fill="#6a82a0" font-size="12" font-weight="700">✕</text>
+  <text x="1010" y="460" text-anchor="middle" fill="#256695" font-size="13" font-weight="800">📋 Version History</text>
+  <text x="1010" y="478" text-anchor="middle" fill="#7a90aa" font-size="11">Alpha Services — INV-2024-002</text>
+  <line x1="816" y1="488" x2="1204" y2="488" stroke="#f0f3f7" stroke-width="1"/>
+  <!-- Meta info -->
+  <text x="820" y="506" fill="#7a90aa" font-size="10" font-weight="700">STATUS</text>
+  <rect x="820" y="512" width="62" height="16" rx="7" fill="#e6f7ed"/>
+  <text x="851" y="524" text-anchor="middle" fill="#2e7a44" font-size="9.5" font-weight="700">✔ Reviewed</text>
+  <text x="920" y="506" fill="#7a90aa" font-size="10" font-weight="700">UPLOADED BY</text>
+  <text x="920" y="524" fill="#2a3f55" font-size="11">John Doe</text>
+  <text x="1070" y="506" fill="#7a90aa" font-size="10" font-weight="700">REVIEWED BY</text>
+  <text x="1070" y="524" fill="#2a3f55" font-size="11">Sarah Admin</text>
+  <!-- Version table header -->
+  <rect x="816" y="534" width="388" height="24" rx="4" fill="#f4f8fb"/>
+  <text x="830" y="550" fill="#256695" font-size="10" font-weight="700">Ver</text>
+  <text x="866" y="550" fill="#256695" font-size="10" font-weight="700">Action</text>
+  <text x="970" y="550" fill="#256695" font-size="10" font-weight="700">User</text>
+  <text x="1090" y="550" fill="#256695" font-size="10" font-weight="700">Timestamp</text>
+  <!-- Version rows -->
+  <text x="830" y="574" fill="#2a3f55" font-size="10">v2</text>
+  <text x="866" y="574" fill="#2a3f55" font-size="10">Reviewed &amp; Edited</text>
+  <text x="970" y="574" fill="#2a3f55" font-size="10">Sarah Admin</text>
+  <text x="1090" y="574" fill="#2a3f55" font-size="10">18/03 09:42</text>
+  <line x1="816" y1="582" x2="1204" y2="582" stroke="#f0f3f7" stroke-width="1"/>
+  <text x="830" y="600" fill="#2a3f55" font-size="10">v1</text>
+  <text x="866" y="600" fill="#2a3f55" font-size="10">Uploaded</text>
+  <text x="970" y="600" fill="#2a3f55" font-size="10">John Doe</text>
+  <text x="1090" y="600" fill="#2a3f55" font-size="10">17/03 14:15</text>
+  <line x1="816" y1="608" x2="1204" y2="608" stroke="#f0f3f7" stroke-width="1"/>
+  <text x="830" y="626" fill="#aab8c8" font-size="10">v0</text>
+  <text x="866" y="626" fill="#aab8c8" font-size="10">AI Extracted</text>
+  <text x="970" y="626" fill="#aab8c8" font-size="10">System</text>
+  <text x="1090" y="626" fill="#aab8c8" font-size="10">17/03 14:10</text>
+  <rect x="834" y="682" width="352" height="32" rx="8" fill="#256695"/>
+  <text x="1010" y="703" text-anchor="middle" fill="white" font-size="12" font-weight="700">Close</text>
+
+  <!-- Design label -->
+  <rect x="340" y="872" width="600" height="20" rx="4" fill="#256695" opacity="0.08"/>
+  <text x="640" y="886" text-anchor="middle" fill="#256695" font-size="11" font-weight="700">Design 05 — Data View (Invoice shown; tabs for Bank Statement &amp; Mortgage Forms; Version History modal)</text>
+</svg>
