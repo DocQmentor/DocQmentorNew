@@ -259,8 +259,9 @@ const Dashboard = () => {
     ]);
 
     for (const fileObj of selectedFiles) {
-      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, { autoClose: 1000 });
+      const toastId = toast.info(`Uploading ${fileObj.fileName}...`, { autoClose: false });
       try {
+        toast.update(toastId, { render: `${fileObj.fileName}: uploading to storage…`, autoClose: false });
         const result = await uploadToAzure(
           fileObj.file,
           fileObj.modelType,
@@ -268,16 +269,26 @@ const Dashboard = () => {
           name  || currentUser.name,
           (pct) => {
             toast.update(toastId, {
-              render: `${fileObj.fileName} uploading: ${pct}%`,
-              isLoading: pct < 100,
-              autoClose: pct >= 100 ? 2000 : false,
+              render: `${fileObj.fileName}: ${pct < 100 ? `uploading ${pct}%` : "processing with AI…"}`,
+              isLoading: true,
+              autoClose: false,
             });
           }
         );
-        if (result?.error) { toast.error(result.error); continue; }
-        toast.success(`${fileObj.fileName} uploaded successfully!`);
-      } catch {
-        toast.error("Upload failed. Please try again.");
+        if (result?.error) {
+          toast.update(toastId, { render: `❌ ${result.error}`, type: "error", isLoading: false, autoClose: 6000 });
+          continue;
+        }
+        const splitMsg = result?.splitCount > 0
+          ? `✅ ${fileObj.fileName}: split into ${result.splitCount} document(s)`
+          : `⚠️ ${fileObj.fileName}: uploaded but no documents detected — check if model type is correct`;
+        toast.update(toastId, { render: splitMsg, type: result?.splitCount > 0 ? "success" : "warning", isLoading: false, autoClose: 6000 });
+      } catch (err) {
+        const msg = err?.response?.data?.message || err?.response?.data || err?.message || "Unknown error";
+        toast.update(toastId, {
+          render: `❌ Upload failed: ${typeof msg === "string" ? msg : JSON.stringify(msg)}`,
+          type: "error", isLoading: false, autoClose: 8000
+        });
       }
     }
 

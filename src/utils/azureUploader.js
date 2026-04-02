@@ -194,7 +194,7 @@ const CONTAINER_URL = "https://docqmentor2blob.blob.core.windows.net/docqmentor2
 const BLOB_SERVICE_URL_WITH_SAS = `${CONTAINER_URL}?${sasToken}`;
 const CONTAINER_NAME = "docqmentor2";
 const AZURE_FUNCTION_URL =
-  "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=H4sgHod2tb26Mmhl_h4DfLQe428vjXDrlIo_Npk7sSr6AzFuPY_B6Q==";
+  "https://docqmentorfuncapp.azurewebsites.net/api/DocQmentorFunc?code=5ttVguFIlYsgNTLnI7I-hGlMyInPTM_Y-3ihASWqOxLzAzFuaOzdpQ==";
 
 // Helpers
 const splitCamelCase = (text) => text.replace(/([a-z])([A-Z])/g, "$1 $2");
@@ -219,8 +219,8 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
   // ✅ User requested REMOVING unique ID prefix.
   const uniqueFileName = file.name;
 
-  // Upload to 'rawupload' folder inside 'docqmentor2' container
-  const filePath = `rawupload/${uniqueFileName}`;
+  // Upload to 'uploads' folder — 'rawupload' is reserved for BlobTrigger-only flow
+  const filePath = `uploads/${uniqueFileName}`;
   const blockBlobClient = containerClient.getBlockBlobClient(filePath);
 
   try {
@@ -257,10 +257,8 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
     //   pageCount: 0, // can be updated later
     // };
 
-    // 4️⃣ Send to backend - DISABLED
-    // The backend trigger (BlobTrigger) on 'rawupload' should handle this now.
-    /*
-    await axios.post(
+    // 4️⃣ Send to backend for immediate processing
+    const backendResponse = await axios.post(
       AZURE_FUNCTION_URL,
       {
         blobUrl: blobUrlWithSAS,
@@ -268,33 +266,33 @@ export const uploadToAzure = async (file, modelType, userId, userName, onProgres
         modelType,
         uploadedBy: { id: userId, name: userName },
         uploadedAt: new Date().toISOString(),
-        metadata,
         extractedData: {},
         confidenceScores: {},
         versionHistory: []
       },
       {
-        headers: {
-          "Content-Type": "application/json"
-        }
+        headers: { "Content-Type": "application/json" }
       }
     );
-    */
+
+    const splitCount = backendResponse?.data?.results?.length ?? 0;
 
     // 5️⃣ Return UI info
-    // We return success so the UI shows "Uploaded". 
-    // The document won't appear in the list until processed by backend.
     return {
       fileName: file.name,
       folderName,
       uploadedAt: new Date(),
-      status: "Uploaded (Processing)", // specific status
+      status: "Uploaded (Processing)",
       url: blobUrlWithSAS,
       uploadId,
       modelType,
+      splitCount,
     };
   } catch (error) {
-    console.error("Azure upload error:", error.response?.data || error.message);
+    console.error("=== UPLOAD ERROR ===");
+    console.error("Message:", error.message);
+    console.error("Status:", error.response?.status);
+    console.error("Backend response:", JSON.stringify(error.response?.data, null, 2));
     throw error;
   }
 };
