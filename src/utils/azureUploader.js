@@ -210,6 +210,59 @@ const extractFolderName = (filename) => {
   return cleaned.trim().toUpperCase();
 };
 
+// Upload file to blob only — returns blobUrl (with SAS). No processing.
+export const uploadToBlobOnly = async (file, onProgress) => {
+  const containerClient = new ContainerClient(BLOB_SERVICE_URL_WITH_SAS);
+  const filePath = `uploads/${file.name}`;
+  const blockBlobClient = containerClient.getBlockBlobClient(filePath);
+
+  await blockBlobClient.uploadData(file, {
+    blobHTTPHeaders: { blobContentType: file.type },
+    onProgress: (ev) => {
+      if (onProgress && ev.loadedBytes && file.size) {
+        const percent = Math.round((ev.loadedBytes * 100) / file.size);
+        onProgress(percent);
+      }
+    },
+  });
+
+  return blockBlobClient.url;
+};
+
+// Detect document type from already-uploaded blob — returns "invoice" | "bankstatement" | "mortgageforms" | "unknown" | null
+export const detectTypeFromBlob = async (blobUrl) => {
+  try {
+    const response = await axios.post(
+      `${AZURE_FUNCTION_URL}&action=detect`,
+      { blobUrl },
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return response?.data?.detectedType || null;
+  } catch {
+    return null;
+  }
+};
+
+// Process an already-uploaded blob — splits, extracts fields, saves DB records
+export const processDocument = async (blobUrl, fileName, modelType, userId, userName) => {
+  const response = await axios.post(
+    AZURE_FUNCTION_URL,
+    {
+      blobUrl,
+      documentName: fileName,
+      modelType,
+      uploadedBy: { id: userId, name: userName },
+      uploadedAt: new Date().toISOString(),
+      extractedData: {},
+      confidenceScores: {},
+      versionHistory: [],
+    },
+    { headers: { "Content-Type": "application/json" } }
+  );
+  const splitCount = response?.data?.results?.length ?? 0;
+  return { fileName, splitCount };
+};
+
 // ✅ Enhanced upload with metadata
 export const uploadToAzure = async (file, modelType, userId, userName, onProgress) => {
   const uploadId = uuidv4();

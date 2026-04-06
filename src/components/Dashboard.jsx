@@ -2,24 +2,22 @@ import { useRef, useState, useEffect } from "react";
 import "./Dashboard.css";
 import { AlertTriangle } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
-import { uploadToAzure } from "../utils/azureUploader";
+import { uploadToBlobOnly, detectTypeFromBlob, processDocument } from "../utils/azureUploader";
 import Footer from "../Layout/Footer";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getVendorFolders, checkFileExists } from "../utils/blobService";
+import { getVendorFolders } from "../utils/blobService";
 import { useMsal } from "@azure/msal-react";
 import { useUser } from "../context/UserContext";
 import { sasToken } from "../sasToken";
 import useGroupAccess from "../utils/userGroupAccess";
 import { useConfig } from "../context/ConfigContext";
 
-/* ── Auto-detection keyword rules (Design 03) ────────────── */
-const detectDocumentType = (fileName) => {
-  const n = fileName.toLowerCase();
-  if (/invoice|inv[_\-.]|receipt|bill|lpo/.test(n))        return "Invoice";
-  if (/statement|bank[_\-.]|stmt|bankstmt/.test(n))        return "BankStatement";
-  if (/mortgage|loan[_\-.]|lend|borrow|mort/.test(n))      return "MortgageForms";
-  return null;
+/* ── Map backend detected type → UI type key ─────────────── */
+const normalizeDetectedType = (t) => {
+  if (!t) return null;
+  const map = { invoice: "Invoice", bankstatement: "BankStatement", mortgageforms: "MortgageForms" };
+  return map[t.toLowerCase()] || null;
 };
 
 const TYPE_META = {
@@ -56,10 +54,6 @@ const Dashboard = () => {
   const [activeTab,       setActiveTab]        = useState("All");
   const [backendError,    setBackendError]     = useState(false);
 
-  // Type-selection modal
-  const [typeModalFile,      setTypeModalFile]      = useState(null);
-  const [unknownTypeQueue,   setUnknownTypeQueue]   = useState([]);
-  const [modalSelectedType,  setModalSelectedType]  = useState(null);
 
   const documentsPerPage = 10;
   const fileInputRef = useRef(null);
@@ -175,70 +169,47 @@ const Dashboard = () => {
     prevDocCountRef.current = globalDocuments.length;
   }, [globalDocuments.length]);
 
-  /* ── File selection with auto-detection ─────────────── */
-  const FileChange = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
+  /* ── Type override from queue dropdown ──────────────── */
+  const handleTypeOverride = (uploadId, newType) =>
+    setSelectedFiles((prev) =>
+      prev.map((f) => (f.uploadId === uploadId ? { ...f, modelType: newType || null } : f))
+    );
 
-    const detected = [];
-    const unknown  = [];
+  /* ── File selection: upload → detect → show in queue ── */
+  const FileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (!files.length) return;
 
     for (const file of files) {
       const fileName = file.name;
 
-      if (localInProcess.some((i) => i.documentName?.toLowerCase() === fileName.toLowerCase())) {
+      if (selectedFiles.some((f) => f.fileName.toLowerCase() === fileName.toLowerCase())) {
         toast.error(`"${fileName}" is already queued.`);
         continue;
       }
 
-      const docType = detectDocumentType(fileName);
+      const uploadId = uuidv4();
+      // Add immediately with detecting state
+      setSelectedFiles((prev) => [
+        ...prev,
+        { file, fileName, uploadId, folderName: extractFolderName(fileName), modelType: null, blobUrl: null, detecting: true },
+      ]);
 
-      if (docType) {
-        const existsInStorage = await checkFileExists(docType.toLowerCase(), fileName);
-        if (existsInStorage) {
-          toast.error(`"${fileName}" already exists in storage. Please rename and try again.`);
-          continue;
+      // Upload then detect in background
+      (async () => {
+        try {
+          const blobUrl = await uploadToBlobOnly(file);
+          const raw     = await detectTypeFromBlob(blobUrl);
+          const modelType = normalizeDetectedType(raw);
+          setSelectedFiles((prev) =>
+            prev.map((f) => f.uploadId === uploadId ? { ...f, blobUrl, modelType, detecting: false } : f)
+          );
+        } catch (err) {
+          toast.error(`Failed to process "${fileName}": ${err.message}`);
+          setSelectedFiles((prev) => prev.filter((f) => f.uploadId !== uploadId));
         }
-        detected.push({ file, fileName, uploadId: uuidv4(), folderName: extractFolderName(fileName), modelType: docType });
-      } else {
-        unknown.push({ file, fileName, uploadId: uuidv4(), folderName: extractFolderName(fileName), modelType: null });
-      }
-    }
-
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    if (detected.length) setSelectedFiles((prev) => [...prev, ...detected]);
-    if (unknown.length) {
-      const [first, ...rest] = unknown;
-      setTypeModalFile(first);
-      setUnknownTypeQueue(rest);
-      setModalSelectedType(null);
-    }
-  };
-
-  /* ── Type modal actions ──────────────────────────────── */
-  const handleModalConfirm = async () => {
-    if (!modalSelectedType || !typeModalFile) return;
-    const existsInStorage = await checkFileExists(modalSelectedType.toLowerCase(), typeModalFile.fileName);
-    if (existsInStorage) {
-      toast.error(`"${typeModalFile.fileName}" already exists in storage.`);
-      advanceModalQueue();
-      return;
-    }
-    setSelectedFiles((prev) => [...prev, { ...typeModalFile, modelType: modalSelectedType }]);
-    advanceModalQueue();
-  };
-
-  const handleModalCancel = () => advanceModalQueue();
-
-  const advanceModalQueue = () => {
-    if (unknownTypeQueue.length > 0) {
-      const [next, ...rest] = unknownTypeQueue;
-      setTypeModalFile(next);
-      setUnknownTypeQueue(rest);
-      setModalSelectedType(null);
-    } else {
-      setTypeModalFile(null);
-      setModalSelectedType(null);
+      })();
     }
   };
 
@@ -262,18 +233,13 @@ const Dashboard = () => {
       const toastId = toast.info(`Uploading ${fileObj.fileName}...`, { autoClose: false });
       try {
         toast.update(toastId, { render: `${fileObj.fileName}: uploading to storage…`, autoClose: false });
-        const result = await uploadToAzure(
-          fileObj.file,
+        toast.update(toastId, { render: `${fileObj.fileName}: processing with AI…`, isLoading: true, autoClose: false });
+        const result = await processDocument(
+          fileObj.blobUrl,
+          fileObj.fileName,
           fileObj.modelType,
           email || currentUser.id,
           name  || currentUser.name,
-          (pct) => {
-            toast.update(toastId, {
-              render: `${fileObj.fileName}: ${pct < 100 ? `uploading ${pct}%` : "processing with AI…"}`,
-              isLoading: true,
-              autoClose: false,
-            });
-          }
         );
         if (result?.error) {
           toast.update(toastId, { render: `❌ ${result.error}`, type: "error", isLoading: false, autoClose: 6000 });
@@ -451,7 +417,7 @@ const Dashboard = () => {
           <div className="dash-upload-panel">
             <div className="dash-panel-hdr">
               <h3>📤 Upload Documents</h3>
-              <p>Type is auto-detected from filename.</p>
+              <p>Type is detected automatically from document content.</p>
             </div>
             <hr className="dash-divider" />
 
@@ -484,16 +450,30 @@ const Dashboard = () => {
                   {selectedFiles.map((f, i) => {
                     const meta = f.modelType ? TYPE_META[f.modelType] : null;
                     return (
-                      <li key={i} className={`dash-file-item${!f.modelType ? " unknown" : ""}`}>
+                      <li key={f.uploadId} className={`dash-file-item${!f.modelType && !f.detecting ? " unknown" : ""}`}>
                         <span className="dash-file-emoji">📄</span>
                         <div className="dash-file-info">
                           <span className="dash-file-name">{f.fileName}</span>
-                          {meta ? (
-                            <span className="dash-type-badge" style={{ background: meta.bg, color: meta.text }}>
-                              {meta.emoji} {meta.label} — Auto-Detected
-                            </span>
+                          {f.detecting ? (
+                            <span className="dash-type-badge detecting-badge">⏳ Uploading &amp; detecting…</span>
                           ) : (
-                            <span className="dash-type-badge unknown-badge">❓ Unknown — Select Type</span>
+                            <div className="dash-type-row">
+                              {meta && (
+                                <span className="dash-type-badge" style={{ background: meta.bg, color: meta.text }}>
+                                  {meta.emoji} {meta.label}
+                                </span>
+                              )}
+                              <select
+                                className="dash-type-override-select"
+                                value={f.modelType || ""}
+                                onChange={(e) => handleTypeOverride(f.uploadId, e.target.value)}
+                              >
+                                <option value="">{meta ? "▼ Change type" : "❓ Select type…"}</option>
+                                {Object.entries(TYPE_META).map(([key, m]) => (
+                                  <option key={key} value={key}>{m.emoji} {m.label}</option>
+                                ))}
+                              </select>
+                            </div>
                           )}
                         </div>
                         <button className="dash-file-del" onClick={() => handleDeleteFile(i)}>✕</button>
@@ -505,15 +485,19 @@ const Dashboard = () => {
                 <button
                   className="dash-process-btn"
                   onClick={handleProcessFiles}
-                  disabled={isUploading}
+                  disabled={isUploading || selectedFiles.some((f) => f.detecting || !f.modelType)}
                 >
-                  ⚡ {isUploading ? "Uploading..." : `Process Files (${selectedFiles.length})`}
+                  ⚡ {isUploading ? "Processing..." : `Process Files (${selectedFiles.length})`}
                 </button>
 
-                {selectedFiles.some((f) => !f.modelType) && (
+                {selectedFiles.some((f) => f.detecting) && (
                   <div className="dash-unknown-warn">
-                    <span>⚠️ Some files need manual type selection</span>
-                    <span>A dialog will appear before upload</span>
+                    <span>⏳ Detecting document types, please wait…</span>
+                  </div>
+                )}
+                {!selectedFiles.some((f) => f.detecting) && selectedFiles.some((f) => !f.modelType) && (
+                  <div className="dash-unknown-warn">
+                    <span>⚠️ Select a type for all files before processing</span>
                   </div>
                 )}
               </>
@@ -604,58 +588,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── Type Selection Modal (Design 02) ───────────────── */}
-      {typeModalFile && (
-        <div className="type-modal-overlay">
-          <div className="type-modal">
-            <div className="type-modal-accent" />
-            <button className="type-modal-close" onClick={handleModalCancel}>✕</button>
-
-            <div className="type-modal-icon">🤔</div>
-            <h2 className="type-modal-title">Document Type Not Detected</h2>
-            <p className="type-modal-sub">We couldn&apos;t identify the type for this file.</p>
-            <p className="type-modal-sub">Please select the correct document model to continue.</p>
-
-            <div className="type-modal-filename">📄 {typeModalFile.fileName}</div>
-
-            <p className="type-modal-section-lbl">SELECT DOCUMENT TYPE</p>
-
-            <div className="type-modal-cards">
-              {Object.entries(TYPE_META).map(([key, meta]) => (
-                <button
-                  key={key}
-                  className={`type-card${modalSelectedType === key ? " selected" : ""}`}
-                  onClick={() => setModalSelectedType(key)}
-                >
-                  {modalSelectedType === key && <span className="type-card-check">✓</span>}
-                  <span className="type-card-emoji">{meta.emoji}</span>
-                  <span className="type-card-label">{meta.label}</span>
-                  <span className="type-card-desc">
-                    {key === "Invoice"       ? "Vendor invoices, receipts, bills"    :
-                     key === "BankStatement" ? "Account & balance statements"        :
-                                              "Loan & mortgage documents"}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            <div className="type-modal-actions">
-              <button className="type-modal-cancel-btn"  onClick={handleModalCancel}>Cancel</button>
-              <button
-                className="type-modal-confirm-btn"
-                onClick={handleModalConfirm}
-                disabled={!modalSelectedType}
-              >
-                ✅ Confirm &amp; Add to Queue
-              </button>
-            </div>
-
-            <div className="type-modal-hint">
-              💡 This dialog appears automatically when a file&apos;s type cannot be determined from the filename.
-            </div>
-          </div>
-        </div>
-      )}
 
       <Footer />
       <ToastContainer />
